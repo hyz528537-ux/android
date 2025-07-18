@@ -45,7 +45,6 @@ class EmulationUseCase(
                 emulateWithBattery(
                     message = message,
                     forceRelayer = forceRelayer,
-                    params = params
                 )
             } else {
                 emulate(message, params)
@@ -75,30 +74,26 @@ class EmulationUseCase(
     private suspend fun emulateWithBattery(
         message: MessageBodyEntity,
         forceRelayer: Boolean,
-        params: Boolean,
     ): Emulated {
-        try {
-            if (api.config.isBatteryDisabled) {
-                throw IllegalStateException("Battery is disabled")
-            }
-
-            val wallet = message.wallet
-            val tonProofToken = accountRepository.requestTonProofToken(wallet) ?: throw IllegalStateException("Can't find TonProof token")
-            val boc = createMessage(message, true)
-
-            val (consequences, withBattery) = batteryRepository.emulate(
-                tonProofToken = tonProofToken,
-                publicKey = wallet.publicKey,
-                testnet = wallet.testnet,
-                boc = boc,
-                forceRelayer = forceRelayer,
-                safeModeEnabled = settingsRepository.isSafeModeEnabled(api)
-            ) ?: throw IllegalStateException("Failed to emulate battery")
-
-            return parseEmulated(wallet, consequences, TransferType.Battery)
-        } catch (e: Throwable) {
-            return emulate(message, params)
+        if (api.config.isBatteryDisabled) {
+            throw IllegalStateException("Battery is disabled")
         }
+
+        val wallet = message.wallet
+        val tonProofToken = accountRepository.requestTonProofToken(wallet)
+            ?: throw IllegalStateException("Can't find TonProof token")
+        val boc = createMessage(message, true)
+
+        val (consequences, withBattery) = batteryRepository.emulate(
+            tonProofToken = tonProofToken,
+            publicKey = wallet.publicKey,
+            testnet = wallet.testnet,
+            boc = boc,
+            forceRelayer = forceRelayer,
+            safeModeEnabled = settingsRepository.isSafeModeEnabled(api)
+        ) ?: throw IllegalStateException("Failed to emulate battery")
+
+        return parseEmulated(wallet, consequences, TransferType.Battery)
     }
 
     private suspend fun emulate(message: MessageBodyEntity, params: Boolean): Emulated {
@@ -185,18 +180,22 @@ class EmulationUseCase(
         jettons: List<JettonQuantity>
     ): List<BalanceEntity> {
         val list = mutableListOf<BalanceEntity>()
-        list.add(BalanceEntity.create(
-            accountId = wallet.address,
-            value = Coins.of(tonValue),
-        ))
+        list.add(
+            BalanceEntity.create(
+                accountId = wallet.address,
+                value = Coins.of(tonValue),
+            )
+        )
         for (jettonQuantity in jettons) {
             val token = TokenEntity(jettonQuantity.jetton)
             val value = Coins.ofNano(jettonQuantity.quantity, token.decimals)
-            list.add(BalanceEntity(
-                token = token,
-                value = value,
-                walletAddress = jettonQuantity.walletAddress.address
-            ))
+            list.add(
+                BalanceEntity(
+                    token = token,
+                    value = value,
+                    walletAddress = jettonQuantity.walletAddress.address
+                )
+            )
         }
         return list.toList()
     }

@@ -55,6 +55,13 @@ import uikit.widget.SimpleRecyclerView
 import uikit.widget.SlideActionView
 import java.util.concurrent.CancellationException
 import androidx.core.view.isVisible
+import com.tonapps.extensions.uri
+import com.tonapps.icu.CurrencyFormatter
+import com.tonapps.tonkeeper.popup.ActionSheet
+import com.tonapps.tonkeeper.ui.screen.send.main.state.SendFee
+import com.tonapps.uikit.color.accentGreenColor
+import com.tonapps.wallet.localization.Plurals
+import uikit.extensions.dp
 import uikit.extensions.getDimensionPixelSize
 
 class SendTransactionScreen(wallet: WalletEntity) :
@@ -73,7 +80,17 @@ class SendTransactionScreen(wallet: WalletEntity) :
         parametersOf(args.request, args.batteryTransactionType, args.forceRelayer)
     }
 
-    private val historyAdapter = object : HistoryAdapter(disableOpenAction = true) {
+    private val feeMethodSelector: ActionSheet by lazy {
+        ActionSheet(requireContext())
+    }
+
+    private val historyAdapter = object : HistoryAdapter(
+        disableOpenAction = true,
+        shouldShowFeeToggle = {
+            viewModel.feeOptions.size > 1
+        },
+        showFeeMethods = ::showFeeMethods,
+    ) {
         override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
             super.onAttachedToRecyclerView(recyclerView)
             recyclerView.isNestedScrollingEnabled = true
@@ -164,10 +181,7 @@ class SendTransactionScreen(wallet: WalletEntity) :
         slideTextBuilder.append("\n")
         slideTextBuilder.append(SpannableString(secondLineText).apply {
             setSpan(
-                RelativeSizeSpan(0.8f),
-                0,
-                secondLineText.length,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                RelativeSizeSpan(0.8f), 0, secondLineText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
             )
             setSpan(
                 ForegroundColorSpan(
@@ -324,6 +338,69 @@ class SendTransactionScreen(wallet: WalletEntity) :
         builder.append(": ")
         builder.append(wallet.label.getTitle(requireContext(), walletView, 16))
         walletView.text = builder
+    }
+
+    private fun showFeeMethods(currentFee: SendFee, targetView: View) {
+        feeMethodSelector.width = 264.dp
+
+        if (feeMethodSelector.isShowing) {
+            return
+        }
+
+        feeMethodSelector.clearItems()
+
+        viewModel.feeOptions.forEach { fee ->
+            when (fee) {
+                is SendFee.TokenFee -> {
+                    val formattedAmount = CurrencyFormatter.format(
+                        fee.amount.token.symbol,
+                        fee.amount.value,
+                        2
+                    )
+                    val formattedFiat = CurrencyFormatter.formatFiat(
+                        fee.fiatCurrency.code,
+                        fee.fiatAmount,
+                    )
+                    feeMethodSelector.addItem(
+                        id = fee.amount.token.symbol.hashCode().toLong(),
+                        title = fee.amount.token.symbol,
+                        subtitle = "≈ $formattedAmount · $formattedFiat",
+                        imageUri = fee.amount.token.imageUri,
+                        icon = if (currentFee == fee) {
+                            getDrawable(UIKitIcon.ic_done_16)
+                        } else null,
+                        onClick = {
+                            viewModel.setFeeMethod(fee)
+                        }
+                    )
+                }
+
+                is SendFee.Battery -> {
+                    val formattedCharges = requireContext().resources.getQuantityString(
+                        Plurals.battery_charges,
+                        fee.charges,
+                        CurrencyFormatter.format(value = fee.charges.toBigDecimal())
+                    )
+                    feeMethodSelector.addItem(
+                        id = "battery".hashCode().toLong(),
+                        title = getString(Localization.battery_refill_title),
+                        subtitle = "≈ $formattedCharges",
+                        imageUri = UIKitIcon.ic_flash_24.uri(),
+                        imageTintColor = requireContext().accentGreenColor,
+                        icon = if (currentFee == fee) {
+                            getDrawable(UIKitIcon.ic_done_16)
+                        } else null,
+                        onClick = {
+                            viewModel.setFeeMethod(fee)
+                        }
+                    )
+                }
+
+                else -> {}
+            }
+        }
+
+        feeMethodSelector.showPopupAboveRight(targetView)
     }
 
     companion object {

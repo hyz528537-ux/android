@@ -235,22 +235,33 @@ class SettingsViewModel(
             uiItems.add(Item.Space)
         }
 
-        uiItems.add(Item.Notifications(ListCell.Position.FIRST))
+        if (environment.isGooglePlayServicesAvailable) {
+            uiItems.add(Item.Notifications(ListCell.Position.FIRST))
+        }
+
+        var secondCellPosition = if (environment.isGooglePlayServicesAvailable) {
+            ListCell.Position.MIDDLE
+        } else {
+            ListCell.Position.FIRST
+        }
 
         if (wallet.hasPrivateKey) {
             if (!hasW5) {
-                uiItems.add(Item.W5(ListCell.Position.MIDDLE))
+                uiItems.add(Item.W5(secondCellPosition))
+                secondCellPosition = ListCell.Position.MIDDLE
             }
             if (!hasV4R2) {
-                uiItems.add(Item.V4R2(ListCell.Position.MIDDLE))
+                uiItems.add(Item.V4R2(secondCellPosition))
+                secondCellPosition = ListCell.Position.MIDDLE
             }
         }
         if (!wallet.testnet) {
-            uiItems.add(Item.Currency(currency.code, ListCell.Position.MIDDLE))
+            uiItems.add(Item.Currency(currency.code, secondCellPosition))
+            secondCellPosition = ListCell.Position.MIDDLE
         }
 
         if (wallet.isTonConnectSupported) {
-            uiItems.add(Item.SearchEngine(searchEngine, ListCell.Position.MIDDLE))
+            uiItems.add(Item.SearchEngine(searchEngine, secondCellPosition))
             uiItems.add(Item.ConnectedApps(ListCell.Position.MIDDLE))
         }
 

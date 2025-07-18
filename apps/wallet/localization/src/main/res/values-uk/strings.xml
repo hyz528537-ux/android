@@ -29,8 +29,10 @@
     <string name="setup_finish_title">Завершіть налаштування</string>
     <string name="setup_finish_push">Увімкнути сповіщення про транзакції</string>
     <string name="setup_finish_biometry">Використовуйте біометрію для підтвердження транзакцій</string>
-    <string name="setup_finish_backup">Зробіть резервну копію фрази для відновлення гаманця</string>
+    <string name="setup_finish_backup">Зробіть резервну копію фрази відновлення</string>
+    <string name="setup_finish_backup_subtitle">Без неї ви не зможете відновити гаманець</string>
     <string name="setup_finish_telegram">Приєднуйтесь до каналу Tonkeeper</string>
+    <string name="setup_onboarding">Дізнайтеся, як користуватися своїм гаманцем</string>
     <string name="contacts">Контакти</string>
     <string name="step_1">Крок 1</string>
     <string name="step_2">Крок 2</string>
@@ -351,7 +353,7 @@
     <string name="system">Система</string>
     <string name="network_fee">Мережевий збір</string>
     <string name="confirm">Підтвердити</string>
-    <string name="send_request_comment">Ви повинні додати примітку від обміну для переказу. Без неї ваші кошти будуть втрачені.</string>
+    <string name="send_request_comment">Під час надсилання обов’язково додайте примітку або тег від біржі. Без цього кошти не будуть зараховані й можуть бути втрачені.</string>
     <string name="banner_top">Ви використовуєте експериментальну версію Tonkeeper.</string>
     <string name="banner_top_button">Встановити стабільну версію</string>
     <string name="signer_description">Відкрийте Signer » Виберіть потрібний ключ » Скануйте QR-код</string>
@@ -431,7 +433,6 @@
         <item quantity="many">≈ %1$s зарядів за %2$s</item>
         <item quantity="other">≈ %1$s зарядів за %2$s</item>
     </plurals>
-    <string name="will_be_paid_with_battery">Буде сплачено батареєю</string>
     <string name="battery_settings_title">Налаштування батареї</string>
     <string name="battery_settings_subtitle">Вибрані транзакції будуть сплачені батареєю Tonkeeper.</string>
     <string name="battery_recharge_title">Перезарядка</string>
@@ -445,7 +446,6 @@
     <string name="promocode_hint">Промокод</string>
     <string name="refund">Повернення</string>
     <string name="gasless_switch_label">Торкніться, щоб оплатити %1$s</string>
-    <string name="change_fee_method">Змінити спосіб оплати</string>
     <string name="battery_large_pack">Великий</string>
     <string name="battery_medium_pack">Середній</string>
     <string name="battery_small_pack">Маленький</string>
@@ -589,5 +589,7 @@
     <string name="currency_not_found">Валюта не знайдена</string>
     <string name="onrmap_provider_description">Інші постачальники доступні для різних валютних пар.</string>
     <string name="stake_ethena_description">Токен tsUSDe представляє USDe, що зберігається через Ethena, децентралізований сервіс стейкінгу. tsUSDe автоматично накопичує винагороду за стейкінг з мінімальним блокуванням.</string>
-
+    <string name="support_title">Потрібна допомога?</string>
+    <string name="support_subtitle">Напишіть нам у Telegram — ми зробимо все можливе, щоб допомогти.</string>
+    <string name="ask_question">Поставити запитання</string>
 </resources>

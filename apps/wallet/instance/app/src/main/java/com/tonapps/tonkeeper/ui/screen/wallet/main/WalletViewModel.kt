@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.tonapps.icu.Coins
 import com.tonapps.network.NetworkMonitor
+import com.tonapps.tonkeeper.Environment
+import com.tonapps.tonkeeper.RemoteConfig
 import com.tonapps.tonkeeper.core.entities.AssetsEntity.Companion.sort
 import com.tonapps.tonkeeper.extensions.hasPushPermission
 import com.tonapps.tonkeeper.helper.DateHelper
@@ -54,6 +56,8 @@ class WalletViewModel(
     private val transactionManager: TransactionManager,
     private val assetsManager: AssetsManager,
     private val apkManager: APKManager,
+    private val remoteConfig: RemoteConfig,
+    private val environment: Environment,
 ) : BaseWalletVM(app) {
 
     val installId: String
@@ -233,11 +237,12 @@ class WalletViewModel(
                 val walletPushEnabled = settingsRepository.getPushWallet(state.wallet.id)
                 val hasInitializedWallet = accountRepository.getInitializedWallets().isNotEmpty()
                 State.Setup(
-                    pushEnabled = context.hasPushPermission() && walletPushEnabled,
+                    pushEnabled = !environment.isGooglePlayServicesAvailable || (context.hasPushPermission() && walletPushEnabled),
                     biometryEnabled = if (wallet.hasPrivateKey) settingsRepository.biometric else true,
                     hasBackup = if (wallet.hasPrivateKey) state.hasBackup else true,
-                    showTelegramChannel = !settingsRepository.isTelegramChannel(state.wallet.id),
+                    showTelegramChannel = false,
                     safeModeBlock = !api.config.flags.safeModeEnabled && hasInitializedWallet && settingsRepository.showSafeModeSetup,
+                    onboardingStoriesEnabled = wallet.hasPrivateKey && !wallet.testnet && remoteConfig.isOnboardingStoriesEnabled,
                 )
             }
 

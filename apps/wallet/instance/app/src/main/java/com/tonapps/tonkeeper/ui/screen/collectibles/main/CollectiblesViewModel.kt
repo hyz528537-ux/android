@@ -57,6 +57,9 @@ class CollectiblesViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null).filterNotNull().flattenFirst()
 
+    var hasNfts = false
+        private set
+
     init {
         transactionManager.eventsFlow(wallet).collectFlow {
             _ltFlow.value = it.lt
@@ -77,6 +80,7 @@ class CollectiblesViewModel(
         hiddenBalances: Boolean,
         isOnline: Boolean,
     ): Flow<UiListState> = collectiblesRepository.getFlow(wallet.address, wallet.testnet, isOnline).map { result ->
+        hasNfts = result.list.isNotEmpty()
         val safeMode = settingsRepository.isSafeModeEnabled(api)
         val uiItems = mutableListOf<Item>()
         for (nft in result.list) {

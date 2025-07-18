@@ -29,8 +29,10 @@
     <string name="setup_finish_title">Sozlashni yakunlash</string>
     <string name="setup_finish_push">Tranzaksiya bildirishnomalarini yoqing</string>
     <string name="setup_finish_biometry">Tranzaksiyalarni tasdiqlash uchun biometrikani qo\'llang</string>
-    <string name="setup_finish_backup">Hamyonni tiklash iborasini zaxiralash</string>
+    <string name="setup_finish_backup">Qayta tiklash iborangizni zaxiralang</string>
+    <string name="setup_finish_backup_subtitle">U holda, hamyoningizni tiklay olmaysiz</string>
     <string name="setup_finish_telegram">Tonkeeper kanaliga qo\'shiling</string>
+    <string name="setup_onboarding">Hamyoningizdan qanday foydalanishni o\'rganing</string>
     <string name="contacts">Kontaktlar</string>
     <string name="step_1">1-qadam</string>
     <string name="step_2">2-qadam</string>
@@ -353,7 +355,7 @@
     <string name="system">Tizim</string>
     <string name="network_fee">Tarmoq to\'lovi</string>
     <string name="confirm">Tasdiqlash</string>
-    <string name="send_request_comment">Pul oʻtkazmasi uchun almashinuvdan eslatmani kiritishingiz kerak. Aks holda, mablagʻlaringiz yoʻqoladi.</string>
+    <string name="send_request_comment">Yuborishda birjadan olingan eslatma yoki tegni qo‘shganingizga ishonch hosil qiling. U bo‘lmasa, mablag‘lar tushmaydi va yo‘qolishi mumkin.</string>
     <string name="banner_top">Siz hozirda Tonkeeper-ning tajribaviy versiyasidan foydalanmoqdasiz.</string>
     <string name="banner_top_button">Barqaror versiyani o\'rnating</string>
     <string name="signer_description">Signer-ni oching » Kerakli kalitni tanlang » QR kodni skaner qiling</string>
@@ -430,7 +432,6 @@
         <item quantity="one">≈ %1$s zaryad %2$s uchun</item>
         <item quantity="other">≈ %1$s zaryadlar %2$s uchun</item>
     </plurals>
-    <string name="will_be_paid_with_battery">Batareya bilan to‘lanadi</string>
     <string name="battery_settings_title">Batareya Sozlamalari</string>
     <string name="battery_settings_subtitle">Tanlangan tranzaktsiyalar Tonkeeper Batareya orqali to‘lanadi.</string>
     <string name="battery_recharge_title">Zaryadlash</string>
@@ -444,7 +445,6 @@
     <string name="promocode_hint">Kupon kodi</string>
     <string name="refund">To\'lovni qaytarish</string>
     <string name="gasless_switch_label">%1$s orqali toʻlash uchun bosing</string>
-    <string name="change_fee_method">Toʻlov usulini oʻzgartirish</string>
     <string name="battery_large_pack">Katta</string>
     <string name="battery_medium_pack">O\'rta</string>
     <string name="battery_small_pack">Kichik</string>
@@ -579,4 +579,7 @@
     <string name="credit_card_subtitle">Visa yoki Mastercard</string>
     <string name="currency_not_found">Valyuta topilmadi</string>
     <string name="onrmap_provider_description">Turli valyuta juftliklari uchun boshqa provayderlar mavjud.</string>
+    <string name="support_title">Yordam kerakmi?</string>
+    <string name="support_subtitle">Telegram orqali bizga murojaat qiling — yordam berishga harakat qilamiz.</string>
+    <string name="ask_question">Savol berish</string>
 </resources>

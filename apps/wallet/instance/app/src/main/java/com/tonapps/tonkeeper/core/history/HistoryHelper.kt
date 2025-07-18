@@ -1,9 +1,7 @@
 package com.tonapps.tonkeeper.core.history
 
 import android.content.Context
-import android.util.Log
 import androidx.collection.arrayMapOf
-import com.squareup.moshi.Json
 import com.tonapps.blockchain.ton.extensions.equalsAddress
 import com.tonapps.icu.Coins
 import com.tonapps.extensions.max24
@@ -30,6 +28,7 @@ import kotlinx.coroutines.withContext
 import com.tonapps.tonkeeper.extensions.with
 import com.tonapps.tonkeeper.helper.DateHelper
 import com.tonapps.tonkeeper.ui.screen.dialog.encrypted.EncryptedCommentScreen
+import com.tonapps.tonkeeper.ui.screen.send.main.state.SendFee
 import com.tonapps.tonkeeper.usecase.emulation.Emulated
 import com.tonapps.uikit.list.ListCell
 import com.tonapps.wallet.api.API
@@ -46,12 +45,10 @@ import com.tonapps.wallet.data.events.EventsRepository
 import com.tonapps.wallet.data.events.TxActionType
 import com.tonapps.wallet.data.passcode.PasscodeManager
 import com.tonapps.wallet.data.rates.RatesRepository
-import com.tonapps.wallet.data.rates.entity.RatesEntity
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.localization.Localization
 import com.tonapps.wallet.localization.Plurals
 import io.tonapi.models.JettonVerificationType
-import io.tonapi.models.MessageConsequences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -59,7 +56,6 @@ import kotlinx.coroutines.flow.take
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import kotlin.math.abs
 
 // TODO request refactoring
 class HistoryHelper(
@@ -203,69 +199,8 @@ class HistoryHelper(
 
     suspend fun create(
         wallet: WalletEntity,
-        response: MessageConsequences,
-        rates: RatesEntity,
-        isBattery: Boolean = false,
-        options: ActionOptions
-    ): Details {
-        val items = mapping(
-            wallet = wallet,
-            event = response.event,
-            options = options.copy(
-                removeDate = true,
-                positionExtra = 1
-            )
-        ).toMutableList()
-        val extra = response.event.extra
-
-        val fee = if (0 > extra) Coins.of(abs(extra)) else Coins.ZERO
-        val feeFormat = "≈ " + CurrencyFormatter.format("TON", fee)
-        val feeFiat = rates.convert("TON", fee)
-        val feeFiatFormat = CurrencyFormatter.formatFiat(rates.currency.code, feeFiat)
-
-        val refund = if (extra > 0) Coins.of(extra) else Coins.ZERO
-        val refundFormat = "≈ " + CurrencyFormatter.format("TON", refund)
-        val refundFiat = rates.convert("TON", refund)
-        val refundFiatFormat = CurrencyFormatter.formatFiat(rates.currency.code, refundFiat)
-
-        val isRefund = extra > 0
-
-
-        items.add(
-            HistoryItem.Event(
-                index = items.lastIndex + 1,
-                position = ListCell.Position.LAST,
-                txId = "fee",
-                iconURL = "",
-                action = if (isRefund) ActionType.Refund else ActionType.Fee,
-                title = "",
-                subtitle = if (isBattery) context.getString(Localization.will_be_paid_with_battery) else "",
-                value = if (isRefund) refundFormat else feeFormat,
-                date = if (isRefund) refundFiatFormat.toString() else feeFiatFormat.toString(),
-                isOut = true,
-                sender = null,
-                recipient = null,
-                failed = false,
-                isScam = false,
-                wallet = wallet,
-                isMaybeSpam = false,
-                actionOutStatus = ActionOutStatus.Send
-            )
-        )
-
-        return Details(
-            accountId = wallet.accountId,
-            items = items.toList(),
-            fee = fee,
-            feeFormat = feeFormat,
-            feeFiat = feeFiat,
-            feeFiatFormat = feeFiatFormat
-        )
-    }
-
-    suspend fun create(
-        wallet: WalletEntity,
-        emulated: Emulated
+        emulated: Emulated,
+        fee: SendFee,
     ): Details {
         val items = mapping(
             wallet = wallet,
@@ -310,9 +245,26 @@ class HistoryHelper(
                 iconURL = "",
                 action = if (emulated.extra.isRefund) ActionType.Refund else ActionType.Fee,
                 title = "",
-                subtitle = if (emulated.withBattery) context.getString(Localization.will_be_paid_with_battery) else "",
-                value = feeFormat,
-                date = feeFiatFormat.toString(),
+                subtitle = "",
+                value = if (fee is SendFee.Battery) {
+                    "≈ " + context.resources.getQuantityString(
+                        Plurals.battery_charges,
+                        fee.charges,
+                        CurrencyFormatter.format(value = fee.charges.toBigDecimal())
+                    )
+                } else {
+                    feeFormat
+                },
+                date = if (fee is SendFee.Battery) {
+                    context.getString(
+                        Localization.out_of_available_charges,
+                        CurrencyFormatter.format(
+                            value = fee.chargesBalance.toBigDecimal()
+                        )
+                    )
+                } else {
+                    feeFiatFormat.toString()
+                },
                 isOut = true,
                 sender = null,
                 recipient = null,
@@ -320,6 +272,7 @@ class HistoryHelper(
                 isScam = false,
                 wallet = wallet,
                 actionOutStatus = ActionOutStatus.Any,
+                sendFee = fee,
             )
         )
 

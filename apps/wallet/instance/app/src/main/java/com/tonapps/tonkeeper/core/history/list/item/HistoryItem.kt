@@ -17,6 +17,7 @@ import com.tonapps.extensions.writeEnum
 import com.tonapps.tonkeeper.core.history.ActionOutStatus
 import com.tonapps.tonkeeper.core.history.ActionType
 import com.tonapps.tonkeeper.helper.DateHelper
+import com.tonapps.tonkeeper.ui.screen.send.main.state.SendFee
 import com.tonapps.uikit.list.BaseListItem
 import com.tonapps.uikit.list.ListCell
 import com.tonapps.wallet.api.entity.Blockchain
@@ -318,6 +319,7 @@ sealed class HistoryItem(
         val spamState: SpamTransactionState = SpamTransactionState.UNKNOWN,
         val actionOutStatus: ActionOutStatus,
         val showNetwork: Boolean = false,
+        val sendFee: SendFee? = null
     ): HistoryItem(TYPE_ACTION) {
 
         val account: Account?

@@ -29,8 +29,10 @@
     <string name="setup_finish_title">完成设置</string>
     <string name="setup_finish_push">启用交易通知</string>
     <string name="setup_finish_biometry">使用生物识别技术批准交易</string>
-    <string name="setup_finish_backup">备份钱包恢复短语</string>
+    <string name="setup_finish_backup">备份您的恢复助记词</string>
+    <string name="setup_finish_backup_subtitle">没有它，您将无法恢复钱包</string>
     <string name="setup_finish_telegram">加入Tonkeeper频道</string>
+    <string name="setup_onboarding">了解如何使用您的钱包</string>
     <string name="contacts">联系方式</string>
     <string name="step_1">步骤 1</string>
     <string name="step_2">第 2 步</string>
@@ -352,7 +354,7 @@
     <string name="system">系统</string>
     <string name="network_fee">网络费用</string>
     <string name="confirm">确认</string>
-    <string name="send_request_comment">您必须包含来自交易所的备注进行转账。否则，您的资金将丢失。</string>
+    <string name="send_request_comment">发送时，请务必包含交易所提供的备注或标签。否则资金将无法入账，且可能丢失。</string>
     <string name="banner_top">您当前正在使用 Tonkeeper 的实验版本。</string>
     <string name="banner_top_button">安装稳定版</string>
     <string name="signer_description">打开签名器 » 选择所需的密钥 » 扫描二维码</string>
@@ -426,7 +428,6 @@
     <plurals name="battery_charges_per_action">
         <item quantity="other">≈ 每 %2$s %1$s 次充电</item>
     </plurals>
-    <string name="will_be_paid_with_battery">将使用电池支付</string>
     <string name="battery_settings_title">电池设置</string>
     <string name="battery_settings_subtitle">选定的交易将由 Tonkeeper 电池支付。</string>
     <string name="battery_recharge_title">充值</string>
@@ -440,7 +441,6 @@
     <string name="promocode_hint">促销代码</string>
     <string name="refund">退款</string>
     <string name="gasless_switch_label">%1$s 后即可轻触付款</string>
-    <string name="change_fee_method">更改付款方式</string>
     <string name="battery_large_pack">大的</string>
     <string name="battery_medium_pack">中等的</string>
     <string name="battery_small_pack">小的</string>
@@ -574,5 +574,8 @@
     <string name="credit_card_subtitle">Visa或Mastercard</string>
     <string name="currency_not_found">未找到货币</string>
     <string name="onrmap_provider_description">其他提供商可提供不同的货币对。</string>
+    <string name="support_title">需要帮助吗？</string>
+    <string name="support_subtitle">在 Telegram 上联系我，我们会尽力提供帮助。</string>
+    <string name="ask_question">提出问题</string>
 
 </resources>

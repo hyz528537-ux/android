@@ -29,8 +29,10 @@
     <string name="setup_finish_title">Kurulumu tamamla</string>
     <string name="setup_finish_push">İşlem bildirimlerini etkinleştir</string>
     <string name="setup_finish_biometry">İşlemleri onaylamak için biyometriyi kullanın</string>
-    <string name="setup_finish_backup">Cüzdan kurtarma ifadesini yedekleyin</string>
+    <string name="setup_finish_backup">Kurtarma ifadenizi yedekleyin</string>
+    <string name="setup_finish_backup_subtitle">Olmazsa cüzdanınızı geri yükleyemezsiniz</string>
     <string name="setup_finish_telegram">Tonkeeper kanalına katıl</string>
+    <string name="setup_onboarding">Cüzdanınızı nasıl kullanacağınızı öğrenin</string>
     <string name="contacts">Kişiler</string>
     <string name="step_1">Adım 1</string>
     <string name="step_2">Adım 2</string>
@@ -352,7 +354,7 @@
     <string name="system">Sistem</string>
     <string name="network_fee">Ağ ücreti</string>
     <string name="confirm">Onayla</string>
-    <string name="send_request_comment">Transfer için borsadan aldığınız notu eklemelisiniz. Onsuz, paranız kaybolacaktır.</string>
+    <string name="send_request_comment">Gönderirken borsadan alınan notu veya etiketi eklediğinizden emin olun. Olmazsa, fonlar yatırılmaz ve kaybolabilir.</string>
     <string name="banner_top">Şu anda Tonkeeper\'ın deneysel bir sürümünü kullanıyorsunuz.</string>
     <string name="banner_top_button">Kararlı sürümü yükle</string>
     <string name="signer_description">Açık İmzalayıcı » Gerekli anahtarı seç » QR kodunu tara</string>
@@ -428,7 +430,6 @@
         <item quantity="one">≈ %1$s şarj başına %2$s</item>
         <item quantity="other">≈ %1$s şarj başına %2$s</item>
     </plurals>
-    <string name="will_be_paid_with_battery">Batarya ile ödenecek</string>
     <string name="battery_settings_title">Batarya Ayarları</string>
     <string name="battery_settings_subtitle">Seçilen işlemler Tonkeeper Bataryası ile ödenecektir.</string>
     <string name="battery_recharge_title">Yeniden şarj et</string>
@@ -442,7 +443,6 @@
     <string name="promocode_hint">Promosyon Kodu</string>
     <string name="refund">Geri ödemek</string>
     <string name="gasless_switch_label">%1$s ile ödeme yapmak için dokunun</string>
-    <string name="change_fee_method">Ödeme yöntemini değiştir</string>
     <string name="battery_large_pack">Büyük</string>
     <string name="battery_medium_pack">Orta</string>
     <string name="battery_small_pack">Küçük</string>
@@ -579,5 +579,7 @@
     <string name="credit_card_subtitle">Visa veya Mastercard</string>
     <string name="currency_not_found">Para birimi bulunamadı</string>
     <string name="onrmap_provider_description">Farklı döviz çiftleri için diğer sağlayıcılar mevcuttur.</string>
-
+    <string name="support_title">Yardıma mı ihtiyacınız var?</string>
+    <string name="support_subtitle">Telegram’dan bize sorun — size yardımcı olmak için elimizden geleni yapacağız.</string>
+    <string name="ask_question">Soru Sor</string>
 </resources>

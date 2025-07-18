@@ -5,6 +5,7 @@ import com.tonapps.tonkeeper.core.Amount
 import com.tonapps.tonkeeper.core.history.HistoryHelper
 import com.tonapps.tonkeeper.core.history.list.item.HistoryItem
 import com.tonapps.tonkeeper.ui.screen.send.main.helper.InsufficientBalanceType
+import com.tonapps.tonkeeper.ui.screen.send.main.state.SendFee
 import com.tonapps.wallet.data.account.entities.WalletEntity
 
 sealed class SendTransactionState {
@@ -26,7 +27,8 @@ sealed class SendTransactionState {
         val totalFormat: CharSequence,
         val isDangerous: Boolean,
         val nftCount: Int,
-        val failed: Boolean
+        val failed: Boolean,
+        val fee: SendFee,
     ): SendTransactionState() {
 
         val uiItems: List<HistoryItem>

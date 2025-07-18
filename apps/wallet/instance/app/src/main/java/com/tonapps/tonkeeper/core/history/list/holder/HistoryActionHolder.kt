@@ -2,17 +2,21 @@ package com.tonapps.tonkeeper.core.history.list.holder
 
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.util.Log
+import android.os.Build
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ImageSpan
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorInt
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.net.toUri
 import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.postprocessors.BlurPostProcessor
 import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.tonapps.extensions.logError
 import com.tonapps.extensions.max24
-import com.tonapps.extensions.short12
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.core.history.ActionType
 import com.tonapps.tonkeeper.core.history.HistoryHelper
@@ -20,13 +24,15 @@ import com.tonapps.tonkeeper.core.history.iconRes
 import com.tonapps.tonkeeper.core.history.list.item.HistoryItem
 import com.tonapps.tonkeeper.core.history.nameRes
 import com.tonapps.tonkeeper.koin.historyHelper
-import com.tonapps.tonkeeper.ui.screen.transaction.TransactionScreen
 import com.tonapps.tonkeeper.ui.screen.nft.NftScreen
+import com.tonapps.tonkeeper.ui.screen.send.main.state.SendFee
+import com.tonapps.tonkeeper.ui.screen.transaction.TransactionScreen
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.color.accentGreenColor
 import com.tonapps.uikit.color.accentOrangeColor
 import com.tonapps.uikit.color.iconSecondaryColor
 import com.tonapps.uikit.color.stateList
+import com.tonapps.uikit.color.textAccentColor
 import com.tonapps.uikit.color.textPrimaryColor
 import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.uikit.color.textTertiaryColor
@@ -44,11 +50,12 @@ import uikit.navigation.Navigation
 import uikit.navigation.Navigation.Companion.navigation
 import uikit.widget.FrescoView
 import uikit.widget.LoaderView
-import androidx.core.net.toUri
 
 class HistoryActionHolder(
     parent: ViewGroup,
     private val disableOpenAction: Boolean,
+    private val shouldShowFeeToggle: () -> Boolean,
+    private val showFeeMethods: (currentFee: SendFee, targetView: View) -> Unit
 ) : HistoryHolder<HistoryItem.Event>(parent, R.layout.view_history_action) {
 
     private val amountColorReceived = context.accentGreenColor
@@ -76,6 +83,7 @@ class HistoryActionHolder(
         drawable
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onBind(item: HistoryItem.Event) {
         commentView.clearDrawables()
 
@@ -102,6 +110,21 @@ class HistoryActionHolder(
         }
 
         subtitleView.text = item.subtitle
+
+        if (item.txId == "fee" && item.sendFee != null && shouldShowFeeToggle()) {
+            subtitleView.setTextColor(context.textAccentColor)
+            val text = getString(Localization.edit_full)
+            val drawable = context.drawable(UIKitIcon.ic_chevron_right_12, subtitleView.currentTextColor)
+            drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+            val span = ImageSpan(drawable, ImageSpan.ALIGN_CENTER)
+            val spannable = SpannableStringBuilder("$text ")
+            spannable.setSpan(span, spannable.length - 1, spannable.length, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
+
+            subtitleView.text = spannable
+            itemView.setOnClickListener {
+                showFeeMethods(item.sendFee, itemView)
+            }
+        }
 
         dateView.text = item.date
 
@@ -184,7 +207,13 @@ class HistoryActionHolder(
         } else {
             commentView.text = comment.body.max24
             commentView.setLeftDrawable(null)
-            commentView.setOnClickListener { context.navigation?.add(TransactionScreen.newInstance(item!!)) }
+            commentView.setOnClickListener {
+                context.navigation?.add(
+                    TransactionScreen.newInstance(
+                        item!!
+                    )
+                )
+            }
         }
     }
 
@@ -194,7 +223,9 @@ class HistoryActionHolder(
         senderAddress: String
     ) {
         val scope = lifecycleScope ?: return
-        val flow = context.historyHelper?.requestDecryptComment(context, comment, txId, senderAddress) ?: return
+        val flow =
+            context.historyHelper?.requestDecryptComment(context, comment, txId, senderAddress)
+                ?: return
         flow.catch {
             context.logError(it)
             commentView.reject()
