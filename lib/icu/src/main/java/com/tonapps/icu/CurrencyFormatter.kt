@@ -26,6 +26,10 @@ object CurrencyFormatter {
         Locale("si"),
     )
 
+    fun getScale(value: BigDecimal): Int {
+        return CurrencyFormat.getScale(value)
+    }
+
     private fun getFixedLocale(locale: Locale): Locale {
         return try {
             if (customDigitLocales.any { it.language.equals(locale.language) } || locale.isO3Country.equals("IRN", ignoreCase = true)) {

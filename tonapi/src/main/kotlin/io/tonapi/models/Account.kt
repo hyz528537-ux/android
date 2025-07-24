@@ -16,71 +16,63 @@
 package io.tonapi.models
 
 import io.tonapi.models.AccountStatus
+import io.tonapi.models.ExtraCurrency
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param address 
- * @param balance 
- * @param lastActivity unix timestamp
- * @param status 
- * @param getMethods 
- * @param isWallet 
- * @param currenciesBalance {'USD': 1, 'IDR': 1000}
- * @param interfaces 
- * @param name 
- * @param isScam 
- * @param icon 
- * @param memoRequired 
- * @param isSuspended 
- */
 
+@Serializable
 
 data class Account (
 
-    @Json(name = "address")
+    @SerialName(value = "address")
     val address: kotlin.String,
 
-    @Json(name = "balance")
+    @SerialName(value = "balance")
     val balance: kotlin.Long,
 
     /* unix timestamp */
-    @Json(name = "last_activity")
+    @SerialName(value = "last_activity")
     val lastActivity: kotlin.Long,
 
-    @Json(name = "status")
+    @Contextual @SerialName(value = "status")
     val status: AccountStatus,
 
-    @Json(name = "get_methods")
+    @SerialName(value = "get_methods")
     val getMethods: kotlin.collections.List<kotlin.String>,
 
-    @Json(name = "is_wallet")
+    @SerialName(value = "is_wallet")
     val isWallet: kotlin.Boolean,
 
-    /* {'USD': 1, 'IDR': 1000} */
-    @Json(name = "currencies_balance")
-    val currenciesBalance: kotlin.collections.Map<kotlin.String, kotlin.Any>? = null,
+    @SerialName(value = "extra_balance")
+    val extraBalance: kotlin.collections.List<ExtraCurrency>? = null,
 
-    @Json(name = "interfaces")
+    /* {'USD': 1, 'IDR': 1000} */
+    @Contextual @SerialName(value = "currencies_balance")
+    val currenciesBalance: kotlin.collections.Map<kotlin.String, io.JsonAny>? = null,
+
+    @SerialName(value = "interfaces")
     val interfaces: kotlin.collections.List<kotlin.String>? = null,
 
-    @Json(name = "name")
+    @SerialName(value = "name")
     val name: kotlin.String? = null,
 
-    @Json(name = "is_scam")
+    @SerialName(value = "is_scam")
     val isScam: kotlin.Boolean? = null,
 
-    @Json(name = "icon")
+    @SerialName(value = "icon")
     val icon: kotlin.String? = null,
 
-    @Json(name = "memo_required")
+    @SerialName(value = "memo_required")
     val memoRequired: kotlin.Boolean? = null,
 
-    @Json(name = "is_suspended")
+    @SerialName(value = "is_suspended")
     val isSuspended: kotlin.Boolean? = null
 
-)
+) {
+
+
+}
 

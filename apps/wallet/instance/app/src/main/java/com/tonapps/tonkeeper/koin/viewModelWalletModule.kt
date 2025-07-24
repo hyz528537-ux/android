@@ -38,6 +38,8 @@ import com.tonapps.tonkeeper.ui.screen.send.transaction.SendTransactionViewModel
 import com.tonapps.tonkeeper.ui.screen.settings.apps.AppsViewModel
 import com.tonapps.tonkeeper.ui.screen.sign.SignDataViewModel
 import com.tonapps.tonkeeper.ui.screen.staking.withdraw.StakeWithdrawViewModel
+import com.tonapps.tonkeeper.ui.screen.swap.omniston.OmnistonViewModel
+import com.tonapps.tonkeeper.ui.screen.swap.picker.SwapPickerViewModel
 import com.tonapps.tonkeeper.ui.screen.transaction.TransactionViewModel
 import org.koin.core.module.dsl.viewModelOf
 
@@ -80,4 +82,6 @@ val viewModelWalletModule = module {
     viewModelOf(::OnRampViewModel)
     viewModelOf(::OnRampProviderPickerViewModel)
     viewModelOf(::OnRampPickerViewModel)
+    viewModelOf(::OmnistonViewModel)
+    viewModelOf(::SwapPickerViewModel)
 }

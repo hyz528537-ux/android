@@ -12,6 +12,7 @@ dependencies {
     implementation(project(Dependence.Wallet.Data.core))
     implementation(project(Dependence.Wallet.api))
     implementation(project(Dependence.Lib.extensions))
+    implementation(project(Dependence.Module.tonApi))
 
     api(Dependence.TON.tvm)
     api(Dependence.TON.crypto)

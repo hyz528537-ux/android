@@ -17,14 +17,14 @@
                 android:id="@+id/sell_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:title="@string/sell"/>
+                android:title="@string/send"/>
 
             <com.tonapps.tonkeeper.ui.screen.onramp.main.view.CurrencyInputView
                 android:id="@+id/buy_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:title="@string/buy"/>
+                android:title="@string/receive"/>
 
         </uikit.widget.ColumnLayout>
 
@@ -39,13 +39,27 @@
 
     </FrameLayout>
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/price"
+    <uikit.widget.ColumnLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="12dp"
-        android:textAppearance="@style/TextAppearance.Body2"
-        android:textColor="?attr/textSecondaryColor"/>
+        android:padding="12dp">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/price"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Body2"
+            android:textColor="?attr/textSecondaryColor"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/price_reversed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Body2"
+            android:textColor="?attr/textSecondaryColor"/>
+
+    </uikit.widget.ColumnLayout>
 
 </uikit.widget.ColumnLayout>

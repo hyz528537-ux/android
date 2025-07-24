@@ -22,14 +22,15 @@ import io.tonapi.models.DepositStakeAction
 import io.tonapi.models.DomainRenewAction
 import io.tonapi.models.ElectionsDepositStakeAction
 import io.tonapi.models.ElectionsRecoverStakeAction
-import io.tonapi.models.InscriptionMintAction
-import io.tonapi.models.InscriptionTransferAction
+import io.tonapi.models.ExtraCurrencyTransferAction
+import io.tonapi.models.GasRelayAction
 import io.tonapi.models.JettonBurnAction
 import io.tonapi.models.JettonMintAction
 import io.tonapi.models.JettonSwapAction
 import io.tonapi.models.JettonTransferAction
 import io.tonapi.models.NftItemTransferAction
 import io.tonapi.models.NftPurchaseAction
+import io.tonapi.models.PurchaseAction
 import io.tonapi.models.SmartContractAction
 import io.tonapi.models.SubscriptionAction
 import io.tonapi.models.TonTransferAction
@@ -37,123 +38,131 @@ import io.tonapi.models.UnSubscriptionAction
 import io.tonapi.models.WithdrawStakeAction
 import io.tonapi.models.WithdrawStakeRequestAction
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param type 
- * @param status 
- * @param simplePreview 
- * @param baseTransactions 
- * @param tonTransfer 
- * @param contractDeploy 
- * @param jettonTransfer 
- * @param jettonBurn 
- * @param jettonMint 
- * @param nftItemTransfer 
- * @param subscribe 
- * @param unSubscribe 
- * @param auctionBid 
- * @param nftPurchase 
- * @param depositStake 
- * @param withdrawStake 
- * @param withdrawStakeRequest 
- * @param electionsDepositStake 
- * @param electionsRecoverStake 
- * @param jettonSwap 
- * @param smartContractExec 
- * @param domainRenew 
- * @param inscriptionTransfer 
- * @param inscriptionMint 
- */
 
+@Serializable
 
 data class Action (
 
-    @Json(name = "type")
-    val type: String,
+    @SerialName(value = "type")
+    val type: Action.Type,
 
-    @Json(name = "status")
+    @SerialName(value = "status")
     val status: Action.Status,
 
-    @Json(name = "simple_preview")
+    @SerialName(value = "simple_preview")
     val simplePreview: ActionSimplePreview,
 
-    @Json(name = "base_transactions")
+    @SerialName(value = "base_transactions")
     val baseTransactions: kotlin.collections.List<kotlin.String>,
 
-    @Json(name = "TonTransfer")
+    @SerialName(value = "TonTransfer")
     val tonTransfer: TonTransferAction? = null,
 
-    @Json(name = "ContractDeploy")
+    @SerialName(value = "ExtraCurrencyTransfer")
+    val extraCurrencyTransfer: ExtraCurrencyTransferAction? = null,
+
+    @SerialName(value = "ContractDeploy")
     val contractDeploy: ContractDeployAction? = null,
 
-    @Json(name = "JettonTransfer")
+    @SerialName(value = "JettonTransfer")
     val jettonTransfer: JettonTransferAction? = null,
 
-    @Json(name = "JettonBurn")
+    @SerialName(value = "JettonBurn")
     val jettonBurn: JettonBurnAction? = null,
 
-    @Json(name = "JettonMint")
+    @SerialName(value = "JettonMint")
     val jettonMint: JettonMintAction? = null,
 
-    @Json(name = "NftItemTransfer")
+    @SerialName(value = "NftItemTransfer")
     val nftItemTransfer: NftItemTransferAction? = null,
 
-    @Json(name = "Subscribe")
+    @SerialName(value = "Subscribe")
     val subscribe: SubscriptionAction? = null,
 
-    @Json(name = "UnSubscribe")
+    @SerialName(value = "UnSubscribe")
     val unSubscribe: UnSubscriptionAction? = null,
 
-    @Json(name = "AuctionBid")
+    @SerialName(value = "AuctionBid")
     val auctionBid: AuctionBidAction? = null,
 
-    @Json(name = "NftPurchase")
+    @SerialName(value = "NftPurchase")
     val nftPurchase: NftPurchaseAction? = null,
 
-    @Json(name = "DepositStake")
+    @SerialName(value = "DepositStake")
     val depositStake: DepositStakeAction? = null,
 
-    @Json(name = "WithdrawStake")
+    @SerialName(value = "WithdrawStake")
     val withdrawStake: WithdrawStakeAction? = null,
 
-    @Json(name = "WithdrawStakeRequest")
+    @SerialName(value = "WithdrawStakeRequest")
     val withdrawStakeRequest: WithdrawStakeRequestAction? = null,
 
-    @Json(name = "ElectionsDepositStake")
+    @SerialName(value = "ElectionsDepositStake")
     val electionsDepositStake: ElectionsDepositStakeAction? = null,
 
-    @Json(name = "ElectionsRecoverStake")
+    @SerialName(value = "ElectionsRecoverStake")
     val electionsRecoverStake: ElectionsRecoverStakeAction? = null,
 
-    @Json(name = "JettonSwap")
+    @SerialName(value = "JettonSwap")
     val jettonSwap: JettonSwapAction? = null,
 
-    @Json(name = "SmartContractExec")
+    @SerialName(value = "SmartContractExec")
     val smartContractExec: SmartContractAction? = null,
 
-    @Json(name = "DomainRenew")
+    @SerialName(value = "DomainRenew")
     val domainRenew: DomainRenewAction? = null,
 
-    @Json(name = "InscriptionTransfer")
-    val inscriptionTransfer: InscriptionTransferAction? = null,
+    @SerialName(value = "Purchase")
+    val purchase: PurchaseAction? = null,
 
-    @Json(name = "InscriptionMint")
-    val inscriptionMint: InscriptionMintAction? = null
+    @SerialName(value = "GasRelay")
+    val gasRelay: GasRelayAction? = null
 
 ) {
+
+    /**
+     * 
+     *
+     * Values: TonTransfer,ExtraCurrencyTransfer,ContractDeploy,JettonTransfer,JettonBurn,JettonMint,NftItemTransfer,Subscribe,UnSubscribe,AuctionBid,NftPurchase,DepositStake,WithdrawStake,WithdrawStakeRequest,ElectionsDepositStake,ElectionsRecoverStake,JettonSwap,SmartContractExec,DomainRenew,Purchase,Unknown
+     */
+    @Serializable
+    enum class Type(val value: kotlin.String) {
+        @SerialName(value = "TonTransfer") TonTransfer("TonTransfer"),
+        @SerialName(value = "ExtraCurrencyTransfer") ExtraCurrencyTransfer("ExtraCurrencyTransfer"),
+        @SerialName(value = "ContractDeploy") ContractDeploy("ContractDeploy"),
+        @SerialName(value = "JettonTransfer") JettonTransfer("JettonTransfer"),
+        @SerialName(value = "JettonBurn") JettonBurn("JettonBurn"),
+        @SerialName(value = "JettonMint") JettonMint("JettonMint"),
+        @SerialName(value = "NftItemTransfer") NftItemTransfer("NftItemTransfer"),
+        @SerialName(value = "Subscribe") Subscribe("Subscribe"),
+        @SerialName(value = "UnSubscribe") UnSubscribe("UnSubscribe"),
+        @SerialName(value = "AuctionBid") AuctionBid("AuctionBid"),
+        @SerialName(value = "NftPurchase") NftPurchase("NftPurchase"),
+        @SerialName(value = "DepositStake") DepositStake("DepositStake"),
+        @SerialName(value = "WithdrawStake") WithdrawStake("WithdrawStake"),
+        @SerialName(value = "WithdrawStakeRequest") WithdrawStakeRequest("WithdrawStakeRequest"),
+        @SerialName(value = "ElectionsDepositStake") ElectionsDepositStake("ElectionsDepositStake"),
+        @SerialName(value = "ElectionsRecoverStake") ElectionsRecoverStake("ElectionsRecoverStake"),
+        @SerialName(value = "JettonSwap") JettonSwap("JettonSwap"),
+        @SerialName(value = "SmartContractExec") SmartContractExec("SmartContractExec"),
+        @SerialName(value = "DomainRenew") DomainRenew("DomainRenew"),
+        @SerialName(value = "Purchase") Purchase("Purchase"),
+        @SerialName(value = "Unknown") Unknown("Unknown");
+    }
     /**
      * 
      *
      * Values: ok,failed
      */
-    @JsonClass(generateAdapter = false)
+    @Serializable
     enum class Status(val value: kotlin.String) {
-        @Json(name = "ok") ok("ok"),
-        @Json(name = "failed") failed("failed");
+        @SerialName(value = "ok") ok("ok"),
+        @SerialName(value = "failed") failed("failed");
     }
+
 }
 

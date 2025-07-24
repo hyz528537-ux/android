@@ -16,38 +16,37 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 
  *
- * Values: transOrd,transTickTock,transSplitPrepare,transSplitInstall,transMergePrepare,transMergeInstall,transStorage
+ * Values: TransOrd,TransTickTock,TransSplitPrepare,TransSplitInstall,TransMergePrepare,TransMergeInstall,TransStorage
  */
-
-@JsonClass(generateAdapter = false)
+@Serializable
 enum class TransactionType(val value: kotlin.String) {
 
-    @Json(name = "TransOrd")
-    transOrd("TransOrd"),
+    @SerialName(value = "TransOrd")
+    TransOrd("TransOrd"),
 
-    @Json(name = "TransTickTock")
-    transTickTock("TransTickTock"),
+    @SerialName(value = "TransTickTock")
+    TransTickTock("TransTickTock"),
 
-    @Json(name = "TransSplitPrepare")
-    transSplitPrepare("TransSplitPrepare"),
+    @SerialName(value = "TransSplitPrepare")
+    TransSplitPrepare("TransSplitPrepare"),
 
-    @Json(name = "TransSplitInstall")
-    transSplitInstall("TransSplitInstall"),
+    @SerialName(value = "TransSplitInstall")
+    TransSplitInstall("TransSplitInstall"),
 
-    @Json(name = "TransMergePrepare")
-    transMergePrepare("TransMergePrepare"),
+    @SerialName(value = "TransMergePrepare")
+    TransMergePrepare("TransMergePrepare"),
 
-    @Json(name = "TransMergeInstall")
-    transMergeInstall("TransMergeInstall"),
+    @SerialName(value = "TransMergeInstall")
+    TransMergeInstall("TransMergeInstall"),
 
-    @Json(name = "TransStorage")
-    transStorage("TransStorage");
+    @SerialName(value = "TransStorage")
+    TransStorage("TransStorage");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

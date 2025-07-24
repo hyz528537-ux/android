@@ -18,48 +18,41 @@ package io.tonapi.models
 import io.tonapi.models.BlockRaw
 import io.tonapi.models.InitStateRaw
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param mode 
- * @param version 
- * @param capabilities 
- * @param last 
- * @param lastUtime 
- * @param now 
- * @param stateRootHash 
- * @param `init` 
- */
 
+@Serializable
 
 data class GetRawMasterchainInfoExt200Response (
 
-    @Json(name = "mode")
+    @SerialName(value = "mode")
     val mode: kotlin.Int,
 
-    @Json(name = "version")
+    @SerialName(value = "version")
     val version: kotlin.Int,
 
-    @Json(name = "capabilities")
+    @SerialName(value = "capabilities")
     val capabilities: kotlin.Long,
 
-    @Json(name = "last")
+    @SerialName(value = "last")
     val last: BlockRaw,
 
-    @Json(name = "last_utime")
+    @SerialName(value = "last_utime")
     val lastUtime: kotlin.Int,
 
-    @Json(name = "now")
+    @SerialName(value = "now")
     val now: kotlin.Int,
 
-    @Json(name = "state_root_hash")
+    @SerialName(value = "state_root_hash")
     val stateRootHash: kotlin.String,
 
-    @Json(name = "init")
+    @SerialName(value = "init")
     val `init`: InitStateRaw
 
-)
+) {
+
+
+}
 

@@ -17,43 +17,41 @@ package io.tonapi.models
 
 import io.tonapi.models.JettonVerificationType
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param address 
- * @param name 
- * @param symbol 
- * @param decimals 
- * @param image 
- * @param verification 
- */
 
+@Serializable
 
 data class JettonPreview (
 
-    @Json(name = "address")
+    @SerialName(value = "address")
     val address: kotlin.String,
 
-    @Json(name = "name")
+    @SerialName(value = "name")
     val name: kotlin.String,
 
-    @Json(name = "symbol")
+    @SerialName(value = "symbol")
     val symbol: kotlin.String,
 
-    @Json(name = "decimals")
+    @SerialName(value = "decimals")
     val decimals: kotlin.Int,
 
-    @Json(name = "image")
+    @SerialName(value = "image")
     val image: kotlin.String,
 
-    @Json(name = "verification")
+    @Contextual @SerialName(value = "verification")
     val verification: JettonVerificationType,
 
-    @Json(name = "custom_payload_api_uri")
+    @SerialName(value = "score")
+    val score: kotlin.Int,
+
+    @SerialName(value = "custom_payload_api_uri")
     val customPayloadApiUri: kotlin.String? = null
 
-)
+) {
+
+
+}
 

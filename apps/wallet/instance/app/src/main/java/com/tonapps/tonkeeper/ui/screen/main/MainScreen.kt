@@ -23,11 +23,13 @@ import com.tonapps.tonkeeper.ui.screen.events.main.EventsScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.picker.PickerScreen
 import com.tonapps.tonkeeper.ui.screen.root.RootEvent
 import com.tonapps.tonkeeper.ui.screen.swap.SwapScreen
+import com.tonapps.tonkeeper.ui.screen.swap.omniston.OmnistonScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.main.WalletScreen
 import com.tonapps.uikit.color.backgroundPageColor
 import com.tonapps.uikit.color.backgroundTransparentColor
 import com.tonapps.uikit.color.constantBlackColor
 import com.tonapps.uikit.color.drawable
+import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlinx.coroutines.flow.filterIsInstance
@@ -149,7 +151,7 @@ class MainScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_main, S
         }.launchIn(lifecycleScope)
 
         collectFlow(rootViewModel.eventFlow.filterIsInstance<RootEvent.Swap>()) {
-            navigation?.add(SwapScreen.newInstance(it.wallet, it.uri, it.address, it.from, it.to))
+            navigation?.add(OmnistonScreen.newInstance(wallet = it.wallet))
         }
         collectFlow(viewModel.selectedWalletFlow) { wallet ->
             applyWallet(wallet)

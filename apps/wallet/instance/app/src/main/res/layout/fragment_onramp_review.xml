@@ -2,6 +2,8 @@
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/confirm_page"
+    android:paddingBottom="32dp"
     android:visibility="gone"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -63,41 +65,11 @@
                 android:textAppearance="@style/TextAppearance.Label1"
                 android:textColor="?attr/textPrimaryColor"
                 android:text="@string/payment_method"/>
-
-            <com.tonapps.tonkeeper.ui.component.PaymentTypeView
-                android:id="@+id/payment_cards"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:title="@string/credit_card"
-                android:subtitle="@string/credit_card_subtitle"
-                android:icon="@drawable/ic_payment_method_card"
-                android:tag="card"/>
-
-            <com.tonapps.tonkeeper.ui.component.PaymentTypeView
-                android:id="@+id/payment_google_pay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:title="@string/google_pay"
-                android:tag="google_pay"
-                android:icon="@drawable/google_pay"/>
-
-            <com.tonapps.tonkeeper.ui.component.PaymentTypeView
-                android:id="@+id/payment_revolut"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:title="@string/revolut"
-                android:tag="revolut_pay"
-                android:icon="@drawable/revolut"/>
-
-            <com.tonapps.tonkeeper.ui.component.PaymentTypeView
-                android:id="@+id/payment_paypal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:title="@string/paypal"
-                android:tag="paypal"
-                android:icon="@drawable/paypal"/>
-
         </uikit.widget.ColumnLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="116dp"/>
 
     </uikit.widget.ColumnLayout>
 

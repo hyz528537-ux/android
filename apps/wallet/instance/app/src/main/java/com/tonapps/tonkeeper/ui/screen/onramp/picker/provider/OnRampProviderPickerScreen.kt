@@ -9,10 +9,10 @@ import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.ui.base.BaseWalletScreen
 import com.tonapps.tonkeeper.ui.base.ScreenContext
+import com.tonapps.tonkeeper.ui.screen.onramp.main.state.UiState
 import com.tonapps.tonkeeper.ui.screen.onramp.picker.provider.list.Adapter
 import com.tonapps.tonkeeperx.R
 import com.tonapps.wallet.data.account.entities.WalletEntity
-import com.tonapps.wallet.data.purchase.entity.PurchaseMethodEntity
 import org.koin.core.parameter.parametersOf
 import uikit.base.BaseFragment
 import uikit.extensions.activity
@@ -24,21 +24,17 @@ import uikit.widget.ModalHeader
 
 class OnRampProviderPickerScreen(wallet: WalletEntity): BaseWalletScreen<ScreenContext.Wallet>(R.layout.fragment_onramp_provider_picker, ScreenContext.Wallet(wallet)), BaseFragment.Modal {
 
-    private val provider: PurchaseMethodEntity by lazy {
-        arguments?.getParcelableCompat<PurchaseMethodEntity>(PROVIDER)!!
-    }
-
-    private val providers: List<PurchaseMethodEntity> by lazy {
-        arguments?.getParcelableArrayList(PROVIDERS) ?: emptyList()
+    private val state: UiState.SelectedProvider by lazy {
+        arguments?.getParcelableCompat<UiState.SelectedProvider>(ARG_STATE)!!
     }
 
     override val viewModel: OnRampProviderPickerViewModel by walletViewModel {
-        parametersOf(provider, providers)
+        parametersOf(state)
     }
 
     private val adapter = Adapter { item ->
-        viewModel.setSelectedProvider(item.provider)
-        setResult(item.provider)
+        viewModel.setSelectedProvider(item.id)
+        setResult(item.id)
     }
 
     private lateinit var headerView: ModalHeader
@@ -59,34 +55,35 @@ class OnRampProviderPickerScreen(wallet: WalletEntity): BaseWalletScreen<ScreenC
         listView.adapter = adapter
 
         button = view.findViewById(R.id.button)
-        button.setOnClickListener { setResult(provider) }
+        button.setOnClickListener { setResult(state.selectedProviderId) }
         button.applyNavBottomMargin(16.dp)
     }
 
-    private fun setResult(provider: PurchaseMethodEntity) {
+    private fun setResult(providerId: String?) {
         setResult(Bundle().apply {
-            putParcelable(PROVIDER, provider)
+            putString(ARG_PROVIDER_ID, providerId)
         })
     }
 
     companion object {
 
-        private const val PROVIDER = "provider"
-        private const val PROVIDERS = "providers"
+        private const val ARG_STATE = "state"
+        private const val ARG_PROVIDER_ID = "provider_id"
 
         suspend fun run(
             context: Context,
             wallet: WalletEntity,
-            provider: PurchaseMethodEntity,
-            supportedProviders: List<PurchaseMethodEntity>
-        ): PurchaseMethodEntity {
+            state: UiState.SelectedProvider
+        ): String? {
+            if (state.providers.isEmpty()) {
+                throw IllegalArgumentException("No providers available")
+            }
             val activity = context.activity ?: throw IllegalArgumentException("Context must be an Activity")
             val fragment = OnRampProviderPickerScreen(wallet).apply {
-                putParcelableArg(PROVIDER, provider)
-                putParcelableArrayListArg(PROVIDERS, ArrayList(supportedProviders))
+                putParcelableArg(ARG_STATE, state)
             }
             val result = activity.addForResult(fragment)
-            return result.getParcelableCompat<PurchaseMethodEntity>(PROVIDER) ?: provider
+            return result.getString(ARG_PROVIDER_ID)
         }
 
     }

@@ -202,7 +202,7 @@ data class WalletCurrency(
         const val ETH_KEY = "ETH"
 
         private val USDT_TRON_ADDRESS = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
-        private val USDT_TON_ADDRESS = "0:b113a994b5024a16719f69139328eb759596c38a25f59028b146fecdc3621dfe"
+        val USDT_TON_ADDRESS = "0:b113a994b5024a16719f69139328eb759596c38a25f59028b146fecdc3621dfe"
         private val USDT_ETH_ADDRESS = "0xdac17f958d2ee523a2206206994597c13d831ec7"
 
         val USDE_TON_ETHENA_ADDRESS = "0:086fa2a675f74347b08dd4606a549b8fdb98829cb282bc1949d3b12fbaed9dcc"
@@ -387,6 +387,10 @@ data class WalletCurrency(
         get() = chain is Chain.TON
 
     @IgnoredOnParcel
+    val isTronChain: Boolean
+        get() = chain is Chain.TRON
+
+    @IgnoredOnParcel
     val decimals: Int
         get() = chain.decimals
 
@@ -412,6 +416,29 @@ data class WalletCurrency(
         } else {
             chain.name.uppercase().replace("TRON", "TRC20")
         }
+    }
+
+
+    @IgnoredOnParcel
+    val address: String by lazy {
+        when (chain) {
+            is Chain.TON -> chain.address
+            is Chain.TRON -> chain.address
+            is Chain.ETC -> chain.address
+            else -> code
+        }
+    }
+
+    @IgnoredOnParcel
+    val symbol: String by lazy {
+        /*if (chain is Chain.FIAT) {
+            code
+        } else if (chain is Chain.TON) {
+            chain.address
+        } else {
+            chain.name // code
+        }*/
+        code
     }
 
     override fun equals(other: Any?): Boolean {

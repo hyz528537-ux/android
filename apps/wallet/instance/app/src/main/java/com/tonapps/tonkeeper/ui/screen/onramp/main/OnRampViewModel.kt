@@ -1,58 +1,48 @@
 package com.tonapps.tonkeeper.ui.screen.onramp.main
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.viewModelScope
-import com.tonapps.blockchain.ton.extensions.equalsAddress
-import com.tonapps.extensions.toUriOrNull
+import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
-import com.tonapps.tonkeeper.core.AnalyticsHelper
-import com.tonapps.tonkeeper.extensions.getNormalizeCountryFlow
 import com.tonapps.tonkeeper.extensions.getProvidersByCountry
 import com.tonapps.tonkeeper.extensions.onRampDataFlow
-import com.tonapps.tonkeeper.extensions.onRampFormCurrencyFlow
-import com.tonapps.tonkeeper.extensions.providersFlow
-import com.tonapps.tonkeeper.helper.BrowserHelper
+import com.tonapps.tonkeeper.helper.TwinInput
+import com.tonapps.tonkeeper.helper.TwinInput.Companion.opposite
 import com.tonapps.tonkeeper.manager.assets.AssetsManager
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
-import com.tonapps.tonkeeper.ui.screen.onramp.main.state.CurrencyInputState
-import com.tonapps.tonkeeper.ui.screen.onramp.main.state.OnRampBalanceState
-import com.tonapps.tonkeeper.ui.screen.onramp.main.state.OnRampConfirmState
-import com.tonapps.tonkeeper.ui.screen.onramp.main.state.OnRampCurrencyInputs
-import com.tonapps.tonkeeper.ui.screen.onramp.main.state.OnRampInputsState
+import com.tonapps.tonkeeper.ui.screen.onramp.main.entities.ProviderEntity
+import com.tonapps.tonkeeper.ui.screen.onramp.main.state.OnRampPaymentMethodState
+import com.tonapps.tonkeeper.ui.screen.onramp.main.state.UiState
+import com.tonapps.tonkeeper.ui.screen.onramp.picker.currency.OnRampPickerScreen
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.entity.BalanceEntity
 import com.tonapps.wallet.api.entity.OnRampArgsEntity
 import com.tonapps.wallet.api.entity.OnRampMerchantEntity
-import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.entities.WalletEntity
+import com.tonapps.wallet.data.core.currency.CurrencyCountries
 import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.purchase.PurchaseRepository
-import com.tonapps.wallet.data.purchase.entity.OnRamp.AllowedPair
-import com.tonapps.wallet.data.purchase.entity.PurchaseMethodEntity
 import com.tonapps.wallet.data.rates.RatesRepository
-import com.tonapps.wallet.data.rates.entity.RatesEntity
 import com.tonapps.wallet.data.settings.SettingsRepository
-import com.tonapps.wallet.data.token.TokenRepository
+import com.tonapps.wallet.localization.Localization
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.math.BigDecimal
+import kotlinx.io.IOException
+import uikit.UiButtonState
+import uikit.extensions.collectFlow
 
 class OnRampViewModel(
     app: Application,
@@ -61,329 +51,300 @@ class OnRampViewModel(
     private val ratesRepository: RatesRepository,
     private val assetsManager: AssetsManager,
     private val purchaseRepository: PurchaseRepository,
-    private val tokenRepository: TokenRepository,
     private val api: API,
     private val accountRepository: AccountRepository
 ): BaseWalletVM(app) {
 
-    private var requestWebViewLinkJob: Job? = null
-    private val formCurrencyFlow = purchaseRepository.onRampFormCurrencyFlow(settingsRepository)
-
-    private val onRampResultFlow = purchaseRepository
-        .onRampDataFlow(settingsRepository, api)
-
     val installId: String
         get() = settingsRepository.installId
 
-    private val _currencyInputStateFlow = MutableStateFlow(OnRampCurrencyInputs())
+    private val settings = OnRampSettings(app)
 
-    @OptIn(FlowPreview::class)
-    val currencyInputStateFlow = _currencyInputStateFlow.asStateFlow().debounce(100)
-    val currencyInputState: OnRampCurrencyInputs
-        get() = _currencyInputStateFlow.value
+    private val _requestFocusFlow = MutableEffectFlow<TwinInput.Type?>()
+    val requestFocusFlow = _requestFocusFlow.asSharedFlow().filterNotNull()
 
-    private val _rawValuesFlow = MutableStateFlow(Pair(0.0, 0.0))
-    private val rawValuesFlow = _rawValuesFlow.asStateFlow()
-    private val rawValues: Pair<Double, Double>
-        get() = _rawValuesFlow.value
+    private var observeInputButtonEnabledJob: Job? = null
+    private var requestAvailableProvidersJob: Job? = null
 
-    private val _inputValuesFlow = MutableStateFlow(OnRampInputsState())
-    val inputValuesFlow = _inputValuesFlow.asStateFlow()
-    private val inputValues: OnRampInputsState
-        get() = _inputValuesFlow.value
+    private val _selectedProviderIdFlow = MutableStateFlow<String?>(null)
+    private val selectedProviderIdFlow = _selectedProviderIdFlow.asStateFlow()
 
-    private val _confirmStateFlow = MutableStateFlow(OnRampConfirmState())
-    val confirmStateFlow = _confirmStateFlow.asStateFlow()
+    private val _availableProvidersFlow = MutableStateFlow<List<OnRampMerchantEntity>>(emptyList())
+    private val availableProvidersFlow = _availableProvidersFlow.asStateFlow().filterNotNull()
 
-    private val confirmState: OnRampConfirmState
-        get() = _confirmStateFlow.value
+    private val _selectedPaymentMethodFlow = MutableStateFlow(settings.getPaymentMethod())
+    private val selectedPaymentMethodFlow = _selectedPaymentMethodFlow.asStateFlow()
 
-    val balanceFlow = combine(inputValuesFlow, currencyInputStateFlow) { (from, to), state ->
-        val balance = if (state.sell is CurrencyInputState.TONAsset) getBalanceToken(state.sell) else null
-        val remainingFormat = createRemainingFormat(balance, from)
+    private val _stepFlow = MutableStateFlow(UiState.Step.Input)
+    val stepFlow = _stepFlow.asStateFlow()
 
-        OnRampBalanceState(
-            balance = balance,
+    private val onRampDataFlow = purchaseRepository.onRampDataFlow(settingsRepository, api)
+
+    private val paymentMerchantsFlow = settingsRepository.countryFlow.map(purchaseRepository::getPaymentMethods)
+
+    private val paymentMethodsFlow = paymentMerchantsFlow.map { merchants ->
+        merchants.map { it.methods }.flatten().distinctBy { it.type }.filter { it.type != "apple_pay" }
+    }
+
+    private val merchantsFlow = settingsRepository.countryFlow.map {
+        purchaseRepository.getProvidersByCountry(wallet, settingsRepository, it)
+    }
+
+    val providersFlow = combine(
+        availableProvidersFlow,
+        merchantsFlow.map { list ->
+            list.associateBy { it.id }
+        }
+    ) { availableProviders, merchants ->
+        availableProviders.mapNotNull { widget ->
+            merchants[widget.merchant]?.let { ProviderEntity(widget, it) }
+        }
+    }.flowOn(Dispatchers.IO)
+
+    private val twinInput = TwinInput(viewModelScope)
+
+    val inputPrefixFlow = twinInput.stateFlow.map { it.focus.opposite }.distinctUntilChanged()
+    val sendOutputCurrencyFlow = twinInput.stateFlow.map { it.sendCurrency }.distinctUntilChanged()
+    val receiveOutputCurrencyFlow = twinInput.stateFlow.map { it.receiveCurrency }.distinctUntilChanged()
+
+    val allowedPairFlow = combine(
+        twinInput.currenciesStateFlow,
+        onRampDataFlow.map { it.data }.distinctUntilChanged()
+    ) { (send, receive), data ->
+        data.findValidPairs(send.symbol, receive.symbol).pair
+    }.distinctUntilChanged()
+
+    val ratesFlow = twinInput.currenciesStateFlow.map { inputCurrencies ->
+        val fiatCurrency = inputCurrencies.fiat ?: settingsRepository.currency
+        ratesRepository.getRates(fiatCurrency, inputCurrencies.cryptoTokens.map { it.address })
+    }.distinctUntilChanged()
+
+    val minAmountFlow = combine(
+        twinInput.currenciesStateFlow.map { it.send }.distinctUntilChanged(),
+        allowedPairFlow.map { it?.min }.distinctUntilChanged()
+    ) { sendCurrency, minAmount ->
+        val coins = minAmount?.let {
+            Coins.of(it, sendCurrency.decimals)
+        } ?: return@combine null
+        val formatted = CurrencyFormatter.format(sendCurrency.symbol, coins, replaceSymbol = false)
+        UiState.MinAmount(coins, formatted)
+    }
+
+    val rateFormattedFlow = combine(
+        twinInput.currenciesStateFlow,
+        ratesFlow
+    ) { inputCurrencies, rates ->
+        val value = Coins.ONE
+        val firstLinePrefix = CurrencyFormatter.format(inputCurrencies.send.symbol, value, replaceSymbol = false)
+        val firstRate = rates.convert(inputCurrencies.send, value, inputCurrencies.receive)
+        val firstLineSuffix = CurrencyFormatter.format(inputCurrencies.receive.symbol, firstRate, replaceSymbol = false)
+        val firstLine = "$firstLinePrefix ≈ $firstLineSuffix"
+
+        val secondLinePrefix = CurrencyFormatter.format(inputCurrencies.receive.symbol, value, replaceSymbol = false)
+        val secondRate = rates.convert(inputCurrencies.receive, value, inputCurrencies.send)
+        val secondLineSuffix = CurrencyFormatter.format(inputCurrencies.send.symbol, secondRate, replaceSymbol = false)
+        val secondLine = "$secondLinePrefix ≈ $secondLineSuffix"
+        UiState.RateFormatted(firstLine, secondLine)
+    }.distinctUntilChanged()
+
+    val sendOutputValueFlow = twinInput.createConvertFlow(ratesFlow, TwinInput.Type.Send)
+    val receiveOutputValueFlow = twinInput.createConvertFlow(ratesFlow, TwinInput.Type.Receive)
+
+    val balanceUiStateFlow = twinInput.stateFlow.map { it.send }.distinctUntilChanged().map { sendInput ->
+        val token = if (sendInput.currency.fiat) null else assetsManager.getToken(wallet, sendInput.currency.address)
+        val balance = token?.token?.balance
+        val remainingFormat = createRemainingFormat(balance, sendInput.coins)
+        UiState.Balance(
+            balance = token?.token?.balance,
             insufficientBalance = remainingFormat.second,
             remainingFormat = remainingFormat.first
         )
+    }.flowOn(Dispatchers.IO)
+
+    val selectedProviderUiStateFlow = combine(
+        providersFlow,
+        selectedProviderIdFlow
+    ) { providers, selectedProviderId ->
+        UiState.SelectedProvider(
+            send = twinInput.state.sendCurrency,
+            receive = twinInput.state.receiveCurrency,
+            providers = providers,
+            selectedProviderId = selectedProviderId,
+            sendAmount = twinInput.state.send.coins
+        )
     }
 
-    val isFirstButtonEnabled: Boolean
-        get() {
-            if (currencyInputState.allowedPair == null) {
-                return false
+    private val _inputButtonUiStateFlow = MutableStateFlow<UiButtonState>(UiButtonState.Default(false))
+    private val inputButtonUiStateFlow = _inputButtonUiStateFlow.asStateFlow()
+
+    private val _confirmButtonUiStateFlow = MutableStateFlow<UiButtonState>(UiButtonState.Default(true))
+    val confirmButtonUiStateFlow = _confirmButtonUiStateFlow.asStateFlow()
+
+    val buttonUiStateFlow = combine(
+        stepFlow,
+        inputButtonUiStateFlow,
+        confirmButtonUiStateFlow,
+    ) { step, inputButton, confirmButton ->
+        if (step == UiState.Step.Input) {
+            inputButton
+        } else {
+            confirmButton
+        }
+    }.distinctUntilChanged()
+
+    val paymentMethodUiStateFlow = combine(
+        selectedPaymentMethodFlow,
+        paymentMethodsFlow
+    ) { selectedType, methods ->
+        OnRampPaymentMethodState(
+            selectedType = selectedType,
+            methods = methods.map {
+                OnRampPaymentMethodState.createMethod(context, it, settingsRepository.country)
+            }.sortedBy { method ->
+                val index = OnRampPaymentMethodState.sortKeys.indexOf(method.type)
+                if (index == -1) Int.MAX_VALUE else index
             }
-            return (rawValues.first > 0 || rawValues.second > 0)
+        )
+    }
+
+    val purchaseType: String
+        get() = if (twinInput.state.sendCurrency.fiat) "buy" else "sell"
+
+    val network: String
+        get() = OnRampUtils.resolveNetwork(twinInput.state.sendCurrency)
+
+    val from: String
+        get() = OnRampUtils.fixSymbol(twinInput.state.sendCurrency.symbol)
+
+    val to: String
+        get() = OnRampUtils.fixSymbol(twinInput.state.receiveCurrency.symbol)
+
+    val fromForAnalytics: String
+        get() = if (twinInput.state.sendCurrency.fiat) {
+            "fiat"
+        } else {
+            "crypto_$from"
         }
 
-    val isSecondButtonEnabled: Boolean
-        get() {
-            if (!isFirstButtonEnabled) {
-                return false
-            }
-            return !confirmState.unavailable
+    val toForAnalytics: String
+        get() = if (twinInput.state.receiveCurrency.fiat) {
+            "fiat"
+        } else {
+            "crypto_$to"
         }
+
+    val country: String
+        get() = settingsRepository.country
+
+    val paymentMethod: String
+        get() = _selectedPaymentMethodFlow.value ?: "unknown"
 
     init {
-        settingsRepository.countryFlow.collectFlow(::setCountry)
-        combine(
-            formCurrencyFlow,
-            onRampResultFlow,
-        ) { (send, receive), onRampResult ->
-            val onRampData = onRampResult.data
-            val providers = purchaseRepository.getProvidersByCountry(wallet, settingsRepository, onRampResult.country)
-            val sendInputState = createCurrencyInputState(send)
-            val receiveInputState = createCurrencyInputState(receive)
-            val rates = requestRates(sendInputState, receiveInputState)
-            val allowedPair = if (send.fiat && receive.fiat) null else onRampData.isValidPair(OnRampCurrencyInputs.fixSymbol(send.code), OnRampCurrencyInputs.fixSymbol(receive.code))
-            val allowedProviderIds = allowedPair?.merchants?.map { it.slug } ?: emptyList()
-            val selectedProviderId = allowedProviderIds.firstOrNull()
-            _currencyInputStateFlow.value = OnRampCurrencyInputs(
-                country = onRampResult.country,
-                sell = sendInputState,
-                buy = receiveInputState,
-                providers = providers.filter { allowedProviderIds.contains(it.id) },
-                rates = rates,
-                selectedProviderId = selectedProviderId,
-                allowedPair = allowedPair,
-                merchants = onRampData.merchants.filter { allowedProviderIds.contains(it.slug) },
-                availableFiatSlugs = onRampData.availableFiatSlugs,
-            )
-        }.launch()
+        applyDefaultCurrencies()
+        startObserveInputButtonEnabled()
 
-        combine(currencyInputStateFlow, rawValuesFlow) { state, values ->
-            if (state.allowedPair == null) {
-                _inputValuesFlow.value = OnRampInputsState(
-                    from = Coins.of(values.first, state.sellDecimals),
-                    to = Coins.of(values.second, state.buyDecimals)
-                )
-            } else if (values.second == 0.0) {
-                val coins = Coins.of(values.first, state.sellDecimals)
-                if (state.sell.isUSD && state.buy.isUSDT) {
-                    _inputValuesFlow.value = OnRampInputsState(
-                        from = coins,
-                        to = coins
-                    )
-                } else {
-                    _inputValuesFlow.value = OnRampInputsState(
-                        from = coins,
-                        to = state.rateConvert(coins, false)
-                    )
-                }
+        combine(
+            _selectedPaymentMethodFlow.filter { it == null },
+            paymentMethodsFlow.filter { it.isNotEmpty() }
+        ) { _, methods ->
+            setSelectedPaymentMethod(methods.first().type)
+        }.launch()
+    }
+
+    fun updateFocusInput(type: TwinInput.Type) {
+        twinInput.updateFocus(type)
+    }
+
+    fun updateSendCurrency(currency: WalletCurrency, saveSettings: Boolean = true) {
+        twinInput.updateCurrency(TwinInput.Type.Send, currency)
+        if (saveSettings) {
+            settings.setFromCurrency(currency)
+        }
+    }
+
+    fun updateSendInput(amount: String) {
+        twinInput.updateValue(TwinInput.Type.Send, amount)
+    }
+
+    fun updateReceiveInput(amount: String) {
+        twinInput.updateValue(TwinInput.Type.Receive, amount)
+    }
+
+    fun updateReceiveCurrency(currency: WalletCurrency) {
+        twinInput.updateCurrency(TwinInput.Type.Receive, currency)
+        settings.setToCurrency(currency)
+    }
+
+    fun switch() {
+        twinInput.switch()
+        settings.setToCurrency(twinInput.state.sendCurrency)
+        settings.setFromCurrency(twinInput.state.receiveCurrency)
+    }
+
+    fun reset() {
+        cancelRequestAvailableProviders()
+        startObserveInputButtonEnabled()
+        _stepFlow.value = UiState.Step.Input
+    }
+
+    private fun startObserveInputButtonEnabled() {
+        cancelObserveInputButtonEnabled()
+        observeInputButtonEnabledJob = combine(
+            balanceUiStateFlow,
+            allowedPairFlow,
+            twinInput.stateFlow,
+            minAmountFlow.map { it?.amount ?: Coins.ZERO }.distinctUntilChanged(),
+        ) { balance, pair, inputs, minAmount ->
+            if (inputs.isEmpty || pair == null) {
+                UiButtonState.Default(false)
+            } else if (minAmount > inputs.send.coins) {
+                UiButtonState.Default(false)
+            } else if (inputs.sendCurrency.isTONChain || inputs.sendCurrency.isTronChain) {
+                UiButtonState.Default(balance.balance != null && balance.balance.value.isPositive && !balance.insufficientBalance)
             } else {
-                val coins = Coins.of(values.second, state.buyDecimals)
-                if (state.sell.isUSD && state.buy.isUSDT) {
-                    _inputValuesFlow.value = OnRampInputsState(
-                        from = coins,
-                        to = coins
-                    )
-                } else {
-                    _inputValuesFlow.value = OnRampInputsState(
-                        from = state.rateConvert(coins, true),
-                        to = coins
-                    )
-                }
+                UiButtonState.Default(true)
             }
-        }.flowOn(Dispatchers.IO).launch()
-
-        combine(
-            currencyInputStateFlow,
-            inputValuesFlow
-        ) { inputs, values ->
-            val toFormat = CurrencyFormatter.format(inputs.from, values.from, replaceSymbol = false)
-            val fromFormat = CurrencyFormatter.format(inputs.to, values.to, replaceSymbol = false)
-
-            _confirmStateFlow.update {
-                it.copy(
-                    fromFormat = fromFormat,
-                    toFormat = toFormat
-                )
-            }
-        }.launch()
-    }
-
-    private suspend fun createCurrencyInputState(currency: WalletCurrency = WalletCurrency.USD): CurrencyInputState {
-        if (currency.fiat) {
-            return CurrencyInputState.Fiat(currency)
-        }
-        val chain = currency.chain
-        if (chain is WalletCurrency.Chain.TON) {
-            val token = tokenRepository.getToken(
-                accountId = wallet.accountId,
-                testnet = wallet.testnet,
-                tokenAddress = chain.address
-            ) ?: return createCurrencyInputState()
-
-            return CurrencyInputState.TONAsset(token)
-        } else {
-            return CurrencyInputState.Crypto(currency)
+        }.distinctUntilChanged().collectFlow {
+            _inputButtonUiStateFlow.value = it
         }
     }
 
-    fun calculate() {
-        _confirmStateFlow.update {
-            it.copy(
-                loading = true,
-                unavailable = false,
+    private fun cancelObserveInputButtonEnabled() {
+        observeInputButtonEnabledJob?.cancel()
+        observeInputButtonEnabledJob = null
+    }
+
+    private fun currencyByCountry(): WalletCurrency {
+        val code = CurrencyCountries.getCurrencyCode(settingsRepository.country)
+        return WalletCurrency.ofOrDefault(code)
+    }
+
+    private fun applyDefaultCurrencies() {
+        val fromCurrency = settings.getFromCurrency()
+        updateSendCurrency(fromCurrency ?: currencyByCountry(), fromCurrency != null)
+        updateReceiveCurrency(settings.getToCurrency() ?: WalletCurrency.TON)
+    }
+
+    fun pickCurrency(forType: TwinInput.Type) = viewModelScope.launch {
+        runCatching {
+            OnRampPickerScreen.run(
+                context = context,
+                wallet = wallet,
+                currency = twinInput.getCurrency(forType),
+                send = forType == TwinInput.Type.Send
             )
-        }
-        requestWebViewLink()
-    }
-
-    private suspend fun requestWebViewLinkArg(): OnRampArgsEntity {
-        var walletAddress = ""
-        if (currencyInputState.isTON) {
-            walletAddress = wallet.address
-        } else if (currencyInputState.isTron) {
-            walletAddress = accountRepository.getTronAddress(wallet.id) ?: ""
-        }
-        val args = OnRampArgsEntity(
-            from = currencyInputState.from,
-            to = currencyInputState.to,
-            network = currencyInputState.type,
-            wallet = walletAddress,
-            purchaseType = currencyInputState.purchaseType,
-            amount = inputValues.from,
-            country = currencyInputState.country,
-            paymentMethod = currencyInputState.paymentType
-        )
-
-        return args
-    }
-
-    private fun requestWebViewLink() {
-        requestWebViewLinkJob?.cancel()
-        requestWebViewLinkJob = viewModelScope.launch {
-            val arg = requestWebViewLinkArg()
-            val items = api.calculateOnRamp(arg)
-            val selectedProvider = currencyInputState.selectedProvider
-            if (selectedProvider == null) {
-                setConfirmUnavailable()
-                return@launch
-            }
-            val sortMerchants = items.map { it.merchant }
-            val item = items.firstOrNull {
-                it.merchant.equals(selectedProvider.id, ignoreCase = true)
-            } ?: items.firstOrNull()
-
-            if (item == null) {
-                setConfirmUnavailable()
-                return@launch
-            }
-
-            _currencyInputStateFlow.update { state ->
-                state.copy(
-                    selectedProviderId = item.merchant
-                )
-            }
-
-            val coins = Coins.of(item.amount)
-
-            _confirmStateFlow.update {
-                it.copy(
-                    loading = false,
-                    unavailable = false,
-                    fromFormat = CurrencyFormatter.format(currencyInputState.to, coins, replaceSymbol = false),
-                    webViewLink = item.widgetUrl
-                )
-            }
-
-            if (sortMerchants.size > 1) {
-                _currencyInputStateFlow.update { state ->
-                    val providers = state.providers
-                        .filter { provider ->
-                            sortMerchants.any { it.equals(provider.id, ignoreCase = true) }
-                        }
-                        .sortedBy { provider ->
-                            sortMerchants.indexOfFirst { it.equals(provider.id, ignoreCase = true) }
-                        }
-
-                    val selectedProviderId = if (providers.any {
-                        it.id.equals(state.selectedProviderId, ignoreCase = true)
-                    }) {
-                        state.selectedProviderId
-                    } else {
-                        providers.firstOrNull()?.id
-                    }
-
-                    state.copy(
-                        providers = providers,
-                        selectedProviderId = selectedProviderId
-                    )
-                }
+        }.onSuccess { currency ->
+            _requestFocusFlow.emit(forType)
+            if (currency == twinInput.state.getCurrency(forType)) {
+                return@onSuccess
+            } else if (twinInput.state.hasCurrency(currency)) {
+                switch()
+            } else if (forType == TwinInput.Type.Send) {
+                updateSendCurrency(currency)
+            } else if (forType == TwinInput.Type.Receive) {
+                updateReceiveCurrency(currency)
             }
         }
-    }
-
-    private fun setConfirmUnavailable() {
-        _confirmStateFlow.update {
-            it.copy(
-                loading = false,
-                unavailable = true
-            )
-        }
-    }
-
-    fun resetConfirm() {
-        _confirmStateFlow.update {
-            it.copy(
-                loading = false,
-                unavailable = false,
-            )
-        }
-
-        requestWebViewLinkJob?.cancel()
-        requestWebViewLinkJob = null
-    }
-
-    fun openWeb() {
-        val confirmState = confirmStateFlow.value
-        val webViewLink = confirmState.webViewLink?.toUriOrNull() ?: return
-        BrowserHelper.open(context, webViewLink)
-
-        AnalyticsHelper.onRampOpenWebview(
-            installId = installId,
-            type = currencyInputState.purchaseType,
-            sellAsset = currencyInputState.fromForAnalytics,
-            buyAsset = currencyInputState.toForAnalytics,
-            countryCode = currencyInputState.country,
-            paymentMethod = currencyInputState.paymentType ?: "unknown",
-            providerName = currencyInputState.selectedProvider?.title ?: "unknown",
-            providerDomain = webViewLink.host ?: "unknown"
-        )
-    }
-
-    fun setProviderId(providerId: String): Boolean {
-        if (providerId.equals(currencyInputState.selectedProviderId, ignoreCase = true)) {
-            return false
-        }
-        _currencyInputStateFlow.update {
-            it.copy(
-                selectedProviderId = providerId,
-            )
-        }
-        return true
-    }
-
-    fun setPaymentMethod(id: String): Boolean {
-        if (currencyInputState.paymentType.equals(id, ignoreCase = true)) {
-            return false
-        }
-        _currencyInputStateFlow.update {
-            it.copy(
-                paymentType = id,
-            )
-        }
-        return true
-    }
-
-    private suspend fun getBalanceToken(currency: CurrencyInputState.TONAsset): BalanceEntity? {
-        val tokens = assetsManager.getTokens(wallet, settingsRepository.currency, false)
-        val token = tokens.firstOrNull {
-            it.address.equalsAddress(currency.address)
-        } ?: return null
-        return token.token.balance
     }
 
     private fun createRemainingFormat(balance: BalanceEntity?, value: Coins): Pair<CharSequence?, Boolean> {
@@ -398,49 +359,87 @@ class OnRampViewModel(
         return Pair(format, remaining.isNegative)
     }
 
-    private suspend fun requestRates(
-        send: CurrencyInputState,
-        receive: CurrencyInputState
-    ): RatesEntity = withContext(Dispatchers.IO) {
-        val walletCurrency = CurrencyInputState.findWalletCurrency(send, receive) ?: settingsRepository.currency
-        val token = CurrencyInputState.findToken(send, receive) ?: TokenEntity.TON
-        ratesRepository.getRates(walletCurrency, token.address)
+    private suspend fun requestWebViewLinkArg(paymentMethod: String?): OnRampArgsEntity {
+        var walletAddress = ""
+        if (twinInput.state.hasTonChain) {
+            walletAddress = wallet.address
+        } else if (twinInput.state.hasTronChain) {
+            walletAddress = accountRepository.getTronAddress(wallet.id) ?: ""
+        }
+
+        return OnRampArgsEntity(
+            from = from,
+            to = to,
+            network = network,
+            wallet = walletAddress,
+            purchaseType = purchaseType,
+            amount = twinInput.state.send.coins,
+            country = settingsRepository.country,
+            paymentMethod = paymentMethod
+        )
     }
 
-    fun setFromAmount(value: Double) {
-        _rawValuesFlow.update {
-            it.copy(value, 0.0)
+    private fun cancelRequestAvailableProviders() {
+        requestAvailableProvidersJob?.cancel()
+        requestAvailableProvidersJob = null
+    }
+
+    private fun setLoading(loading: Boolean) {
+        if (_stepFlow.value == UiState.Step.Input && loading) {
+            _inputButtonUiStateFlow.value = UiButtonState.Loading
+        } else if (_stepFlow.value == UiState.Step.Confirm && loading) {
+            _confirmButtonUiStateFlow.value = UiButtonState.Loading
+        } else if (_stepFlow.value == UiState.Step.Confirm) {
+            _confirmButtonUiStateFlow.value = UiButtonState.Default(true)
         }
     }
 
-    fun setToAmount(value: Double) {
-        _rawValuesFlow.update {
-            it.copy(0.0, value)
+    fun requestAvailableProviders(selectedPaymentMethod: String? = _selectedPaymentMethodFlow.value) {
+        if (twinInput.state.isEmpty) {
+            return
+        }
+
+        cancelRequestAvailableProviders()
+        cancelObserveInputButtonEnabled()
+        setLoading(true)
+
+        requestAvailableProvidersJob = viewModelScope.launch {
+            try {
+                val args = requestWebViewLinkArg(selectedPaymentMethod)
+                val availableProviders = api.calculateOnRamp(args)
+                if (availableProviders.isEmpty()) {
+                    throw IOException("No providers available for the selected payment method")
+                } else {
+                    _availableProvidersFlow.value = availableProviders
+                    _stepFlow.value = UiState.Step.Confirm
+                    setLoading(false)
+                }
+            } catch (ignored: CancellationException) { } catch (e: Exception) {
+                toast(Localization.unknown_error)
+                reset()
+            }
         }
     }
 
-    fun switch() {
-        val currentSend = purchaseRepository.sendCurrency ?: WalletCurrency.TON
-        val currentReceive = purchaseRepository.receiveCurrency
-
-        purchaseRepository.sendCurrency = currentReceive
-        purchaseRepository.receiveCurrency = currentSend
-
-        _inputValuesFlow.update {
-            it.copy(
-                from = it.to,
-                to = it.from
-            )
-        }
+    fun setSelectedProviderId(id: String?) {
+        _selectedProviderIdFlow.value = id
     }
 
-    fun setCountry(country: String) {
-        _currencyInputStateFlow.update {
-            it.copy(country = country)
-        }
+    fun isPurchaseOpenConfirm(providerId: String) = settingsRepository.isPurchaseOpenConfirm(wallet.id, providerId)
+
+    fun disableConfirmDialog(wallet: WalletEntity, providerId: String) {
+        settingsRepository.disablePurchaseOpenConfirm(wallet.id, providerId)
     }
 
-    private companion object {
-        private val epsilon = BigDecimal("0.0009")
+    fun setSelectedPaymentMethod(type: String) {
+        _selectedPaymentMethodFlow.value = type
+        requestAvailableProviders(type)
+        settings.setPaymentMethod(type)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        cancelRequestAvailableProviders()
+        cancelObserveInputButtonEnabled()
     }
 }

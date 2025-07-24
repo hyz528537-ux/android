@@ -7,9 +7,12 @@ import android.widget.Button
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.LinearLayoutCompat
 import com.facebook.drawee.view.SimpleDraweeView
+import com.tonapps.tonkeeper.ui.screen.onramp.main.entities.ProviderEntity
 import com.tonapps.tonkeeperx.R
+import com.tonapps.uikit.color.textAccentColor
 import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.wallet.data.purchase.entity.PurchaseMethodEntity
+import com.tonapps.wallet.localization.Localization
 import uikit.dialog.modal.ModalDialog
 import uikit.extensions.applyNavBottomPadding
 import uikit.extensions.dp
@@ -55,6 +58,23 @@ class PurchaseConfirmDialog(
         applyInfoButtons(method.infoButtons)
     }
 
+    fun show(
+        provider: ProviderEntity,
+        callback: (showAgain: Boolean) -> Unit
+    ) {
+        super.show()
+        iconView.setImageURI(provider.iconUrl)
+        titleView.text = provider.title
+        subtitleView.text = provider.description
+        button.text = context.getString(Localization.open)
+        button.setOnClickListener {
+            callback(!checkbox.checked)
+            dismiss()
+        }
+        checkbox.checked = false
+        applyInfoButtons(provider.buttons)
+    }
+
     private fun applyInfoButtons(buttons: List<PurchaseMethodEntity.Button>) {
         if (buttons.isNotEmpty()) {
             infoView.removeAllViews()
@@ -73,7 +93,7 @@ class PurchaseConfirmDialog(
         buttonView.text = button.title
         buttonView.setOnClickListener { navigation?.openURL(button.url) }
         buttonView.setTextAppearance(uikit.R.style.TextAppearance_Body1)
-        buttonView.setTextColor(context.textSecondaryColor)
+        buttonView.setTextColor(context.textAccentColor)
         return buttonView
     }
 }

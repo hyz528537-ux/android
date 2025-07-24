@@ -15,29 +15,31 @@
 
 package io.tonapi.models
 
+import io.tonapi.models.TrustType
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param address 
- * @param name 
- * @param preview 
- */
 
+@Serializable
 
 data class FoundAccountsAddressesInner (
 
-    @Json(name = "address")
+    @SerialName(value = "address")
     val address: kotlin.String,
 
-    @Json(name = "name")
+    @SerialName(value = "name")
     val name: kotlin.String,
 
-    @Json(name = "preview")
-    val preview: kotlin.String
+    @SerialName(value = "preview")
+    val preview: kotlin.String,
 
-)
+    @Contextual @SerialName(value = "trust")
+    val trust: TrustType
+
+) {
+
+
+}
 

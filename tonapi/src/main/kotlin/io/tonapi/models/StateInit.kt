@@ -16,24 +16,23 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param boc 
- * @param interfaces 
- */
 
+@Serializable
 
 data class StateInit (
 
-    @Json(name = "boc")
+    @SerialName(value = "boc")
     val boc: kotlin.String,
 
-    @Json(name = "interfaces")
-    val interfaces: kotlin.collections.List<kotlin.String>? = null
+    @SerialName(value = "interfaces")
+    val interfaces: kotlin.collections.List<kotlin.String>
 
-)
+) {
+
+
+}
 

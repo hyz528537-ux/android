@@ -16,12 +16,14 @@ import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.Fee
 import com.tonapps.tonkeeper.core.history.HistoryHelper
 import com.tonapps.tonkeeper.extensions.getTransfers
+import com.tonapps.tonkeeper.helper.BatteryHelper
 import com.tonapps.tonkeeper.manager.assets.AssetsManager
 import com.tonapps.tonkeeper.manager.tx.TransactionManager
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.send.main.helper.InsufficientBalanceType
 import com.tonapps.tonkeeper.ui.screen.send.main.state.SendFee
 import com.tonapps.tonkeeper.usecase.emulation.Emulated
+import com.tonapps.tonkeeper.usecase.emulation.Emulated.Companion.buildFee
 import com.tonapps.tonkeeper.usecase.emulation.EmulationUseCase
 import com.tonapps.tonkeeper.usecase.sign.SignUseCase
 import com.tonapps.wallet.api.API
@@ -104,7 +106,7 @@ class SendTransactionViewModel(
         )
         viewModelScope.launch(Dispatchers.IO) {
             val tokens = getTokens()
-            val useBattery = isBatteryIsEnabledTx()
+            val useBattery = BatteryHelper.isBatteryIsEnabledTx(wallet, batteryTransactionType, settingsRepository, accountRepository, batteryRepository)
             try {
                 val transfers = transfers(tokens.filter { it.isRequestMinting }, true, useBattery)
                 message = accountRepository.messageBody(wallet, request.validUntil, transfers)
@@ -120,24 +122,15 @@ class SendTransactionViewModel(
 
                 val batteryDeferred = async {
                     if (useBattery || forceRelayer) {
-                        val emulated = emulationUseCase(
+                        BatteryHelper.emulation(
+                            wallet = wallet,
                             message = message!!,
-                            useBattery = true,
-                            forceRelayer = true,
-                            params = true
+                            emulationUseCase = emulationUseCase,
+                            accountRepository = accountRepository,
+                            batteryRepository = batteryRepository,
+                            api = api
                         )
-                        val chargesBalance = getBatteryCharges()
-                        val charges = BatteryMapper.calculateChargesAmount(
-                            emulated.extra.value.value,
-                            api.config.batteryMeanFees
-                        )
-                        if (charges > chargesBalance) {
-                            null
-                        } else {
-                            emulated
-                        }
                     } else {
-
                         null
                     }
                 }
@@ -225,40 +218,8 @@ class SendTransactionViewModel(
         }
     }
 
-    private suspend fun getBatteryCharges(): Int = withContext(Dispatchers.IO) {
-        accountRepository.requestTonProofToken(wallet)?.let {
-            batteryRepository.getCharges(it, wallet.publicKey, wallet.testnet, true)
-        } ?: 0
-    }
-
     private suspend fun createDetails(emulated: Emulated): SendTransactionState.Details {
-        val fee: SendFee = if (emulated.withBattery && emulated.consequences != null) {
-            val extra = emulated.consequences.event.extra
-            val chargesBalance = getBatteryCharges()
-            val charges = BatteryMapper.calculateChargesAmount(
-                Coins.of(abs(extra)).value,
-                api.config.batteryMeanFees
-            )
-            val batteryConfig = batteryRepository.getConfig(wallet.testnet)
-            val excessesAddress = batteryConfig.excessesAddress
-            SendFee.Battery(
-                charges = charges,
-                chargesBalance = chargesBalance,
-                extra = extra,
-                excessesAddress = excessesAddress!!,
-            )
-        } else {
-            val fee = Fee(emulated.extra.value, emulated.extra.isRefund)
-            val rates = ratesRepository.getTONRates(currency)
-            val converted = rates.convertTON(fee.value)
-
-            SendFee.Ton(
-                amount = fee,
-                fiatAmount = converted,
-                fiatCurrency = currency,
-                extra = emulated.consequences?.event?.extra ?: 0
-            )
-        }
+        val fee: SendFee = emulated.buildFee(wallet, api, accountRepository, batteryRepository, ratesRepository)
 
         val details = historyHelper.create(wallet, emulated, fee)
         val totalFormatBuilder = StringBuilder(getString(Localization.total, emulated.totalFormat))
@@ -274,25 +235,6 @@ class SendTransactionViewModel(
             failed = emulated.failed,
             fee = fee,
         )
-    }
-
-    private suspend fun isBatteryIsEnabledTx(): Boolean = withContext(Dispatchers.IO) {
-        if (settingsRepository.batteryIsEnabledTx(wallet.accountId, batteryTransactionType)) {
-            getBatteryBalance().isPositive
-        } else {
-            false
-        }
-    }
-
-    private suspend fun getBatteryBalance(): Coins {
-        val tonProof = accountRepository.requestTonProofToken(wallet) ?: return Coins.ZERO
-        val entity = batteryRepository.getBalance(
-            tonProofToken = tonProof,
-            publicKey = wallet.publicKey,
-            testnet = wallet.testnet,
-            ignoreCache = true
-        )
-        return entity.balance
     }
 
     private suspend fun isSingleWallet(): Boolean {

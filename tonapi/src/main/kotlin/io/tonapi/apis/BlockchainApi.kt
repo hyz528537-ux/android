@@ -16,7 +16,7 @@
 package io.tonapi.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import io.tonapi.models.BlockchainAccountInspect
@@ -24,34 +24,36 @@ import io.tonapi.models.BlockchainBlock
 import io.tonapi.models.BlockchainBlockShards
 import io.tonapi.models.BlockchainBlocks
 import io.tonapi.models.BlockchainConfig
+import io.tonapi.models.BlockchainLibrary
 import io.tonapi.models.BlockchainRawAccount
+import io.tonapi.models.ExecGetMethodWithBodyForBlockchainAccountRequest
+import io.tonapi.models.InlineObject
 import io.tonapi.models.MethodExecutionResult
 import io.tonapi.models.RawBlockchainConfig
 import io.tonapi.models.ReducedBlocks
 import io.tonapi.models.SendBlockchainMessageRequest
-import io.tonapi.models.ServiceStatus
-import io.tonapi.models.StatusDefaultResponse
 import io.tonapi.models.Transaction
 import io.tonapi.models.Transactions
 import io.tonapi.models.Validators
 
-import com.squareup.moshi.Json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-import io.tonapi.infrastructure.ApiClient
-import io.tonapi.infrastructure.ApiResponse
-import io.tonapi.infrastructure.ClientException
-import io.tonapi.infrastructure.ClientError
-import io.tonapi.infrastructure.ServerException
-import io.tonapi.infrastructure.ServerError
-import io.tonapi.infrastructure.MultiValueMap
-import io.tonapi.infrastructure.PartConfig
-import io.tonapi.infrastructure.RequestConfig
-import io.tonapi.infrastructure.RequestMethod
-import io.tonapi.infrastructure.ResponseType
-import io.tonapi.infrastructure.Success
-import io.tonapi.infrastructure.toMultiValue
+import io.infrastructure.ApiClient
+import io.infrastructure.ApiResponse
+import io.infrastructure.ClientException
+import io.infrastructure.ClientError
+import io.infrastructure.ServerException
+import io.infrastructure.ServerError
+import io.infrastructure.MultiValueMap
+import io.infrastructure.PartConfig
+import io.infrastructure.RequestConfig
+import io.infrastructure.RequestMethod
+import io.infrastructure.ResponseType
+import io.infrastructure.Success
+import io.infrastructure.toMultiValue
 
-class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -59,17 +61,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Blockchain account inspect
-     * @param accountId account ID
-     * @return BlockchainAccountInspect
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun blockchainAccountInspect(accountId: kotlin.String) : BlockchainAccountInspect {
@@ -90,14 +81,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Blockchain account inspect
-     * @param accountId account ID
-     * @return ApiResponse<BlockchainAccountInspect?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun blockchainAccountInspectWithHttpInfo(accountId: kotlin.String) : ApiResponse<BlockchainAccountInspect?> {
@@ -108,12 +91,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation blockchainAccountInspect
-     *
-     * @param accountId account ID
-     * @return RequestConfig
-     */
     fun blockchainAccountInspectRequestConfig(accountId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -130,19 +107,52 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Execute get method for account
-     * @param accountId account ID
-     * @param methodName contract get method name
-     * @param args  (optional)
-     * @return MethodExecutionResult
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun downloadBlockchainBlockBoc(blockId: kotlin.String) : java.io.File {
+        val localVarResponse = downloadBlockchainBlockBocWithHttpInfo(blockId = blockId)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as java.io.File
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun downloadBlockchainBlockBocWithHttpInfo(blockId: kotlin.String) : ApiResponse<java.io.File?> {
+        val localVariableConfig = downloadBlockchainBlockBocRequestConfig(blockId = blockId)
+
+        return request<Unit, java.io.File>(
+            localVariableConfig
+        )
+    }
+
+    fun downloadBlockchainBlockBocRequestConfig(blockId: kotlin.String) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/octet-stream, application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/v2/blockchain/blocks/{block_id}/boc".replace("{"+"block_id"+"}", encodeURIComponent(blockId.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = false,
+            body = localVariableBody
+        )
+    }
+
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun execGetMethodForBlockchainAccount(accountId: kotlin.String, methodName: kotlin.String, args: kotlin.collections.List<kotlin.String>? = null) : MethodExecutionResult {
@@ -163,16 +173,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Execute get method for account
-     * @param accountId account ID
-     * @param methodName contract get method name
-     * @param args  (optional)
-     * @return ApiResponse<MethodExecutionResult?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun execGetMethodForBlockchainAccountWithHttpInfo(accountId: kotlin.String, methodName: kotlin.String, args: kotlin.collections.List<kotlin.String>?) : ApiResponse<MethodExecutionResult?> {
@@ -183,14 +183,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation execGetMethodForBlockchainAccount
-     *
-     * @param accountId account ID
-     * @param methodName contract get method name
-     * @param args  (optional)
-     * @return RequestConfig
-     */
     fun execGetMethodForBlockchainAccountRequestConfig(accountId: kotlin.String, methodName: kotlin.String, args: kotlin.collections.List<kotlin.String>?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -212,29 +204,70 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun execGetMethodWithBodyForBlockchainAccount(accountId: kotlin.String, methodName: kotlin.String, execGetMethodWithBodyForBlockchainAccountRequest: ExecGetMethodWithBodyForBlockchainAccountRequest? = null) : MethodExecutionResult {
+        val localVarResponse = execGetMethodWithBodyForBlockchainAccountWithHttpInfo(accountId = accountId, methodName = methodName, execGetMethodWithBodyForBlockchainAccountRequest = execGetMethodWithBodyForBlockchainAccountRequest)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as MethodExecutionResult
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun execGetMethodWithBodyForBlockchainAccountWithHttpInfo(accountId: kotlin.String, methodName: kotlin.String, execGetMethodWithBodyForBlockchainAccountRequest: ExecGetMethodWithBodyForBlockchainAccountRequest?) : ApiResponse<MethodExecutionResult?> {
+        val localVariableConfig = execGetMethodWithBodyForBlockchainAccountRequestConfig(accountId = accountId, methodName = methodName, execGetMethodWithBodyForBlockchainAccountRequest = execGetMethodWithBodyForBlockchainAccountRequest)
+
+        return request<ExecGetMethodWithBodyForBlockchainAccountRequest, MethodExecutionResult>(
+            localVariableConfig
+        )
+    }
+
+    fun execGetMethodWithBodyForBlockchainAccountRequestConfig(accountId: kotlin.String, methodName: kotlin.String, execGetMethodWithBodyForBlockchainAccountRequest: ExecGetMethodWithBodyForBlockchainAccountRequest?) : RequestConfig<ExecGetMethodWithBodyForBlockchainAccountRequest> {
+        val localVariableBody = execGetMethodWithBodyForBlockchainAccountRequest
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/v2/blockchain/accounts/{account_id}/methods/{method_name}".replace("{"+"account_id"+"}", encodeURIComponent(accountId.toString())).replace("{"+"method_name"+"}", encodeURIComponent(methodName.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = false,
+            body = localVariableBody
+        )
+    }
+
     /**
      * enum for parameter sortOrder
      */
      enum class SortOrderGetBlockchainAccountTransactions(val value: kotlin.String) {
-         @Json(name = "desc") desc("desc"),
-         @Json(name = "asc") asc("asc")
+         @SerialName(value = "desc") desc("desc"),
+         @SerialName(value = "asc") asc("asc");
+
+        /**
+         * Override [toString()] to avoid using the enum variable name as the value, and instead use
+         * the actual value defined in the API spec file.
+         *
+         * This solves a problem when the variable name and its value are different, and ensures that
+         * the client sends the correct enum values to the server always.
+         */
+        override fun toString(): kotlin.String = "$value"
      }
 
-    /**
-     * 
-     * Get account transactions
-     * @param accountId account ID
-     * @param afterLt omit this parameter to get last transactions (optional)
-     * @param beforeLt omit this parameter to get last transactions (optional)
-     * @param limit  (optional, default to 100)
-     * @param sortOrder  (optional, default to desc)
-     * @return Transactions
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainAccountTransactions(accountId: kotlin.String, afterLt: kotlin.Long? = null, beforeLt: kotlin.Long? = null, limit: kotlin.Int? = 100, sortOrder: SortOrderGetBlockchainAccountTransactions? = SortOrderGetBlockchainAccountTransactions.desc) : Transactions {
@@ -255,18 +288,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get account transactions
-     * @param accountId account ID
-     * @param afterLt omit this parameter to get last transactions (optional)
-     * @param beforeLt omit this parameter to get last transactions (optional)
-     * @param limit  (optional, default to 100)
-     * @param sortOrder  (optional, default to desc)
-     * @return ApiResponse<Transactions?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainAccountTransactionsWithHttpInfo(accountId: kotlin.String, afterLt: kotlin.Long?, beforeLt: kotlin.Long?, limit: kotlin.Int?, sortOrder: SortOrderGetBlockchainAccountTransactions?) : ApiResponse<Transactions?> {
@@ -277,16 +298,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainAccountTransactions
-     *
-     * @param accountId account ID
-     * @param afterLt omit this parameter to get last transactions (optional)
-     * @param beforeLt omit this parameter to get last transactions (optional)
-     * @param limit  (optional, default to 100)
-     * @param sortOrder  (optional, default to desc)
-     * @return RequestConfig
-     */
     fun getBlockchainAccountTransactionsRequestConfig(accountId: kotlin.String, afterLt: kotlin.Long?, beforeLt: kotlin.Long?, limit: kotlin.Int?, sortOrder: SortOrderGetBlockchainAccountTransactions?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -317,17 +328,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get blockchain block data
-     * @param blockId block ID
-     * @return BlockchainBlock
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainBlock(blockId: kotlin.String) : BlockchainBlock {
@@ -348,14 +348,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get blockchain block data
-     * @param blockId block ID
-     * @return ApiResponse<BlockchainBlock?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainBlockWithHttpInfo(blockId: kotlin.String) : ApiResponse<BlockchainBlock?> {
@@ -366,12 +358,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainBlock
-     *
-     * @param blockId block ID
-     * @return RequestConfig
-     */
     fun getBlockchainBlockRequestConfig(blockId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -388,17 +374,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get transactions from block
-     * @param blockId block ID
-     * @return Transactions
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainBlockTransactions(blockId: kotlin.String) : Transactions {
@@ -419,14 +394,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get transactions from block
-     * @param blockId block ID
-     * @return ApiResponse<Transactions?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainBlockTransactionsWithHttpInfo(blockId: kotlin.String) : ApiResponse<Transactions?> {
@@ -437,12 +404,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainBlockTransactions
-     *
-     * @param blockId block ID
-     * @return RequestConfig
-     */
     fun getBlockchainBlockTransactionsRequestConfig(blockId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -459,16 +420,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get blockchain config
-     * @return BlockchainConfig
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainConfig() : BlockchainConfig {
@@ -489,13 +440,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get blockchain config
-     * @return ApiResponse<BlockchainConfig?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainConfigWithHttpInfo() : ApiResponse<BlockchainConfig?> {
@@ -506,11 +450,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainConfig
-     *
-     * @return RequestConfig
-     */
     fun getBlockchainConfigRequestConfig() : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -527,17 +466,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get blockchain config from a specific block, if present.
-     * @param masterchainSeqno masterchain block seqno
-     * @return BlockchainConfig
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainConfigFromBlock(masterchainSeqno: kotlin.Int) : BlockchainConfig {
@@ -558,14 +486,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get blockchain config from a specific block, if present.
-     * @param masterchainSeqno masterchain block seqno
-     * @return ApiResponse<BlockchainConfig?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainConfigFromBlockWithHttpInfo(masterchainSeqno: kotlin.Int) : ApiResponse<BlockchainConfig?> {
@@ -576,12 +496,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainConfigFromBlock
-     *
-     * @param masterchainSeqno masterchain block seqno
-     * @return RequestConfig
-     */
     fun getBlockchainConfigFromBlockRequestConfig(masterchainSeqno: kotlin.Int) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -598,17 +512,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get all blocks in all shards and workchains between target and previous masterchain block according to shards last blocks snapshot in masterchain.  We don&#39;t recommend to build your app around this method because it has problem with scalability and will work very slow in the future.
-     * @param masterchainSeqno masterchain block seqno
-     * @return BlockchainBlocks
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainMasterchainBlocks(masterchainSeqno: kotlin.Int) : BlockchainBlocks {
@@ -629,14 +532,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get all blocks in all shards and workchains between target and previous masterchain block according to shards last blocks snapshot in masterchain.  We don&#39;t recommend to build your app around this method because it has problem with scalability and will work very slow in the future.
-     * @param masterchainSeqno masterchain block seqno
-     * @return ApiResponse<BlockchainBlocks?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainMasterchainBlocksWithHttpInfo(masterchainSeqno: kotlin.Int) : ApiResponse<BlockchainBlocks?> {
@@ -647,12 +542,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainMasterchainBlocks
-     *
-     * @param masterchainSeqno masterchain block seqno
-     * @return RequestConfig
-     */
     fun getBlockchainMasterchainBlocksRequestConfig(masterchainSeqno: kotlin.Int) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -669,16 +558,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get last known masterchain block
-     * @return BlockchainBlock
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainMasterchainHead() : BlockchainBlock {
@@ -699,13 +578,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get last known masterchain block
-     * @return ApiResponse<BlockchainBlock?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainMasterchainHeadWithHttpInfo() : ApiResponse<BlockchainBlock?> {
@@ -716,11 +588,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainMasterchainHead
-     *
-     * @return RequestConfig
-     */
     fun getBlockchainMasterchainHeadRequestConfig() : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -737,17 +604,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get blockchain block shards
-     * @param masterchainSeqno masterchain block seqno
-     * @return BlockchainBlockShards
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainMasterchainShards(masterchainSeqno: kotlin.Int) : BlockchainBlockShards {
@@ -768,14 +624,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get blockchain block shards
-     * @param masterchainSeqno masterchain block seqno
-     * @return ApiResponse<BlockchainBlockShards?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainMasterchainShardsWithHttpInfo(masterchainSeqno: kotlin.Int) : ApiResponse<BlockchainBlockShards?> {
@@ -786,12 +634,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainMasterchainShards
-     *
-     * @param masterchainSeqno masterchain block seqno
-     * @return RequestConfig
-     */
     fun getBlockchainMasterchainShardsRequestConfig(masterchainSeqno: kotlin.Int) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -808,17 +650,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get all transactions in all shards and workchains between target and previous masterchain block according to shards last blocks snapshot in masterchain. We don&#39;t recommend to build your app around this method because it has problem with scalability and will work very slow in the future.
-     * @param masterchainSeqno masterchain block seqno
-     * @return Transactions
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainMasterchainTransactions(masterchainSeqno: kotlin.Int) : Transactions {
@@ -839,14 +670,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get all transactions in all shards and workchains between target and previous masterchain block according to shards last blocks snapshot in masterchain. We don&#39;t recommend to build your app around this method because it has problem with scalability and will work very slow in the future.
-     * @param masterchainSeqno masterchain block seqno
-     * @return ApiResponse<Transactions?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainMasterchainTransactionsWithHttpInfo(masterchainSeqno: kotlin.Int) : ApiResponse<Transactions?> {
@@ -857,12 +680,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainMasterchainTransactions
-     *
-     * @param masterchainSeqno masterchain block seqno
-     * @return RequestConfig
-     */
     fun getBlockchainMasterchainTransactionsRequestConfig(masterchainSeqno: kotlin.Int) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -879,17 +696,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get low-level information about an account taken directly from the blockchain.
-     * @param accountId account ID
-     * @return BlockchainRawAccount
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainRawAccount(accountId: kotlin.String) : BlockchainRawAccount {
@@ -910,14 +716,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get low-level information about an account taken directly from the blockchain.
-     * @param accountId account ID
-     * @return ApiResponse<BlockchainRawAccount?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainRawAccountWithHttpInfo(accountId: kotlin.String) : ApiResponse<BlockchainRawAccount?> {
@@ -928,12 +726,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainRawAccount
-     *
-     * @param accountId account ID
-     * @return RequestConfig
-     */
     fun getBlockchainRawAccountRequestConfig(accountId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -950,17 +742,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get transaction data
-     * @param transactionId transaction ID
-     * @return Transaction
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainTransaction(transactionId: kotlin.String) : Transaction {
@@ -981,14 +762,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get transaction data
-     * @param transactionId transaction ID
-     * @return ApiResponse<Transaction?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainTransactionWithHttpInfo(transactionId: kotlin.String) : ApiResponse<Transaction?> {
@@ -999,12 +772,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainTransaction
-     *
-     * @param transactionId transaction ID
-     * @return RequestConfig
-     */
     fun getBlockchainTransactionRequestConfig(transactionId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -1021,17 +788,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get transaction data by message hash
-     * @param msgId message ID
-     * @return Transaction
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainTransactionByMessageHash(msgId: kotlin.String) : Transaction {
@@ -1052,14 +808,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get transaction data by message hash
-     * @param msgId message ID
-     * @return ApiResponse<Transaction?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainTransactionByMessageHashWithHttpInfo(msgId: kotlin.String) : ApiResponse<Transaction?> {
@@ -1070,12 +818,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainTransactionByMessageHash
-     *
-     * @param msgId message ID
-     * @return RequestConfig
-     */
     fun getBlockchainTransactionByMessageHashRequestConfig(msgId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -1092,16 +834,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get blockchain validators
-     * @return Validators
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getBlockchainValidators() : Validators {
@@ -1122,13 +854,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get blockchain validators
-     * @return ApiResponse<Validators?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getBlockchainValidatorsWithHttpInfo() : ApiResponse<Validators?> {
@@ -1139,11 +864,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getBlockchainValidators
-     *
-     * @return RequestConfig
-     */
     fun getBlockchainValidatorsRequestConfig() : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -1160,16 +880,52 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw blockchain config
-     * @return RawBlockchainConfig
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun getLibraryByHash(hash: kotlin.String) : BlockchainLibrary {
+        val localVarResponse = getLibraryByHashWithHttpInfo(hash = hash)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as BlockchainLibrary
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun getLibraryByHashWithHttpInfo(hash: kotlin.String) : ApiResponse<BlockchainLibrary?> {
+        val localVariableConfig = getLibraryByHashRequestConfig(hash = hash)
+
+        return request<Unit, BlockchainLibrary>(
+            localVariableConfig
+        )
+    }
+
+    fun getLibraryByHashRequestConfig(hash: kotlin.String) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/v2/blockchain/libraries/{hash}".replace("{"+"hash"+"}", encodeURIComponent(hash.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = false,
+            body = localVariableBody
+        )
+    }
+
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawBlockchainConfig() : RawBlockchainConfig {
@@ -1190,13 +946,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw blockchain config
-     * @return ApiResponse<RawBlockchainConfig?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawBlockchainConfigWithHttpInfo() : ApiResponse<RawBlockchainConfig?> {
@@ -1207,11 +956,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawBlockchainConfig
-     *
-     * @return RequestConfig
-     */
     fun getRawBlockchainConfigRequestConfig() : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -1228,17 +972,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw blockchain config from a specific block, if present.
-     * @param masterchainSeqno masterchain block seqno
-     * @return RawBlockchainConfig
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawBlockchainConfigFromBlock(masterchainSeqno: kotlin.Int) : RawBlockchainConfig {
@@ -1259,14 +992,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw blockchain config from a specific block, if present.
-     * @param masterchainSeqno masterchain block seqno
-     * @return ApiResponse<RawBlockchainConfig?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawBlockchainConfigFromBlockWithHttpInfo(masterchainSeqno: kotlin.Int) : ApiResponse<RawBlockchainConfig?> {
@@ -1277,12 +1002,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawBlockchainConfigFromBlock
-     *
-     * @param masterchainSeqno masterchain block seqno
-     * @return RequestConfig
-     */
     fun getRawBlockchainConfigFromBlockRequestConfig(masterchainSeqno: kotlin.Int) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -1299,18 +1018,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get reduced blockchain blocks data
-     * @param from 
-     * @param to 
-     * @return ReducedBlocks
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getReducedBlockchainBlocks(from: kotlin.Long, to: kotlin.Long) : ReducedBlocks {
@@ -1331,15 +1038,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get reduced blockchain blocks data
-     * @param from 
-     * @param to 
-     * @return ApiResponse<ReducedBlocks?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getReducedBlockchainBlocksWithHttpInfo(from: kotlin.Long, to: kotlin.Long) : ApiResponse<ReducedBlocks?> {
@@ -1350,13 +1048,6 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getReducedBlockchainBlocks
-     *
-     * @param from 
-     * @param to 
-     * @return RequestConfig
-     */
     fun getReducedBlockchainBlocksRequestConfig(from: kotlin.Long, to: kotlin.Long) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -1377,17 +1068,7 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Send message to blockchain
-     * @param sendBlockchainMessageRequest both a single boc and a batch of boc serialized in base64/hex are accepted
-     * @return void
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
+
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun sendBlockchainMessage(sendBlockchainMessageRequest: SendBlockchainMessageRequest) : Unit {
         val localVarResponse = sendBlockchainMessageWithHttpInfo(sendBlockchainMessageRequest = sendBlockchainMessageRequest)
@@ -1407,14 +1088,7 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Send message to blockchain
-     * @param sendBlockchainMessageRequest both a single boc and a batch of boc serialized in base64/hex are accepted
-     * @return ApiResponse<Unit?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
+
     @Throws(IllegalStateException::class, IOException::class)
     fun sendBlockchainMessageWithHttpInfo(sendBlockchainMessageRequest: SendBlockchainMessageRequest) : ApiResponse<Unit?> {
         val localVariableConfig = sendBlockchainMessageRequestConfig(sendBlockchainMessageRequest = sendBlockchainMessageRequest)
@@ -1424,89 +1098,16 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation sendBlockchainMessage
-     *
-     * @param sendBlockchainMessageRequest both a single boc and a batch of boc serialized in base64/hex are accepted
-     * @return RequestConfig
-     */
     fun sendBlockchainMessageRequestConfig(sendBlockchainMessageRequest: SendBlockchainMessageRequest) : RequestConfig<SendBlockchainMessageRequest> {
         val localVariableBody = sendBlockchainMessageRequest
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         localVariableHeaders["Content-Type"] = "application/json"
         localVariableHeaders["Accept"] = "application/json"
+
         return RequestConfig(
             method = RequestMethod.POST,
             path = "/v2/blockchain/message",
-            query = localVariableQuery,
-            headers = localVariableHeaders,
-            requiresAuthentication = false,
-            body = localVariableBody
-        )
-    }
-
-    /**
-     * 
-     * Status
-     * @return ServiceStatus
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
-    @Suppress("UNCHECKED_CAST")
-    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun status() : ServiceStatus {
-        val localVarResponse = statusWithHttpInfo()
-
-        return when (localVarResponse.responseType) {
-            ResponseType.Success -> (localVarResponse as Success<*>).data as ServiceStatus
-            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
-            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
-            ResponseType.ClientError -> {
-                val localVarError = localVarResponse as ClientError<*>
-                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
-            }
-            ResponseType.ServerError -> {
-                val localVarError = localVarResponse as ServerError<*>
-                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
-            }
-        }
-    }
-
-    /**
-     * 
-     * Status
-     * @return ApiResponse<ServiceStatus?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
-    @Suppress("UNCHECKED_CAST")
-    @Throws(IllegalStateException::class, IOException::class)
-    fun statusWithHttpInfo() : ApiResponse<ServiceStatus?> {
-        val localVariableConfig = statusRequestConfig()
-
-        return request<Unit, ServiceStatus>(
-            localVariableConfig
-        )
-    }
-
-    /**
-     * To obtain the request config of the operation status
-     *
-     * @return RequestConfig
-     */
-    fun statusRequestConfig() : RequestConfig<Unit> {
-        val localVariableBody = null
-        val localVariableQuery: MultiValueMap = mutableMapOf()
-        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
-        localVariableHeaders["Accept"] = "application/json"
-
-        return RequestConfig(
-            method = RequestMethod.GET,
-            path = "/v2/status",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = false,

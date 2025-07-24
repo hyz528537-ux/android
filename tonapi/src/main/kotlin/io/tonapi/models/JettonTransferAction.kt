@@ -20,53 +20,45 @@ import io.tonapi.models.EncryptedComment
 import io.tonapi.models.JettonPreview
 import io.tonapi.models.Refund
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param sendersWallet 
- * @param recipientsWallet 
- * @param amount amount in quanta of tokens
- * @param jetton 
- * @param sender 
- * @param recipient 
- * @param comment 
- * @param encryptedComment 
- * @param refund 
- */
 
+@Serializable
 
 data class JettonTransferAction (
 
-    @Json(name = "senders_wallet")
+    @SerialName(value = "senders_wallet")
     val sendersWallet: kotlin.String,
 
-    @Json(name = "recipients_wallet")
+    @SerialName(value = "recipients_wallet")
     val recipientsWallet: kotlin.String,
 
     /* amount in quanta of tokens */
-    @Json(name = "amount")
+    @SerialName(value = "amount")
     val amount: kotlin.String,
 
-    @Json(name = "jetton")
+    @SerialName(value = "jetton")
     val jetton: JettonPreview,
 
-    @Json(name = "sender")
+    @SerialName(value = "sender")
     val sender: AccountAddress? = null,
 
-    @Json(name = "recipient")
+    @SerialName(value = "recipient")
     val recipient: AccountAddress? = null,
 
-    @Json(name = "comment")
+    @SerialName(value = "comment")
     val comment: kotlin.String? = null,
 
-    @Json(name = "encrypted_comment")
+    @SerialName(value = "encrypted_comment")
     val encryptedComment: EncryptedComment? = null,
 
-    @Json(name = "refund")
+    @SerialName(value = "refund")
     val refund: Refund? = null
 
-)
+) {
+
+
+}
 

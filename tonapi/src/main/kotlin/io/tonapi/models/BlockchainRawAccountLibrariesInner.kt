@@ -16,24 +16,23 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param `public` 
- * @param root 
- */
 
+@Serializable
 
 data class BlockchainRawAccountLibrariesInner (
 
-    @Json(name = "public")
+    @SerialName(value = "public")
     val `public`: kotlin.Boolean,
 
-    @Json(name = "root")
+    @SerialName(value = "root")
     val root: kotlin.String
 
-)
+) {
+
+
+}
 

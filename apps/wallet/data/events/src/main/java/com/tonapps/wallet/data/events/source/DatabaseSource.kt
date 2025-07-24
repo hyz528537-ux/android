@@ -3,12 +3,10 @@ package com.tonapps.wallet.data.events.source
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import android.util.Log
 import com.tonapps.blockchain.ton.extensions.toRawAddress
 import com.tonapps.sqlite.SQLiteHelper
 import com.tonapps.sqlite.withTransaction
-import com.tonapps.wallet.api.fromJSON
-import com.tonapps.wallet.api.toJSON
+import io.Serializer
 import io.tonapi.models.AccountEvent
 import kotlinx.coroutines.CoroutineScope
 
@@ -37,7 +35,7 @@ internal class DatabaseSource(
             values.put(SPAM_TABLE_EVENT_ID_COLUMN, eventId)
             values.put(SPAM_TABLE_ACCOUNT_ID_COLUMN, accountId.toRawAddress())
             values.put(SPAM_TABLE_TESTNET_COLUMN, if (testnet) 1 else 0)
-            values.put(SPAM_TABLE_BODY_COLUMN, toJSON(this))
+            values.put(SPAM_TABLE_BODY_COLUMN, Serializer.toJSON(this))
             values.put(SPAM_TABLE_DATE_COLUMN, timestamp)
             return values
         }
@@ -81,7 +79,7 @@ internal class DatabaseSource(
         val events = mutableListOf<AccountEvent>()
         while (cursor.moveToNext()) {
             val body = cursor.getString(bodyIndex)
-            events.add(fromJSON(body))
+            events.add(Serializer.fromJSON(body))
         }
         cursor.close()
         return events.toList()

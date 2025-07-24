@@ -3,7 +3,6 @@ package com.tonapps.wallet.api.internal
 import android.content.Context
 import android.net.Uri
 import android.util.ArrayMap
-import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.extensions.deviceCountry
 import com.tonapps.extensions.getStoreCountry
@@ -16,13 +15,16 @@ import com.tonapps.wallet.api.entity.ConfigEntity
 import com.tonapps.wallet.api.entity.NotificationEntity
 import com.tonapps.wallet.api.entity.OnRampArgsEntity
 import com.tonapps.wallet.api.entity.StoryEntity
+import com.tonapps.wallet.api.entity.SwapEntity
 import com.tonapps.wallet.api.withRetry
+import io.Serializer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import org.json.JSONObject
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.util.Locale
 
 internal class InternalApi(
@@ -74,8 +76,25 @@ internal class InternalApi(
         return JSONObject(body)
     }
 
+    fun swapOmnistonBuild(args: SwapEntity.Args): SwapEntity.Messages {
+        val json = Serializer.JSON.encodeToString(args)
+        val response = okHttpClient.postJSON(
+            url = "https://swap.tonkeeper.com/v2/swap/omniston/build",
+            json = json
+        ).body?.string() ?: throw IllegalStateException("Internal API request failed")
+        return Serializer.JSON.decodeFromString(response)
+    }
+
+    fun getSwapAssets() = withRetry {
+        okHttpClient.get("https://swap.tonkeeper.com/v2/swap/assets")
+    }
+
     fun getOnRampData(country: String) = withRetry {
         okHttpClient.get("https://swap.tonkeeper.com/v2/onramp/currencies?country=${country.uppercase()}")
+    }
+
+    fun getOnRampPaymentMethods(country: String) = withRetry {
+        okHttpClient.get("https://swap.tonkeeper.com/v2/onramp/payment_methods?country=${country.uppercase()}")
     }
 
     fun getEthenaStakingAPY(address: String): BigDecimal = withRetry {
@@ -83,9 +102,10 @@ internal class InternalApi(
         BigDecimal.valueOf(json.getDouble("value"))
     } ?: BigDecimal.ZERO
 
-    fun calculateOnRamp(args: OnRampArgsEntity) = withRetry {
+    fun calculateOnRamp(args: OnRampArgsEntity): String? {
         val url = "https://swap.tonkeeper.com/v2/onramp/calculate"
-        okHttpClient.postJSON(url, args.toJSON().toString()).body?.string()
+        val json = args.toJSON().toString()
+        return withRetry { okHttpClient.postJSON(url, json).body?.string() }
     }
 
     fun getNotifications(): List<NotificationEntity> {

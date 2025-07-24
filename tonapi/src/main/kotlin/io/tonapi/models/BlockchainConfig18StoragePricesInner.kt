@@ -16,36 +16,32 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param utimeSince 
- * @param bitPricePs 
- * @param cellPricePs 
- * @param mcBitPricePs 
- * @param mcCellPricePs 
- */
 
+@Serializable
 
 data class BlockchainConfig18StoragePricesInner (
 
-    @Json(name = "utime_since")
+    @SerialName(value = "utime_since")
     val utimeSince: kotlin.Long,
 
-    @Json(name = "bit_price_ps")
+    @SerialName(value = "bit_price_ps")
     val bitPricePs: kotlin.Long,
 
-    @Json(name = "cell_price_ps")
+    @SerialName(value = "cell_price_ps")
     val cellPricePs: kotlin.Long,
 
-    @Json(name = "mc_bit_price_ps")
+    @SerialName(value = "mc_bit_price_ps")
     val mcBitPricePs: kotlin.Long,
 
-    @Json(name = "mc_cell_price_ps")
+    @SerialName(value = "mc_cell_price_ps")
     val mcCellPricePs: kotlin.Long
 
-)
+) {
+
+
+}
 

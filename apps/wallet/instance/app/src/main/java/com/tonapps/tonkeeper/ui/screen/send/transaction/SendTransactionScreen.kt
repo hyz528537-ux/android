@@ -57,6 +57,12 @@ import java.util.concurrent.CancellationException
 import androidx.core.view.isVisible
 import com.tonapps.extensions.uri
 import com.tonapps.icu.CurrencyFormatter
+import com.tonapps.tonkeeper.extensions.addFeeItem
+import com.tonapps.tonkeeper.extensions.formattedAmount
+import com.tonapps.tonkeeper.extensions.formattedCharges
+import com.tonapps.tonkeeper.extensions.formattedFiat
+import com.tonapps.tonkeeper.extensions.id
+import com.tonapps.tonkeeper.extensions.symbol
 import com.tonapps.tonkeeper.popup.ActionSheet
 import com.tonapps.tonkeeper.ui.screen.send.main.state.SendFee
 import com.tonapps.uikit.color.accentGreenColor
@@ -350,56 +356,10 @@ class SendTransactionScreen(wallet: WalletEntity) :
         feeMethodSelector.clearItems()
 
         viewModel.feeOptions.forEach { fee ->
-            when (fee) {
-                is SendFee.TokenFee -> {
-                    val formattedAmount = CurrencyFormatter.format(
-                        fee.amount.token.symbol,
-                        fee.amount.value,
-                        2
-                    )
-                    val formattedFiat = CurrencyFormatter.formatFiat(
-                        fee.fiatCurrency.code,
-                        fee.fiatAmount,
-                    )
-                    feeMethodSelector.addItem(
-                        id = fee.amount.token.symbol.hashCode().toLong(),
-                        title = fee.amount.token.symbol,
-                        subtitle = "≈ $formattedAmount · $formattedFiat",
-                        imageUri = fee.amount.token.imageUri,
-                        icon = if (currentFee == fee) {
-                            getDrawable(UIKitIcon.ic_done_16)
-                        } else null,
-                        onClick = {
-                            viewModel.setFeeMethod(fee)
-                        }
-                    )
-                }
-
-                is SendFee.Battery -> {
-                    val formattedCharges = requireContext().resources.getQuantityString(
-                        Plurals.battery_charges,
-                        fee.charges,
-                        CurrencyFormatter.format(value = fee.charges.toBigDecimal())
-                    )
-                    feeMethodSelector.addItem(
-                        id = "battery".hashCode().toLong(),
-                        title = getString(Localization.battery_refill_title),
-                        subtitle = "≈ $formattedCharges",
-                        imageUri = UIKitIcon.ic_flash_24.uri(),
-                        imageTintColor = requireContext().accentGreenColor,
-                        icon = if (currentFee == fee) {
-                            getDrawable(UIKitIcon.ic_done_16)
-                        } else null,
-                        onClick = {
-                            viewModel.setFeeMethod(fee)
-                        }
-                    )
-                }
-
-                else -> {}
+            feeMethodSelector.addFeeItem(fee, fee.id == currentFee?.id) {
+                viewModel.setFeeMethod(fee)
             }
         }
-
         feeMethodSelector.showPopupAboveRight(targetView)
     }
 
@@ -426,8 +386,7 @@ class SendTransactionScreen(wallet: WalletEntity) :
             batteryTxType: BatteryTransaction = BatteryTransaction.UNKNOWN,
             forceRelayer: Boolean = false,
         ): String {
-            val activity =
-                context.activity ?: throw IllegalArgumentException("Context must be an Activity")
+            val activity = context.activity ?: throw IllegalArgumentException("Context must be an Activity")
             val fragment = newInstance(wallet, request, batteryTxType, forceRelayer)
             val result = activity.addForResult(fragment)
             if (result.containsKey(ERROR)) {

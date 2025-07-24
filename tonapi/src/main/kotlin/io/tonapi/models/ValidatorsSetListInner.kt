@@ -16,28 +16,26 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param publicKey 
- * @param weight 
- * @param adnlAddr 
- */
 
+@Serializable
 
 data class ValidatorsSetListInner (
 
-    @Json(name = "public_key")
+    @SerialName(value = "public_key")
     val publicKey: kotlin.String,
 
-    @Json(name = "weight")
+    @SerialName(value = "weight")
     val weight: kotlin.Long,
 
-    @Json(name = "adnl_addr")
+    @SerialName(value = "adnl_addr")
     val adnlAddr: kotlin.String? = null
 
-)
+) {
+
+
+}
 

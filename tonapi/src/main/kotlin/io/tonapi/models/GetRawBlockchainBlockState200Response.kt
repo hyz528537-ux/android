@@ -17,32 +17,29 @@ package io.tonapi.models
 
 import io.tonapi.models.BlockRaw
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param id 
- * @param rootHash 
- * @param fileHash 
- * @param `data` 
- */
 
+@Serializable
 
 data class GetRawBlockchainBlockState200Response (
 
-    @Json(name = "id")
+    @SerialName(value = "id")
     val id: BlockRaw,
 
-    @Json(name = "root_hash")
+    @SerialName(value = "root_hash")
     val rootHash: kotlin.String,
 
-    @Json(name = "file_hash")
+    @SerialName(value = "file_hash")
     val fileHash: kotlin.String,
 
-    @Json(name = "data")
+    @SerialName(value = "data")
     val `data`: kotlin.String
 
-)
+) {
+
+
+}
 

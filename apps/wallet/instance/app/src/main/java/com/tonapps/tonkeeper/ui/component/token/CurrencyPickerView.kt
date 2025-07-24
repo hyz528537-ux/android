@@ -84,6 +84,7 @@ open class CurrencyPickerView @JvmOverloads constructor(
     }
 
     private fun applyValue(value: Value) {
+        iconView.setPlaceholder(null)
         iconView.setImageURI(value.icon, null)
         titleView.text = if (value.subtitle.isNullOrBlank()) {
             value.title

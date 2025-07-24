@@ -17,24 +17,23 @@ package io.tonapi.models
 
 import io.tonapi.models.AccountAddress
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param amount 
- * @param staker 
- */
 
+@Serializable
 
 data class ElectionsDepositStakeAction (
 
-    @Json(name = "amount")
+    @SerialName(value = "amount")
     val amount: kotlin.Long,
 
-    @Json(name = "staker")
+    @SerialName(value = "staker")
     val staker: AccountAddress
 
-)
+) {
+
+
+}
 

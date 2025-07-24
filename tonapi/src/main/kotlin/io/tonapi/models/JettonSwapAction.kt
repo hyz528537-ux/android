@@ -18,51 +18,40 @@ package io.tonapi.models
 import io.tonapi.models.AccountAddress
 import io.tonapi.models.JettonPreview
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param dex 
- * @param amountIn 
- * @param amountOut 
- * @param userWallet 
- * @param router 
- * @param tonIn 
- * @param tonOut 
- * @param jettonMasterIn 
- * @param jettonMasterOut 
- */
 
+@Serializable
 
 data class JettonSwapAction (
 
-    @Json(name = "dex")
+    @SerialName(value = "dex")
     val dex: JettonSwapAction.Dex,
 
-    @Json(name = "amount_in")
+    @SerialName(value = "amount_in")
     val amountIn: kotlin.String,
 
-    @Json(name = "amount_out")
+    @SerialName(value = "amount_out")
     val amountOut: kotlin.String,
 
-    @Json(name = "user_wallet")
+    @SerialName(value = "user_wallet")
     val userWallet: AccountAddress,
 
-    @Json(name = "router")
+    @SerialName(value = "router")
     val router: AccountAddress,
 
-    @Json(name = "ton_in")
+    @SerialName(value = "ton_in")
     val tonIn: kotlin.Long? = null,
 
-    @Json(name = "ton_out")
+    @SerialName(value = "ton_out")
     val tonOut: kotlin.Long? = null,
 
-    @Json(name = "jetton_master_in")
+    @SerialName(value = "jetton_master_in")
     val jettonMasterIn: JettonPreview? = null,
 
-    @Json(name = "jetton_master_out")
+    @SerialName(value = "jetton_master_out")
     val jettonMasterOut: JettonPreview? = null
 
 ) {
@@ -72,11 +61,12 @@ data class JettonSwapAction (
      *
      * Values: stonfi,dedust,megatonfi
      */
-    @JsonClass(generateAdapter = false)
+    @Serializable
     enum class Dex(val value: kotlin.String) {
-        @Json(name = "stonfi") stonfi("stonfi"),
-        @Json(name = "dedust") dedust("dedust"),
-        @Json(name = "megatonfi") megatonfi("megatonfi");
+        @SerialName(value = "stonfi") stonfi("stonfi"),
+        @SerialName(value = "dedust") dedust("dedust"),
+        @SerialName(value = "megatonfi") megatonfi("megatonfi");
     }
+
 }
 

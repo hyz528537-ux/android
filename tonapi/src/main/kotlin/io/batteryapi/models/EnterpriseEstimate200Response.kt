@@ -16,24 +16,20 @@
 package io.batteryapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param estimatedUpfrontPayment 
- * @param emulation base64 encoded emulation results. The exact type can be taken from /v2/wallet/emulate (TONAPI).
- */
 
+@Serializable
 
 data class EnterpriseEstimate200Response (
 
-    @Json(name = "estimated_upfront_payment")
+    @SerialName(value = "estimated_upfront_payment")
     val estimatedUpfrontPayment: kotlin.String,
 
     /* base64 encoded emulation results. The exact type can be taken from /v2/wallet/emulate (TONAPI). */
-    @Json(name = "emulation")
+    @SerialName(value = "emulation")
     val emulation: kotlin.String? = null
 
 ) {

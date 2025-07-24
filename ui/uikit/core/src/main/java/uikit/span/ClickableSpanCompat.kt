@@ -6,8 +6,8 @@ import android.text.style.ClickableSpan
 import android.view.View
 
 class ClickableSpanCompat(
-    private val color: Int = Color.TRANSPARENT,
-    private val onClick: () -> Unit
+    val color: Int = Color.TRANSPARENT,
+    val onClick: () -> Unit
 ): ClickableSpan() {
 
     override fun updateDrawState(ds: TextPaint) {

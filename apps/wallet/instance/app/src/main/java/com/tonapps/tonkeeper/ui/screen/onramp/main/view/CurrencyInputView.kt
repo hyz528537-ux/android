@@ -2,6 +2,8 @@ package com.tonapps.tonkeeper.ui.screen.onramp.main.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
+import android.view.Gravity
 import android.view.View
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.view.setPadding
@@ -23,6 +25,11 @@ import uikit.extensions.hideKeyboard
 import uikit.extensions.useAttributes
 import uikit.widget.ColumnLayout
 import java.math.BigDecimal
+import androidx.core.view.isVisible
+import uikit.extensions.reject
+import uikit.extensions.startSnakeAnimation
+import uikit.extensions.viewMoveTo
+import uikit.widget.RowLayout
 
 class CurrencyInputView @JvmOverloads constructor(
     context: Context,
@@ -42,12 +49,20 @@ class CurrencyInputView @JvmOverloads constructor(
     private val currencyPickerView: CurrencyPickerView
     private val tokenBalanceView: AppCompatTextView
     private val tokenBalanceMaxView: View
+    private val currencyEmptyView: View
+    private val inputContainerView: RowLayout
 
     private var prefix: String? = null
 
     var doOnValueChange: ((value: Double, byUser: Boolean) -> Unit)?
         get() = valueView.doOnValueChange
         set(value) { valueView.doOnValueChange = value }
+
+    var doOnTextChange: ((text: String) -> Unit)?
+        get() = valueView.doOnTextChange
+        set(value) { valueView.doOnTextChange = value }
+
+    var doOnFocusChange: ((hasFocus: Boolean) -> Unit)? = null
 
     var doOnCurrencyClick: (() -> Unit)? = null
 
@@ -61,23 +76,53 @@ class CurrencyInputView @JvmOverloads constructor(
         inflate(context, R.layout.view_currency_input, this)
         setPadding(offsetMedium)
         setDefault()
+        setOnClickListener { focusWithKeyboard() }
 
         titleView = findViewById(R.id.input_title)
         tokenBalanceView = findViewById(R.id.input_token_balance)
         tokenBalanceMaxView = findViewById(R.id.input_token_max)
 
+        inputContainerView = findViewById(R.id.input_container)
+
+        currencyEmptyView = findViewById(R.id.input_currency_empty)
+        currencyEmptyView.setOnClickListener { doOnCurrencyClick?.invoke() }
+
         valueView = findViewById(R.id.input_value)
         valueView.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) setActive() else setDefault()
+            doOnFocusChange?.invoke(hasFocus)
         }
 
         prefixView = findViewById(R.id.input_prefix)
+
+        valueView.onTextSizeChange = { unit, textSize ->
+            prefixView.setTextSize(unit, textSize)
+        }
 
         currencyPickerView = findViewById(R.id.input_currency)
         currencyPickerView.setOnClickListener { doOnCurrencyClick?.invoke() }
 
         context.useAttributes(attrs, R.styleable.CurrencyInputView) {
             titleView.text = it.getString(R.styleable.CurrencyInputView_android_title)
+            if (it.getBoolean(R.styleable.CurrencyInputView_disableInput, false)) {
+                valueView.isEnabled = false
+            }
+
+            applyGravity(it.getInt(R.styleable.CurrencyInputView_android_gravity, Gravity.RIGHT))
+
+
+            val valueScale = it.getInt(R.styleable.CurrencyInputView_valueScale, 0)
+            if (valueScale > 0) {
+                valueView.valueScale = valueScale
+            }
+        }
+    }
+
+    private fun applyGravity(gravity: Int) {
+        if (gravity == Gravity.LEFT) {
+            inputContainerView.viewMoveTo(currencyPickerView, 0)
+            inputContainerView.viewMoveTo(currencyEmptyView, 1)
+            valueView.gravity = Gravity.RIGHT
         }
     }
 
@@ -88,7 +133,11 @@ class CurrencyInputView @JvmOverloads constructor(
         tokenBalanceView.setText(Localization.insufficient_balance)
     }
 
-    fun setTokenBalance(tokenBalance: BalanceEntity?, remainingFormat: CharSequence?) {
+    fun setTokenBalance(
+        tokenBalance: BalanceEntity?,
+        remainingFormat: CharSequence?,
+        symbol: Boolean = true
+    ) {
         if (tokenBalance == null) {
             tokenBalanceView.visibility = View.GONE
             tokenBalanceMaxView.visibility = View.GONE
@@ -96,7 +145,7 @@ class CurrencyInputView @JvmOverloads constructor(
             tokenBalanceView.text = context.getString(Localization.remaining_balance, remainingFormat)
             showTokenBalance(tokenBalance.value)
         } else {
-            val format = CurrencyFormatter.format(tokenBalance.token.symbol, tokenBalance.value)
+            val format = CurrencyFormatter.format(if (symbol) tokenBalance.token.symbol else "", tokenBalance.value)
             tokenBalanceView.text = context.getString(Localization.balance_prefix, format)
             showTokenBalance(tokenBalance.value)
         }
@@ -150,6 +199,11 @@ class CurrencyInputView @JvmOverloads constructor(
         return valueView.getValue()
     }
 
+    fun setValue(value: Double) {
+        valueView.setValue(value)
+        checkPrefix()
+    }
+
     fun setToken(token: TokenEntity) {
         setCurrency(CurrencyPickerView.Value(token))
     }
@@ -159,8 +213,17 @@ class CurrencyInputView @JvmOverloads constructor(
         setCurrency(value)
     }
 
+    fun isTokenEmpty() = currencyEmptyView.isVisible
+
+    fun setEmptyCurrency() {
+        currencyEmptyView.visibility = View.VISIBLE
+        currencyPickerView.visibility = View.GONE
+    }
+
     fun setCurrency(value: CurrencyPickerView.Value) {
         currencyPickerView.value = value
+        currencyEmptyView.visibility = View.GONE
+        currencyPickerView.visibility = View.VISIBLE
     }
 
     private fun setActive() {

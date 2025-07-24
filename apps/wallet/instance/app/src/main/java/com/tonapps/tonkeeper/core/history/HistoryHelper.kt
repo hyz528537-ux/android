@@ -21,7 +21,6 @@ import com.tonapps.tonkeeper.core.history.list.item.HistoryItem
 import com.tonapps.tonkeeper.core.history.list.item.HistoryItem.Event.Comment.Type
 import io.tonapi.models.AccountAddress
 import io.tonapi.models.AccountEvent
-import io.tonapi.models.Action
 import io.tonapi.models.ActionSimplePreview
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -42,12 +41,12 @@ import com.tonapps.wallet.data.collectibles.CollectiblesRepository
 import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.events.CommentEncryption
 import com.tonapps.wallet.data.events.EventsRepository
-import com.tonapps.wallet.data.events.TxActionType
 import com.tonapps.wallet.data.passcode.PasscodeManager
 import com.tonapps.wallet.data.rates.RatesRepository
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.localization.Localization
 import com.tonapps.wallet.localization.Plurals
+import io.tonapi.models.Action
 import io.tonapi.models.JettonVerificationType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -1008,7 +1007,7 @@ class HistoryHelper(
                 wallet = wallet,
                 actionOutStatus = ActionOutStatus.Send
             )
-        } else if (action.type == TxActionType.Unknown) {
+        } else if (action.type == Action.Type.Unknown) {
             return createUnknown(
                 index,
                 txId,

@@ -16,24 +16,23 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * The reward in nanoTons for block creation in the TON blockchain.
- *
- * @param masterchainBlockFee 
- * @param basechainBlockFee 
- */
 
+@Serializable
 
 data class BlockchainConfig14 (
 
-    @Json(name = "masterchain_block_fee")
+    @SerialName(value = "masterchain_block_fee")
     val masterchainBlockFee: kotlin.Long,
 
-    @Json(name = "basechain_block_fee")
+    @SerialName(value = "basechain_block_fee")
     val basechainBlockFee: kotlin.Long
 
-)
+) {
+
+
+}
 

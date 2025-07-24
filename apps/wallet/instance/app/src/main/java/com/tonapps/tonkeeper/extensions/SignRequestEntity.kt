@@ -1,6 +1,5 @@
 package com.tonapps.tonkeeper.extensions
 
-import android.util.Log
 import com.tonapps.blockchain.ton.extensions.equalsAddress
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.data.account.entities.WalletEntity

@@ -87,7 +87,7 @@ internal class CurrencyFormat(val locale: Locale) {
             return decimalFormat
         }
 
-        private fun getScale(value: BigDecimal): Int {
+        fun getScale(value: BigDecimal): Int {
             if (value == BigDecimal.ZERO) {
                 return 0
             }

@@ -38,6 +38,7 @@
     </uikit.widget.RowLayout>
 
     <uikit.widget.RowLayout
+        android:id="@+id/input_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="8dp">
@@ -73,6 +74,20 @@
             android:id="@+id/input_currency"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/input_currency_empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/offsetMedium"
+            android:paddingVertical="8dp"
+            android:background="@drawable/bg_button_tertiary_18"
+            android:visibility="gone"
+            android:textAllCaps="true"
+            android:textColor="?attr/textPrimaryColor"
+            android:textAppearance="@style/TextAppearance.Label1"
+            android:gravity="center"
+            android:text="@string/staking_choose"/>
 
     </uikit.widget.RowLayout>
 

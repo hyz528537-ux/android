@@ -20,7 +20,9 @@ import com.tonapps.tonkeeper.helper.BrowserHelper
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.base.WalletContextScreen
 import com.tonapps.tonkeeper.ui.screen.send.transaction.SendTransactionScreen
+import com.tonapps.tonkeeper.ui.screen.swap.omniston.OmnistonScreen
 import com.tonapps.tonkeeperx.R
+import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.core.entity.SignRequestEntity
 import com.tonapps.wallet.data.settings.BatteryTransaction
@@ -144,20 +146,5 @@ class SwapScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_sw
         webView.removeCallback(webViewCallback)
         webView.destroy()
         super.onDestroyView()
-    }
-
-    companion object {
-
-        fun newInstance(
-            wallet: WalletEntity,
-            uri: Uri,
-            address: String,
-            fromToken: String,
-            toToken: String? = null
-        ): SwapScreen {
-            val fragment = SwapScreen(wallet)
-            fragment.setArgs(SwapArgs(uri, address, fromToken, toToken))
-            return fragment
-        }
     }
 }

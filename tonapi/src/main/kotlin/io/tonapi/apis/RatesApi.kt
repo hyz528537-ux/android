@@ -16,31 +16,32 @@
 package io.tonapi.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import io.tonapi.models.GetChartRates200Response
 import io.tonapi.models.GetMarketsRates200Response
 import io.tonapi.models.GetRates200Response
-import io.tonapi.models.StatusDefaultResponse
+import io.tonapi.models.InlineObject
 
-import com.squareup.moshi.Json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-import io.tonapi.infrastructure.ApiClient
-import io.tonapi.infrastructure.ApiResponse
-import io.tonapi.infrastructure.ClientException
-import io.tonapi.infrastructure.ClientError
-import io.tonapi.infrastructure.ServerException
-import io.tonapi.infrastructure.ServerError
-import io.tonapi.infrastructure.MultiValueMap
-import io.tonapi.infrastructure.PartConfig
-import io.tonapi.infrastructure.RequestConfig
-import io.tonapi.infrastructure.RequestMethod
-import io.tonapi.infrastructure.ResponseType
-import io.tonapi.infrastructure.Success
-import io.tonapi.infrastructure.toMultiValue
+import io.infrastructure.ApiClient
+import io.infrastructure.ApiResponse
+import io.infrastructure.ClientException
+import io.infrastructure.ClientError
+import io.infrastructure.ServerException
+import io.infrastructure.ServerError
+import io.infrastructure.MultiValueMap
+import io.infrastructure.PartConfig
+import io.infrastructure.RequestConfig
+import io.infrastructure.RequestMethod
+import io.infrastructure.ResponseType
+import io.infrastructure.Success
+import io.infrastructure.toMultiValue
 
-class RatesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class RatesApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -48,21 +49,6 @@ class RatesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
         }
     }
 
-    /**
-     * 
-     * Get chart by token
-     * @param token accept jetton master address
-     * @param currency  (optional)
-     * @param startDate  (optional)
-     * @param endDate  (optional)
-     * @param pointsCount  (optional, default to 200)
-     * @return GetChartRates200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getChartRates(token: kotlin.String, currency: kotlin.String? = null, startDate: kotlin.Long? = null, endDate: kotlin.Long? = null, pointsCount: kotlin.Int? = 200) : GetChartRates200Response {
@@ -83,18 +69,6 @@ class RatesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
         }
     }
 
-    /**
-     * 
-     * Get chart by token
-     * @param token accept jetton master address
-     * @param currency  (optional)
-     * @param startDate  (optional)
-     * @param endDate  (optional)
-     * @param pointsCount  (optional, default to 200)
-     * @return ApiResponse<GetChartRates200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getChartRatesWithHttpInfo(token: kotlin.String, currency: kotlin.String?, startDate: kotlin.Long?, endDate: kotlin.Long?, pointsCount: kotlin.Int?) : ApiResponse<GetChartRates200Response?> {
@@ -105,16 +79,6 @@ class RatesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
         )
     }
 
-    /**
-     * To obtain the request config of the operation getChartRates
-     *
-     * @param token accept jetton master address
-     * @param currency  (optional)
-     * @param startDate  (optional)
-     * @param endDate  (optional)
-     * @param pointsCount  (optional, default to 200)
-     * @return RequestConfig
-     */
     fun getChartRatesRequestConfig(token: kotlin.String, currency: kotlin.String?, startDate: kotlin.Long?, endDate: kotlin.Long?, pointsCount: kotlin.Int?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -146,16 +110,6 @@ class RatesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
         )
     }
 
-    /**
-     * 
-     * Get the TON price from markets
-     * @return GetMarketsRates200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getMarketsRates() : GetMarketsRates200Response {
@@ -176,13 +130,6 @@ class RatesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
         }
     }
 
-    /**
-     * 
-     * Get the TON price from markets
-     * @return ApiResponse<GetMarketsRates200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getMarketsRatesWithHttpInfo() : ApiResponse<GetMarketsRates200Response?> {
@@ -193,11 +140,6 @@ class RatesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
         )
     }
 
-    /**
-     * To obtain the request config of the operation getMarketsRates
-     *
-     * @return RequestConfig
-     */
     fun getMarketsRatesRequestConfig() : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -214,18 +156,6 @@ class RatesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
         )
     }
 
-    /**
-     * 
-     * Get the token price to the currency
-     * @param tokens accept ton and jetton master addresses, separated by commas
-     * @param currencies accept ton and all possible fiat currencies, separated by commas
-     * @return GetRates200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRates(tokens: kotlin.collections.List<kotlin.String>, currencies: kotlin.collections.List<kotlin.String>) : GetRates200Response {
@@ -246,15 +176,6 @@ class RatesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
         }
     }
 
-    /**
-     * 
-     * Get the token price to the currency
-     * @param tokens accept ton and jetton master addresses, separated by commas
-     * @param currencies accept ton and all possible fiat currencies, separated by commas
-     * @return ApiResponse<GetRates200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRatesWithHttpInfo(tokens: kotlin.collections.List<kotlin.String>, currencies: kotlin.collections.List<kotlin.String>) : ApiResponse<GetRates200Response?> {
@@ -265,13 +186,6 @@ class RatesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient =
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRates
-     *
-     * @param tokens accept ton and jetton master addresses, separated by commas
-     * @param currencies accept ton and all possible fiat currencies, separated by commas
-     * @return RequestConfig
-     */
     fun getRatesRequestConfig(tokens: kotlin.collections.List<kotlin.String>, currencies: kotlin.collections.List<kotlin.String>) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()

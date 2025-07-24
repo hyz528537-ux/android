@@ -16,32 +16,30 @@
 package io.batteryapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param wallet 
- * @param tx 
- * @param energy 
- * @param bandwidth 
- */
 
+@Serializable
 
 data class TronSendRequest (
 
-    @Json(name = "wallet")
+    @SerialName(value = "wallet")
     val wallet: kotlin.String,
 
-    @Json(name = "tx")
+    @SerialName(value = "tx")
     val tx: kotlin.String? = null,
 
-    @Json(name = "energy")
+    @SerialName(value = "energy")
     val energy: kotlin.Int? = null,
 
-    @Json(name = "bandwidth")
-    val bandwidth: kotlin.Int? = null
+    @SerialName(value = "bandwidth")
+    val bandwidth: kotlin.Int? = null,
+
+    /* base64 encoded payment transaction in the TON network */
+    @SerialName(value = "instant_fee_tx")
+    val instantFeeTx: kotlin.String? = null
 
 ) {
 

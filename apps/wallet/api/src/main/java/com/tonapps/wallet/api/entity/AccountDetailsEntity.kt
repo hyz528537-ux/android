@@ -9,6 +9,7 @@ import com.tonapps.blockchain.ton.extensions.toRawAddress
 import com.tonapps.blockchain.ton.extensions.toUserFriendly
 import io.tonapi.models.Account
 import io.tonapi.models.AccountStatus
+import io.tonapi.models.Wallet
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -58,6 +59,22 @@ data class AccountDetailsEntity(
         balance = account.balance,
         new = new,
         initialized = account.status == AccountStatus.active || account.status == AccountStatus.frozen,
+        testnet = testnet,
+    )
+
+    constructor(
+        query: String,
+        wallet: Wallet,
+        testnet: Boolean,
+        new: Boolean = false
+    ) : this(
+        query = query,
+        preview = AccountEntity(wallet, testnet),
+        active = wallet.status == AccountStatus.active,
+        walletVersion = resolveVersion(testnet, wallet.interfaces, wallet.address),
+        balance = wallet.balance,
+        new = new,
+        initialized = wallet.status == AccountStatus.active || wallet.status == AccountStatus.frozen,
         testnet = testnet,
     )
 

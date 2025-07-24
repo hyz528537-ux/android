@@ -16,24 +16,23 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * The network version and additional capabilities supported by the validators.
- *
- * @param version 
- * @param capabilities 
- */
 
+@Serializable
 
 data class BlockchainConfig8 (
 
-    @Json(name = "version")
+    @SerialName(value = "version")
     val version: kotlin.Long,
 
-    @Json(name = "capabilities")
+    @SerialName(value = "capabilities")
     val capabilities: kotlin.Long
 
-)
+) {
+
+
+}
 

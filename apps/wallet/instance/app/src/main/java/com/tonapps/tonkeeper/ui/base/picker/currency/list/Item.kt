@@ -10,13 +10,16 @@ import com.tonapps.wallet.data.core.currency.WalletCurrency
 data class Item(
     val position: ListCell.Position,
     val currency: WalletCurrency,
+    val extra: String,
 ): BaseListItem() {
 
     val code: String
         get() = currency.code
 
     val name: String
-        get() = currency.title
+        get() = extra.ifEmpty {
+            currency.title
+        }
 
     val drawableRes: Int?
         get() = currency.drawableRes

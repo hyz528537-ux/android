@@ -1,44 +1,56 @@
 package com.tonapps.tonkeeper.ui.screen.onramp.picker.provider
 
 import android.app.Application
+import com.tonapps.icu.Coins
+import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
+import com.tonapps.tonkeeper.ui.screen.onramp.main.state.UiState
 import com.tonapps.tonkeeper.ui.screen.onramp.picker.provider.list.Item
 import com.tonapps.uikit.list.ListCell
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.purchase.PurchaseRepository
-import com.tonapps.wallet.data.purchase.entity.PurchaseMethodEntity
 import com.tonapps.wallet.data.settings.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 
 class OnRampProviderPickerViewModel(
     app: Application,
     private val wallet: WalletEntity,
-    provider: PurchaseMethodEntity,
-    supportedProviders: List<PurchaseMethodEntity>,
+    private val state: UiState.SelectedProvider,
     private val settingsRepository: SettingsRepository,
     private val purchaseRepository: PurchaseRepository,
 ): BaseWalletVM(app) {
 
-    private val _selectedProviderFlow = MutableStateFlow(provider)
-    val selectedProviderFlow = _selectedProviderFlow.asStateFlow()
+    private val _stateFlow = MutableStateFlow(state)
+    val stateFlow = _stateFlow.asStateFlow()
 
-    val uiItemsFlow = selectedProviderFlow.map { selectedProvider ->
+    val uiItemsFlow = stateFlow.map { state ->
+        val fromFormat = CurrencyFormatter.format(state.send.code, Coins.ONE, replaceSymbol = false)
+        val selectedProvider = state.selectedProvider!!
         val list = mutableListOf<Item>()
-        for ((index, itemProvider) in supportedProviders.withIndex()) {
-            val position = ListCell.getPosition(supportedProviders.size, index)
-            list.add(Item(
+        for ((index, provider) in state.providers.withIndex()) {
+            val rate = state.calculateRate(provider.receive)
+            val rateFormat = CurrencyFormatter.format(state.receive.code, rate, replaceSymbol = false)
+            val position = ListCell.getPosition(state.providers.size, index)
+            val item = Item(
                 position = position,
-                provider = itemProvider,
-                selected = itemProvider.id == selectedProvider.id,
-                best = index == 0 && supportedProviders.size > 1
-            ))
+                provider = provider,
+                selected = provider.id.equals(selectedProvider.id, true),
+                rateFormat = "$fromFormat ≈ $rateFormat",
+                best = index == 0 && state.providers.size > 1
+            )
+            list.add(item)
         }
         list.toList()
     }
 
-    fun setSelectedProvider(provider: PurchaseMethodEntity) {
-        _selectedProviderFlow.value = provider
+    fun setSelectedProvider(providerId: String) {
+        _stateFlow.update {
+            it.copy(
+                selectedProviderId = providerId
+            )
+        }
     }
 }

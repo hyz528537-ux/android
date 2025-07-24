@@ -16,52 +16,48 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param address 
- * @param name 
- * @param symbol 
- * @param decimals 
- * @param image 
- * @param description 
- * @param social 
- * @param websites 
- * @param catalogs 
- */
 
+@Serializable
 
 data class JettonMetadata (
 
-    @Json(name = "address")
+    @SerialName(value = "address")
     val address: kotlin.String,
 
-    @Json(name = "name")
+    @SerialName(value = "name")
     val name: kotlin.String,
 
-    @Json(name = "symbol")
+    @SerialName(value = "symbol")
     val symbol: kotlin.String,
 
-    @Json(name = "decimals")
+    @SerialName(value = "decimals")
     val decimals: kotlin.String,
 
-    @Json(name = "image")
+    /* this field currently returns a cached image URL (e.g., \"https://cache.tonapi.io/images/jetton.jpg\"). In the future, this will be replaced with the original URL from the metadata. The cached image is already available in the `preview` field of `JettonInfo` and will remain there. */
+    @SerialName(value = "image")
     val image: kotlin.String? = null,
 
-    @Json(name = "description")
+    @SerialName(value = "description")
     val description: kotlin.String? = null,
 
-    @Json(name = "social")
+    @SerialName(value = "social")
     val social: kotlin.collections.List<kotlin.String>? = null,
 
-    @Json(name = "websites")
+    @SerialName(value = "websites")
     val websites: kotlin.collections.List<kotlin.String>? = null,
 
-    @Json(name = "catalogs")
-    val catalogs: kotlin.collections.List<kotlin.String>? = null
+    @SerialName(value = "catalogs")
+    val catalogs: kotlin.collections.List<kotlin.String>? = null,
 
-)
+    @SerialName(value = "custom_payload_api_uri")
+    val customPayloadApiUri: kotlin.String? = null
+
+) {
+
+
+}
 

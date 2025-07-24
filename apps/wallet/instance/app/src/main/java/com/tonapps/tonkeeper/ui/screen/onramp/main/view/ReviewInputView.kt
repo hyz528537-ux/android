@@ -1,6 +1,7 @@
 package com.tonapps.tonkeeper.ui.screen.onramp.main.view
 
 import android.content.Context
+import android.text.method.MovementMethod
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.view.setPadding
@@ -33,11 +34,23 @@ class ReviewInputView @JvmOverloads constructor(
         }
     }
 
+    fun setTitleMovementMethod(movement: MovementMethod) {
+        titleView.movementMethod = movement
+    }
+
     fun setTitle(title: CharSequence) {
         titleView.text = title
     }
 
     fun setValue(value: CharSequence) {
         valueView.text = value
+    }
+
+    fun setValueTextSize(unit: Int, size: Float) {
+        valueView.setTextSize(unit, size)
+    }
+
+    fun setTitleTextSize(unit: Int, size: Float) {
+        titleView.setTextSize(unit, size)
     }
 }

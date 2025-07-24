@@ -16,36 +16,32 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param domain 
- * @param owner 
- * @param price 
- * @param bids 
- * @param date 
- */
 
+@Serializable
 
 data class Auction (
 
-    @Json(name = "domain")
+    @SerialName(value = "domain")
     val domain: kotlin.String,
 
-    @Json(name = "owner")
+    @SerialName(value = "owner")
     val owner: kotlin.String,
 
-    @Json(name = "price")
+    @SerialName(value = "price")
     val price: kotlin.Long,
 
-    @Json(name = "bids")
+    @SerialName(value = "bids")
     val bids: kotlin.Long,
 
-    @Json(name = "date")
+    @SerialName(value = "date")
     val date: kotlin.Long
 
-)
+) {
+
+
+}
 

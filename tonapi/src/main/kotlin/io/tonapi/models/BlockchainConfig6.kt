@@ -16,24 +16,23 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * Minting fees of new currencies.
- *
- * @param mintNewPrice 
- * @param mintAddPrice 
- */
 
+@Serializable
 
 data class BlockchainConfig6 (
 
-    @Json(name = "mint_new_price")
+    @SerialName(value = "mint_new_price")
     val mintNewPrice: kotlin.Long,
 
-    @Json(name = "mint_add_price")
+    @SerialName(value = "mint_add_price")
     val mintAddPrice: kotlin.Long
 
-)
+) {
+
+
+}
 

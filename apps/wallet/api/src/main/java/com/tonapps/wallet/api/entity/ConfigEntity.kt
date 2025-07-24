@@ -81,6 +81,26 @@ data class ConfigEntity(
         ApkEntity(url, name)
     }
 
+    @IgnoredOnParcel
+    val meanFees: Coins by lazy {
+        Coins.of(batteryMeanFees)
+    }
+
+    @IgnoredOnParcel
+    val meanFeeNft: Coins by lazy {
+        Coins.of(batteryMeanPriceNft)
+    }
+
+    @IgnoredOnParcel
+    val meanFeeSwap: Coins by lazy {
+        Coins.of(batteryMeanPriceSwap)
+    }
+
+    @IgnoredOnParcel
+    val meanFeeJetton: Coins by lazy {
+        Coins.of(batteryMeanPriceJetton)
+    }
+
     constructor(json: JSONObject, debug: Boolean) : this(
         empty = false,
         supportLink = json.getString("supportLink"),

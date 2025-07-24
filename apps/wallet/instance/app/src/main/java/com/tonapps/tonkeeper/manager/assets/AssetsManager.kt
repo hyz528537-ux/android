@@ -67,13 +67,24 @@ class AssetsManager(
         return list
     }
 
+    suspend fun getTONBalance(
+        wallet: WalletEntity,
+        currency: WalletCurrency = settingsRepository.currency
+    ) = getToken(
+        wallet = wallet,
+        token = "TON",
+        currency = currency
+    )?.balance ?: Coins.ZERO
+
     suspend fun getToken(
         wallet: WalletEntity,
         token: String,
         currency: WalletCurrency = settingsRepository.currency
     ): AssetsEntity.Token? {
         val tokens = getTokens(wallet, currency, false)
-        return tokens.firstOrNull { it.token.address.equalsAddress(token) }
+        return tokens.firstOrNull {
+            it.token.address.equalsAddress(token)
+        }
     }
 
     suspend fun getTokens(
@@ -84,10 +95,10 @@ class AssetsManager(
         if (accountIds.isEmpty()) {
             emptyList()
         } else {
-            val deferredTokens = accountIds.map { accountId ->
-                async { getToken(wallet, accountId, currency) }
+            val tokens = getTokens(wallet, currency, false)
+            tokens.filter {
+                accountIds.any { accountId -> it.token.address.equalsAddress(accountId) }
             }
-            deferredTokens.mapNotNull { it.await() }
         }
     }
 

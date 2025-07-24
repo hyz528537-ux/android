@@ -16,23 +16,19 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param type 
- * @param origin 
- */
 
+@Serializable
 
 data class Refund (
 
-    @Json(name = "type")
-    val type: String,
+    @SerialName(value = "type")
+    val type: Refund.Type,
 
-    @Json(name = "origin")
+    @SerialName(value = "origin")
     val origin: kotlin.String
 
 ) {
@@ -40,13 +36,14 @@ data class Refund (
     /**
      * 
      *
-     * Values: dNSPeriodTon,dNSPeriodTg,getGems
+     * Values: DNSPeriodTon,DNSPeriodTg,GetGems
      */
-    @JsonClass(generateAdapter = false)
+    @Serializable
     enum class Type(val value: kotlin.String) {
-        @Json(name = "DNS.ton") dNSPeriodTon("DNS.ton"),
-        @Json(name = "DNS.tg") dNSPeriodTg("DNS.tg"),
-        @Json(name = "GetGems") getGems("GetGems");
+        @SerialName(value = "DNS.ton") DNSPeriodTon("DNS.ton"),
+        @SerialName(value = "DNS.tg") DNSPeriodTg("DNS.tg"),
+        @SerialName(value = "GetGems") GetGems("GetGems");
     }
+
 }
 

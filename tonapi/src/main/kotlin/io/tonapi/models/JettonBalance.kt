@@ -20,40 +20,35 @@ import io.tonapi.models.JettonBalanceLock
 import io.tonapi.models.JettonPreview
 import io.tonapi.models.TokenRates
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param balance 
- * @param walletAddress 
- * @param jetton 
- * @param price 
- * @param extensions 
- * @param lock 
- */
 
+@Serializable
 
 data class JettonBalance (
 
-    @Json(name = "balance")
+    @SerialName(value = "balance")
     val balance: kotlin.String,
 
-    @Json(name = "wallet_address")
+    @SerialName(value = "wallet_address")
     val walletAddress: AccountAddress,
 
-    @Json(name = "jetton")
+    @SerialName(value = "jetton")
     val jetton: JettonPreview,
 
-    @Json(name = "price")
+    @SerialName(value = "price")
     val price: TokenRates? = null,
 
-    @Json(name = "extensions")
+    @SerialName(value = "extensions")
     val extensions: kotlin.collections.List<kotlin.String>? = null,
 
-    @Json(name = "lock")
+    @SerialName(value = "lock")
     val lock: JettonBalanceLock? = null
 
-)
+) {
+
+
+}
 

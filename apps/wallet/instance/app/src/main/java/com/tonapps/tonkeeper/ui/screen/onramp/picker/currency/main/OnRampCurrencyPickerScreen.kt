@@ -3,6 +3,7 @@ package com.tonapps.tonkeeper.ui.screen.onramp.picker.currency.main
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.core.view.doOnLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.tonapps.tonkeeper.ui.base.WalletContextScreen
 import com.tonapps.tonkeeper.ui.base.picker.QueryReceiver
@@ -38,11 +39,6 @@ class OnRampCurrencyPickerScreen(wallet: WalletEntity): WalletContextScreen(R.la
     private lateinit var loaderView: View
     private lateinit var emptyView: View
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        collectFlow(viewModel.uiItemsFlow, ::setUiItems)
-    }
-
     private fun setUiItems(items: List<Item>) {
         if (items.isEmpty()) {
             loaderView.visibility = View.GONE
@@ -57,11 +53,17 @@ class OnRampCurrencyPickerScreen(wallet: WalletEntity): WalletContextScreen(R.la
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        collectFlow(viewModel.uiItemsFlow, ::setUiItems)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         listView = view.findViewById(R.id.list)
         listView.adapter = adapter
         listView.applyNavBottomPadding(requireContext().getDimensionPixelSize(uikit.R.dimen.offsetMedium))
+        listView.isNestedScrollingEnabled = true
 
         loaderView = view.findViewById(R.id.loader)
 

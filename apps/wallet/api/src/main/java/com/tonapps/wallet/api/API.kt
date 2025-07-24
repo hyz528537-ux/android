@@ -3,7 +3,7 @@ package com.tonapps.wallet.api
 import android.content.Context
 import android.net.Uri
 import android.util.ArrayMap
-import com.squareup.moshi.JsonAdapter
+import android.util.Log
 import com.tonapps.blockchain.ton.contract.BaseWalletContract
 import com.tonapps.blockchain.ton.contract.WalletVersion
 import com.tonapps.blockchain.ton.extensions.EmptyPrivateKeyEd25519
@@ -21,6 +21,7 @@ import com.tonapps.network.post
 import com.tonapps.network.postJSON
 import com.tonapps.network.requestBuilder
 import com.tonapps.network.sse
+import com.tonapps.network.ws.WSConnection
 import com.tonapps.wallet.api.core.SourceAPI
 import com.tonapps.wallet.api.entity.AccountDetailsEntity
 import com.tonapps.wallet.api.entity.AccountEventEntity
@@ -29,17 +30,18 @@ import com.tonapps.wallet.api.entity.ChartEntity
 import com.tonapps.wallet.api.entity.ConfigEntity
 import com.tonapps.wallet.api.entity.OnRampArgsEntity
 import com.tonapps.wallet.api.entity.OnRampMerchantEntity
+import com.tonapps.wallet.api.entity.SwapEntity
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.api.internal.ConfigRepository
 import com.tonapps.wallet.api.internal.InternalApi
 import com.tonapps.wallet.api.tron.TronApi
-import io.batteryapi.apis.BatteryApi
-import io.batteryapi.apis.BatteryApi.UnitsGetBalance
+import io.Serializer
+import io.batteryapi.apis.DefaultApi
 import io.batteryapi.models.Balance
 import io.batteryapi.models.Config
+import io.batteryapi.models.EstimateGaslessCostRequest
 import io.batteryapi.models.RechargeMethods
-import io.tonapi.infrastructure.ClientException
-import io.tonapi.infrastructure.Serializer
+import io.infrastructure.ClientException
 import io.tonapi.models.Account
 import io.tonapi.models.AccountAddress
 import io.tonapi.models.AccountEvent
@@ -71,6 +73,7 @@ import org.ton.cell.Cell
 import org.ton.crypto.hex
 import java.math.BigDecimal
 import java.util.Locale
+import kotlin.jvm.Throws
 
 class API(
     private val context: Context,
@@ -79,6 +82,10 @@ class API(
 
     private val internalApi = InternalApi(context, defaultHttpClient, appVersionName)
     private val configRepository = ConfigRepository(context, scope, internalApi)
+
+    private val serverTimeProvider: ServerTimeProvider by lazy {
+        ServerTimeProvider(context)
+    }
 
     val config: ConfigEntity
         get() = configRepository.configEntity
@@ -140,18 +147,13 @@ class API(
         Provider(config.tonapiMainnetHost, config.tonapiTestnetHost, tonAPIHttpClient)
     }
 
-    private val batteryApi by lazy {
-        SourceAPI(
-            BatteryApi(config.batteryHost, tonAPIHttpClient),
-            BatteryApi(config.batteryTestnetHost, tonAPIHttpClient)
-        )
+    private val batteryProvider: BatteryProvider by lazy {
+        BatteryProvider(config.batteryHost, config.batteryTestnetHost, tonAPIHttpClient)
     }
 
-    private val emulationJSONAdapter: JsonAdapter<MessageConsequences> by lazy {
-        Serializer.moshi.adapter(MessageConsequences::class.java)
+    val tron: TronApi by lazy {
+        TronApi(config, defaultHttpClient, batteryProvider.default.get(false))
     }
-
-    val tron = TronApi(config, defaultHttpClient, batteryApi.get(false))
 
     fun accounts(testnet: Boolean) = provider.accounts.get(testnet)
 
@@ -173,7 +175,11 @@ class API(
 
     fun rates() = provider.rates.get(false)
 
-    fun battery(testnet: Boolean) = batteryApi.get(testnet)
+    fun battery(testnet: Boolean) = batteryProvider.default.get(testnet)
+
+    fun batteryWallet(testnet: Boolean) = batteryProvider.wallet.get(testnet)
+
+    fun batteryEmulation(testnet: Boolean) = batteryProvider.emulation.get(testnet)
 
     fun getBatteryConfig(testnet: Boolean): Config? {
         return withRetry { battery(testnet).getConfig() }
@@ -185,10 +191,16 @@ class API(
 
     fun getOnRampData(country: String) = internalApi.getOnRampData(country)
 
+    fun getOnRampPaymentMethods(country: String) = internalApi.getOnRampPaymentMethods(country)
+
+    fun getSwapAssets(): JSONArray = runCatching {
+        internalApi.getSwapAssets()?.let(::JSONArray)
+    }.getOrNull() ?: JSONArray()
+
+    @kotlin.Throws
     suspend fun calculateOnRamp(args: OnRampArgsEntity): List<OnRampMerchantEntity> = withContext(Dispatchers.IO) {
-        val data = internalApi.calculateOnRamp(args) ?: return@withContext emptyList()
-        val items = JSONObject(data).getJSONArray("items")
-        items.map { OnRampMerchantEntity(it) }
+        val data = internalApi.calculateOnRamp(args) ?: throw Exception("Empty response")
+        JSONObject(data).getJSONArray("items").map { OnRampMerchantEntity(it) }
     }
 
     suspend fun getEthenaStakingAPY(address: String): BigDecimal = withContext(Dispatchers.IO) {
@@ -198,7 +210,7 @@ class API(
     fun getBatteryBalance(
         tonProofToken: String,
         testnet: Boolean,
-        units: UnitsGetBalance = UnitsGetBalance.ton
+        units: DefaultApi.UnitsGetBalance = DefaultApi.UnitsGetBalance.ton
     ): Balance? {
         return withRetry { battery(testnet).getBalance(tonProofToken, units) }
     }
@@ -210,7 +222,7 @@ class API(
     private fun isOkStatus(testnet: Boolean): Boolean {
         try {
             val status = withRetry {
-                provider.blockchain.get(testnet).status()
+                provider.utilities.get(testnet).status()
             } ?: return false
             if (!status.restOnline) {
                 return false
@@ -276,6 +288,10 @@ class API(
         "UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ"
     }
 
+    fun swapOmnistonBuild(args: SwapEntity.Args) = withRetry {
+        internalApi.swapOmnistonBuild(args)
+    } ?: throw Exception("Failed to build swap messages")
+
     fun getEvents(
         accountId: String,
         testnet: Boolean,
@@ -329,6 +345,7 @@ class API(
             lt = event.lt,
             inProgress = event.inProgress,
             extra = 0L,
+            progress = 0f,
         )
         listOf(accountEvent)
     }
@@ -400,7 +417,7 @@ class API(
             accounts(testnet).getAccountJettonsBalances(
                 accountId = accountId,
                 currencies = currency?.let { listOf(it) },
-                extensions = extensions,
+                supportedExtensions = extensions,
             ).balances
         } ?: return null
         return jettonsBalances.map { BalanceEntity(it) }.filter { it.value.isPositive }
@@ -439,7 +456,11 @@ class API(
             val wallets = withRetry {
                 wallet(testnet).getWalletsByPublicKey(query).accounts
             } ?: return emptyList()
-            wallets.map { AccountDetailsEntity(query, it, testnet) }.map {
+            wallets.map { AccountDetailsEntity(
+                query = query,
+                wallet = it,
+                testnet = testnet
+            ) }.map {
                 if (it.walletVersion == WalletVersion.UNKNOWN) {
                     it.copy(
                         walletVersion = BaseWalletContract.resolveVersion(
@@ -566,7 +587,7 @@ class API(
         cell: Cell,
         testnet: Boolean,
     ): String? {
-        val request = io.batteryapi.models.EstimateGaslessCostRequest(cell.base64(), false)
+        val request = EstimateGaslessCostRequest(cell.base64(), false)
 
         return withRetry {
             battery(testnet).estimateGaslessCost(jettonMaster, request, tonProofToken).commission
@@ -601,7 +622,11 @@ class API(
         val withBattery = supportedByBattery && allowedByBattery
 
         val string = response.body?.string() ?: return null
-        val consequences = emulationJSONAdapter.fromJson(string) ?: return null
+        val consequences = try {
+            Serializer.JSON.decodeFromString<MessageConsequences>(string)
+        } catch (e: Throwable) {
+            return null
+        }
         return Pair(consequences, withBattery)
     }
 
@@ -619,7 +644,7 @@ class API(
         val request = EmulateMessageToWalletRequest(
             boc = boc,
             params = params,
-            safeMode = safeModeEnabled
+            // safeMode = safeModeEnabled
         )
         withRetry {
             emulation(testnet).emulateMessageToWallet(request)
@@ -667,12 +692,15 @@ class API(
             return@withContext SendBlockchainState.STATUS_ERROR
         }
 
+        val meta = hashMapOf(
+            "platform" to "android",
+            "version" to appVersionName,
+            "source" to source,
+            "confirmation_time" to confirmationTime.toString()
+        )
         val request = SendBlockchainMessageRequest(
             boc = boc,
-            platform = "android",
-            version = appVersionName,
-            source = source,
-            confirmationTime = confirmationTime
+            meta = meta
         )
         withRetry {
             blockchain(testnet).sendBlockchainMessage(request)
@@ -889,9 +917,18 @@ class API(
         }
     }
 
-    fun getServerTime(testnet: Boolean) = withRetry {
-        liteServer(testnet).getRawTime().time
-    } ?: (System.currentTimeMillis() / 1000).toInt()
+    fun getServerTime(testnet: Boolean): Int {
+        val time = serverTimeProvider.getServerTime(testnet)
+        if (time == null) {
+            val serverTimeSeconds = withRetry { liteServer(testnet).getRawTime().time }
+            if (serverTimeSeconds == null) {
+                return (System.currentTimeMillis() / 1000).toInt()
+            }
+            serverTimeProvider.setServerTime(testnet, serverTimeSeconds)
+            return serverTimeSeconds
+        }
+        return time
+    }
 
     suspend fun resolveCountry(): String? = withContext(Dispatchers.IO) {
         if (cachedCountry == null) {

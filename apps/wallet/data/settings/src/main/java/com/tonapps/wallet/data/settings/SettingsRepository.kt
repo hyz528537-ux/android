@@ -3,6 +3,7 @@ package com.tonapps.wallet.data.settings
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
+import android.icu.util.Currency
 import androidx.core.content.edit
 import androidx.core.os.LocaleListCompat
 import com.tonapps.extensions.MutableEffectFlow
@@ -415,6 +416,17 @@ class SettingsRepository(
             return context.locale
         }
         return language.locale
+    }
+
+    fun getDeviceCurrency(): WalletCurrency {
+        val locale = context.locale
+        val deviceCurrency = Currency.getInstance(locale)
+        return WalletCurrency(
+            code = deviceCurrency.currencyCode,
+            title = deviceCurrency.displayName,
+            alias = deviceCurrency.symbol,
+            chain = WalletCurrency.Chain.FIAT(locale.country)
+        )
     }
 
     suspend fun setTokenHidden(

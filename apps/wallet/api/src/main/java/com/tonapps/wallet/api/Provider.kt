@@ -42,4 +42,6 @@ internal class Provider(
     val wallet = SourceAPI(main.wallet, test.wallet)
 
     val gasless = SourceAPI(main.gasless, test.gasless)
+
+    val utilities = SourceAPI(main.utilities, test.utilities)
 }

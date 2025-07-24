@@ -10,6 +10,9 @@
 
     <declare-styleable name="CurrencyInputView">
         <attr name="android:title" format="string|reference"/>
+        <attr name="disableInput" format="boolean"/>
+        <attr name="android:gravity" format="integer"/>
+        <attr name="valueScale" format="integer"/>
     </declare-styleable>
 
     <declare-styleable name="ReviewInputView">

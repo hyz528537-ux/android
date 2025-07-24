@@ -26,7 +26,7 @@ sealed class Item(type: Int): BaseListItem(type) {
     ): Item(TYPE_TITLE)
 
     data class Currency(
-        val position: ListCell.Position,
+        override val position: ListCell.Position,
         val id: String,
         val icon: Uri? = null,
         val iconRes: Int? = null,
@@ -35,7 +35,7 @@ sealed class Item(type: Int): BaseListItem(type) {
         val network: String,
         val currency: WalletCurrency,
         val selected: Boolean,
-    ): Item(TYPE_CURRENCY) {
+    ): Item(TYPE_CURRENCY), ListCell {
 
         val isFiat: Boolean
             get() = network.equals("FIAT", true)
@@ -86,11 +86,11 @@ sealed class Item(type: Int): BaseListItem(type) {
     }
 
     data class More(
-        val position: ListCell.Position = ListCell.Position.LAST,
+        override val position: ListCell.Position = ListCell.Position.LAST,
         val id: String,
         val title: CharSequence,
         val values: List<WalletCurrency> = emptyList()
-    ): Item(TYPE_MORE) {
+    ): Item(TYPE_MORE), ListCell {
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

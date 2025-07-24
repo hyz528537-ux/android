@@ -82,7 +82,7 @@
         android:layout_height="16dp"
         android:layout_gravity="center"
         android:src="@drawable/ic_chevron_right_16"
-        android:tint="?attr/iconSecondaryColor"
+        android:tint="?attr/iconTertiaryColor"
         android:scaleType="centerInside"/>
 
 </uikit.widget.RowLayout>

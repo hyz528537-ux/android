@@ -2,70 +2,43 @@ package com.tonapps.tonkeeper.ui.screen.onramp.main
 
 import android.content.Context
 import android.os.Bundle
-import android.text.SpannableStringBuilder
-import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatTextView
-import androidx.core.text.color
-import androidx.lifecycle.lifecycleScope
-import com.tonapps.tonkeeper.extensions.hideKeyboard
-import com.tonapps.tonkeeper.koin.walletViewModel
-import com.tonapps.tonkeeper.ui.base.WalletContextScreen
-import com.tonapps.tonkeeper.ui.component.CountryFlagView
+import androidx.core.view.allViews
 import com.tonapps.tonkeeper.ui.component.PaymentTypeView
-import com.tonapps.tonkeeper.ui.screen.country.CountryPickerScreen
-import com.tonapps.tonkeeper.ui.screen.onramp.main.state.CurrencyInputState
-import com.tonapps.tonkeeper.ui.screen.onramp.main.state.OnRampConfirmState
-import com.tonapps.tonkeeper.ui.screen.onramp.main.state.OnRampCurrencyInputs
 import com.tonapps.tonkeeper.ui.screen.onramp.main.view.CurrencyInputView
-import com.tonapps.tonkeeper.ui.screen.onramp.main.view.ReviewInputView
-import com.tonapps.tonkeeper.ui.screen.onramp.picker.currency.OnRampPickerScreen
-import com.tonapps.tonkeeper.ui.screen.onramp.picker.provider.OnRampProviderPickerScreen
 import com.tonapps.tonkeeperx.R
-import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.wallet.data.account.entities.WalletEntity
-import com.tonapps.wallet.data.purchase.entity.PurchaseMethodEntity
-import com.tonapps.wallet.localization.Localization
-import kotlinx.coroutines.launch
 import uikit.base.BaseFragment
 import uikit.extensions.collectFlow
-import uikit.extensions.doKeyboardAnimation
-import uikit.widget.HeaderView
-import uikit.widget.LoadableButton
-import uikit.widget.SlideBetweenView
-import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
+import androidx.core.widget.NestedScrollView
 import com.tonapps.tonkeeper.core.AnalyticsHelper
+import com.tonapps.tonkeeper.helper.TwinInput
 import com.tonapps.tonkeeper.koin.remoteConfig
-import com.tonapps.tonkeeper.ui.screen.onramp.main.state.OnRampBalanceState
+import com.tonapps.tonkeeper.ui.screen.onramp.main.state.OnRampPaymentMethodState
+import com.tonapps.tonkeeper.ui.screen.onramp.main.state.UiState
 import com.tonapps.tonkeeper.ui.screen.purchase.PurchaseScreen
 import com.tonapps.uikit.list.ListCell
-import kotlinx.coroutines.flow.filter
+import uikit.extensions.bottomBarsOffset
+import uikit.extensions.dp
 import uikit.extensions.drawable
+import uikit.extensions.rotate180Animation
+import uikit.widget.ColumnLayout
 
-class OnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_onramp, wallet), BaseFragment.BottomSheet {
+class OnRampScreen(wallet: WalletEntity): BaseOnRampScreen(wallet) {
 
     private val source: String by lazy {
         requireArguments().getString(ARG_SOURCE) ?: ""
     }
 
-    private var checkButtonRunnable: Runnable? = null
-
-    override val viewModel: OnRampViewModel by walletViewModel()
-
-    private lateinit var slidesView: SlideBetweenView
-    private lateinit var headerView: HeaderView
-    private lateinit var countryView: CountryFlagView
     private lateinit var sellInput: CurrencyInputView
     private lateinit var buyInput: CurrencyInputView
-    private lateinit var button: LoadableButton
-    private lateinit var switchView: View
     private lateinit var priceView: AppCompatTextView
-    private lateinit var reviewSend: ReviewInputView
-    private lateinit var reviewReceive: ReviewInputView
-    private lateinit var pairNotAvailableView: AppCompatTextView
-    private lateinit var providerTitleView: AppCompatTextView
-    private lateinit var paymentView: View
-    private lateinit var paymentTypeViews: List<PaymentTypeView>
+    private lateinit var priceReversedView: AppCompatTextView
+    private lateinit var paymentView: ColumnLayout
+    private lateinit var confirmPageView: NestedScrollView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,148 +47,103 @@ class OnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        slidesView = view.findViewById(R.id.slides)
-        slidesView.doOnChange = { index ->
-            if (index == 0) {
-                viewModel.resetConfirm()
-            }
-            checkButtonDelay()
-        }
-
-        headerView = view.findViewById(R.id.header)
-        headerView.doOnCloseClick = { prev() }
-        headerView.doOnActionClick = { finish() }
-
-        countryView = view.findViewById(R.id.country)
-        countryView.setOnClickListener { pickCountry() }
+        confirmPageView = view.findViewById(R.id.confirm_page)
 
         sellInput = view.findViewById(R.id.sell_input)
         sellInput.focusWithKeyboard()
-        sellInput.doOnValueChange = { value, byUser ->
-            if (byUser) {
-                viewModel.setFromAmount(value)
+        sellInput.setValueScale(3)
+        sellInput.doOnTextChange = viewModel::updateSendInput
+        sellInput.doOnCurrencyClick = { viewModel.pickCurrency(TwinInput.Type.Send) }
+        sellInput.doOnFocusChange = { hasFocus ->
+            if (hasFocus) {
+                viewModel.updateFocusInput(TwinInput.Type.Send)
             }
-            checkButtonDelay()
         }
-        sellInput.doOnCurrencyClick = { openCurrencyPicker(true) }
 
         buyInput = view.findViewById(R.id.buy_input)
         buyInput.setValueScale(3)
         buyInput.setPrefix(CurrencyInputView.EQUALS_SIGN_PREFIX)
-        buyInput.doOnValueChange = { value, byUser ->
-            if (byUser) {
-                viewModel.setToAmount(value)
+        buyInput.doOnTextChange = viewModel::updateReceiveInput
+        buyInput.doOnCurrencyClick = { viewModel.pickCurrency(TwinInput.Type.Receive) }
+        buyInput.doOnFocusChange = { hasFocus ->
+            if (hasFocus) {
+                viewModel.updateFocusInput(TwinInput.Type.Receive)
             }
-            checkButtonDelay()
         }
-        buyInput.doOnCurrencyClick = { openCurrencyPicker(false) }
 
         priceView = view.findViewById(R.id.price)
+        priceReversedView = view.findViewById(R.id.price_reversed)
 
         reviewSend = view.findViewById(R.id.review_send)
-        reviewReceive = view.findViewById(R.id.review_receive)
+        reviewSend.setOnClickListener {
+            viewModel.reset()
+            sellInput.focusWithKeyboard()
+        }
 
-        switchView = view.findViewById(R.id.switch_button)
-        switchView.setOnClickListener { switch() }
+        reviewReceive.setOnClickListener {
+            viewModel.reset()
+            buyInput.focusWithKeyboard()
+        }
+
+        view.findViewById<View>(R.id.switch_button).setOnClickListener(::switch)
 
         paymentView = view.findViewById(R.id.payment)
 
-        button = view.findViewById(R.id.next_button)
-        button.setOnClickListener {
-            if (slidesView.isFirst) {
-                next()
-            } else {
-                viewModel.openWeb()
+        collectFlow(viewModel.sendOutputCurrencyFlow, sellInput::setCurrency)
+        collectFlow(viewModel.sendOutputValueFlow, sellInput::setValue)
+
+        collectFlow(viewModel.receiveOutputCurrencyFlow, buyInput::setCurrency)
+        collectFlow(viewModel.receiveOutputValueFlow, buyInput::setValue)
+
+        collectFlow(viewModel.inputPrefixFlow, ::applyPrefix)
+        collectFlow(viewModel.rateFormattedFlow, ::applyRateFormatted)
+        collectFlow(viewModel.balanceUiStateFlow, ::applyBalanceState)
+        collectFlow(viewModel.paymentMethodUiStateFlow, ::applyPaymentMethodState)
+        collectFlow(viewModel.requestFocusFlow) { inputType ->
+            when (inputType) {
+                TwinInput.Type.Send -> sellInput.focusWithKeyboard()
+                TwinInput.Type.Receive -> buyInput.focusWithKeyboard()
             }
         }
 
-        paymentTypeViews = paymentTypesViewIds.map { view.findViewById(it) }
-        for (paymentTypeView in paymentTypeViews) {
-            paymentTypeView.setOnClickListener {
-                if (viewModel.setPaymentMethod(paymentTypeView.tag.toString()) && !slidesView.isFirst) {
-                    viewModel.calculate()
-                }
-            }
+        view.findViewById<View>(R.id.edit).setOnClickListener {
+            viewModel.reset()
+            sellInput.focusWithKeyboard()
         }
-
-        view.findViewById<View>(R.id.edit).setOnClickListener { prev() }
-
-        pairNotAvailableView = view.findViewById(R.id.pair_not_available)
-        providerTitleView = view.findViewById(R.id.provider_title)
-
-        val nextContainerView = view.findViewById<View>(R.id.next_container)
-
-        view.doKeyboardAnimation { offset, _, _ ->
-            nextContainerView.translationY = -offset.toFloat()
-        }
-
-        collectFlow(viewModel.currencyInputStateFlow, ::applyCurrencyInputs)
-        collectFlow(viewModel.confirmStateFlow, ::applyConfirmState)
-
-        collectFlow(viewModel.inputValuesFlow) { (sell, buy) ->
-            buyInput.setValue(buy)
-            sellInput.setValue(sell)
-        }
-
-        collectFlow(viewModel.balanceFlow, ::applyBalanceState)
-
-        checkButtonDelay()
     }
 
-    private fun openCurrencyPicker(send: Boolean) {
-        hideKeyboard()
-        navigation?.add(OnRampPickerScreen.newInstance(wallet, send))
-    }
-
-    private fun checkButtonDelay() {
-        checkButtonRunnable?.let {
-            slidesView.removeCallbacks(it)
-        }
-        checkButtonRunnable = Runnable { checkButton() }
-        slidesView.postDelayed(checkButtonRunnable!!, 80)
-    }
-
-    private fun checkButton() {
-        if (slidesView.isFirst) {
-            button.isLoading = false
-            button.isEnabled = viewModel.isFirstButtonEnabled
+    private fun applyPrefix(inputType: TwinInput.Type) {
+        if (inputType == TwinInput.Type.Send) {
+            sellInput.setPrefix(CurrencyInputView.EQUALS_SIGN_PREFIX)
+            buyInput.setPrefix(null)
         } else {
-            button.isEnabled = viewModel.isSecondButtonEnabled
+            sellInput.setPrefix(null)
+            buyInput.setPrefix(CurrencyInputView.EQUALS_SIGN_PREFIX)
         }
     }
 
-    private fun next() {
-        hideKeyboard()
-        slidesView.next(true)
-        countryView.visibility = View.GONE
-        viewModel.calculate()
-
-        AnalyticsHelper.onRampEnterAmount(
-            installId = viewModel.installId,
-            type = viewModel.currencyInputState.purchaseType,
-            sellAsset = viewModel.currencyInputState.fromForAnalytics,
-            buyAsset = viewModel.currencyInputState.toForAnalytics,
-            countryCode = viewModel.currencyInputState.country
-        )
+    private fun switch(view: View) {
+        view.rotate180Animation()
+        viewModel.switch()
     }
 
-    private fun prev() {
-        if (!slidesView.isFirst) {
-            slidesView.prev(true)
-            countryView.visibility = View.VISIBLE
-        }
-    }
-
-    override fun onBackPressed(): Boolean {
-        if (slidesView.isFirst) {
-            return super.onBackPressed()
+    private fun applyRateFormatted(state: UiState.RateFormatted) {
+        if (state.from.isNullOrBlank()) {
+            priceView.visibility = View.GONE
         } else {
-            prev()
-            return false
+            priceView.visibility = View.VISIBLE
+            priceView.text = state.from
+        }
+
+        if (state.to.isNullOrBlank()) {
+            priceReversedView.visibility = View.GONE
+        } else {
+            priceReversedView.visibility = View.VISIBLE
+            priceReversedView.text = state.to
         }
     }
 
-    private fun applyBalanceState(state: OnRampBalanceState) {
+    private fun applyBalanceState(state: UiState.Balance) {
         if (state.insufficientBalance) {
             sellInput.setInsufficientBalance()
         } else {
@@ -223,121 +151,50 @@ class OnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_
         }
     }
 
-    private fun applyCurrencyInputs(inputs: OnRampCurrencyInputs) {
-        applyRateFormat(inputs.rateFormat)
-        countryView.setCountry(inputs.country)
-        setCurrency(sellInput, inputs.sell)
-        setCurrency(buyInput, inputs.buy)
-        applyProvider(inputs.selectedProvider, inputs.providers)
-        applyPaymentMethods(inputs.inputMerchantMethods, inputs.paymentType)
-
-        checkButtonDelay()
-    }
-
-    private fun applyRateFormat(value: CharSequence?) {
-        if (value.isNullOrBlank()) {
-            priceView.visibility = View.GONE
-        } else {
-            priceView.visibility = View.VISIBLE
-            priceView.text = value
+    private fun createPaymentTypeView(method: OnRampPaymentMethodState.Method): PaymentTypeView {
+        val view = PaymentTypeView(requireContext())
+        view.title = method.title
+        view.subtitle = method.subtitle
+        view.setIcon(method.icon)
+        view.tag = method.type
+        view.setOnClickListener {
+            viewModel.setSelectedPaymentMethod(method.type)
         }
+        view.setRounding(method.country.equals("ru", true) || !method.isCard)
+        return view
     }
 
-    private fun applyConfirmState(state: OnRampConfirmState) {
-        button.isLoading = state.loading
-        reviewSend.setValue(state.toFormat)
-        reviewReceive.setValue(state.fromFormat)
-        checkButtonDelay()
-    }
-
-    private fun applyPaymentMethods(list: List<String>, selected: String?) {
-        if (list.isEmpty()) {
-            paymentView.visibility = View.GONE
-            return
-        }
-        paymentView.visibility = View.VISIBLE
-        hidePaymentMethodViews()
-        list.forEach { showPaymentMethod(it) }
-        val views = paymentTypeViews.filter { it.isVisible }
-        for ((index, view) in views.withIndex()) {
-            val position = ListCell.getPosition(views.size, index)
+    private fun createPaymentMethodViews(methods: List<OnRampPaymentMethodState.Method>) {
+        for ((index, method) in methods.withIndex()) {
+            val position = ListCell.getPosition(methods.size, index)
+            val view = createPaymentTypeView(method)
             view.background = position.drawable(requireContext())
-            view.isChecked = selected.equals(view.tag.toString(), ignoreCase = true)
-        }
-    }
-
-    private fun hidePaymentMethodViews() {
-        paymentTypeViews.forEach { it.visibility = View.GONE }
-    }
-
-    private fun showPaymentMethod(id: String) {
-        for (paymentTypeView in paymentTypeViews) {
-            val type = paymentTypeView.tag.toString()
-            if (type.equals(id, ignoreCase = true)) {
-                paymentTypeView.visibility = View.VISIBLE
+            if (method.subtitle != null) {
+                paymentView.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 76.dp))
+            } else {
+                paymentView.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 56.dp))
             }
         }
-    }
 
-    private fun applyProvider(provider: PurchaseMethodEntity?, supportedProviders: List<PurchaseMethodEntity>) {
-        if (provider == null || supportedProviders.isEmpty()) {
-            pairNotAvailableView.visibility = View.VISIBLE
-            providerTitleView.visibility = View.GONE
-            return
-        }
-        pairNotAvailableView.visibility = View.GONE
-        providerTitleView.visibility = View.VISIBLE
-        providerTitleView.text = createProviderText(provider.title)
-        providerTitleView.setOnClickListener { pickProvider(provider, supportedProviders) }
-    }
-
-    private fun createProviderText(title: String): CharSequence {
-        val prefix = getString(Localization.provider)
-        val builder = SpannableStringBuilder(prefix)
-        builder.append(" ")
-        builder.color(requireContext().textSecondaryColor) {
-            append(title)
-        }
-        return builder
-    }
-
-    private fun pickProvider(provider: PurchaseMethodEntity, supportedProviders: List<PurchaseMethodEntity>) {
-        hideKeyboard()
-
-        lifecycleScope.launch {
-            try {
-                val newProvider = OnRampProviderPickerScreen.run(requireContext(), wallet, provider, supportedProviders)
-                if (viewModel.setProviderId(newProvider.id) && !slidesView.isFirst) {
-                    viewModel.calculate()
-                }
-            } catch (ignored: Throwable) { }
+        confirmPageView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            bottomMargin = confirmPageView.bottomBarsOffset
         }
     }
 
-    private fun setCurrency(view: CurrencyInputView, currency: CurrencyInputState) {
-        view.setDecimals(currency.decimals)
-        when (currency) {
-            is CurrencyInputState.TONAsset -> view.setToken(currency.token)
-            is CurrencyInputState.Fiat -> view.setCurrency(currency.currency)
-            is CurrencyInputState.Crypto -> view.setCurrency(currency.currency)
+    private fun applyPaymentMethodState(state: OnRampPaymentMethodState) {
+        if (1 >= paymentView.childCount) {
+            createPaymentMethodViews(state.methods)
         }
-    }
-
-    private fun pickCountry() {
-        hideKeyboard()
-        navigation?.add(CountryPickerScreen.newInstance())
-    }
-
-    private fun switch() {
-        viewModel.switch()
-        switchView.animate().rotationBy(180f).start()
+        for (view in paymentView.allViews) {
+            if (view is PaymentTypeView) {
+                view.isChecked = view.tag.equals(state.selectedType)
+            }
+        }
     }
 
     companion object {
 
         private const val ARG_SOURCE = "source"
-
-        private val paymentTypesViewIds = arrayOf(R.id.payment_cards, R.id.payment_google_pay, R.id.payment_revolut, R.id.payment_paypal)
 
         fun newInstance(context: Context, wallet: WalletEntity, source: String): BaseFragment {
             return if (context.remoteConfig?.nativeOnrmapEnabled == true) {

@@ -16,26 +16,25 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 
  *
- * Values: trPhaseBounceNegfunds,trPhaseBounceNofunds,trPhaseBounceOk
+ * Values: TrPhaseBounceNegfunds,TrPhaseBounceNofunds,TrPhaseBounceOk
  */
-
-@JsonClass(generateAdapter = false)
+@Serializable
 enum class BouncePhaseType(val value: kotlin.String) {
 
-    @Json(name = "TrPhaseBounceNegfunds")
-    trPhaseBounceNegfunds("TrPhaseBounceNegfunds"),
+    @SerialName(value = "TrPhaseBounceNegfunds")
+    TrPhaseBounceNegfunds("TrPhaseBounceNegfunds"),
 
-    @Json(name = "TrPhaseBounceNofunds")
-    trPhaseBounceNofunds("TrPhaseBounceNofunds"),
+    @SerialName(value = "TrPhaseBounceNofunds")
+    TrPhaseBounceNofunds("TrPhaseBounceNofunds"),
 
-    @Json(name = "TrPhaseBounceOk")
-    trPhaseBounceOk("TrPhaseBounceOk");
+    @SerialName(value = "TrPhaseBounceOk")
+    TrPhaseBounceOk("TrPhaseBounceOk");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

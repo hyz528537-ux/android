@@ -16,6 +16,8 @@ data class Coins(
 
     companion object {
 
+        val mathContext = MathContext(32, RoundingMode.HALF_EVEN)
+
         @JvmField
         val CREATOR = object : Parcelable.Creator<Coins> {
             override fun createFromParcel(parcel: Parcel) = Coins(parcel)
@@ -186,13 +188,13 @@ data class Coins(
 
     operator fun times(other: Coins): Coins {
         //  = of(value * other.value, decimals)
-        return of(value.multiply(other.value), decimals)
+        return of(value.multiply(other.value, mathContext), decimals)
     }
 
     fun div(
         other: Coins,
         scale: Int = decimals,
-        roundingMode: RoundingMode = RoundingMode.HALF_UP
+        roundingMode: RoundingMode = RoundingMode.HALF_EVEN
     ): Coins {
         try {
             val result = value.divide(other.value, scale, roundingMode)
@@ -206,7 +208,7 @@ data class Coins(
         return div(
             other = other,
             scale = decimals,
-            roundingMode = RoundingMode.HALF_UP
+            roundingMode = RoundingMode.HALF_EVEN
         )
     }
 
@@ -216,15 +218,15 @@ data class Coins(
 
     operator fun dec() = Coins(value - ONE.value, decimals)
 
-    fun multiply(other: Coins) = of(value.multiply(other.value), decimals)
+    fun multiply(other: Coins) = of(value.multiply(other.value, mathContext), decimals)
 
-    fun multiply(other: BigDecimal) = of(value.multiply(other), decimals)
+    fun multiply(other: BigDecimal) = of(value.multiply(other, mathContext), decimals)
 
-    fun multiply(other: String) = of(value.multiply(BigDecimal(other)), decimals)
+    fun multiply(other: String) = of(value.multiply(BigDecimal(other), mathContext), decimals)
 
-    fun divide(divisor: Coins, roundingMode: RoundingMode = RoundingMode.HALF_DOWN) = of(value.divide(divisor.value, roundingMode))
+    fun divide(divisor: Coins, roundingMode: RoundingMode = RoundingMode.HALF_EVEN) = of(value.divide(divisor.value, roundingMode))
 
-    fun divide(divisor: Int, roundingMode: RoundingMode = RoundingMode.HALF_DOWN) = of(value.divide(BigDecimal(divisor), roundingMode))
+    fun divide(divisor: Int, roundingMode: RoundingMode = RoundingMode.HALF_EVEN) = of(value.divide(BigDecimal(divisor), roundingMode))
 
     override operator fun compareTo(other: Coins) = value.compareTo(other.value)
 
@@ -232,10 +234,14 @@ data class Coins(
 
     fun stripTrailingZeros(): Coins = Coins(value.stripTrailingZeros(), decimals)
 
-    fun toBigInteger(): BigInteger {
-        val multiplier = BigDecimal.TEN.pow(decimals)
+    fun toBigInteger(d: Int = decimals): BigInteger {
+        val multiplier = BigDecimal.TEN.pow(d)
         val multipliedValue = value.multiply(multiplier)
         return multipliedValue.toBigInteger()
+    }
+
+    fun toBigDecimal(d: Int = decimals): BigDecimal {
+        return value.setScale(d, RoundingMode.HALF_EVEN)
     }
 
     @Deprecated("Use toBigInteger() instead")
@@ -249,17 +255,29 @@ data class Coins(
         return value.toFloat()
     }
 
+    fun toDouble(decimals: Int): Double {
+        val multiplier = BigDecimal.TEN.pow(decimals)
+        val multipliedValue = value.multiply(multiplier)
+        return multipliedValue.toDouble()
+    }
+
+    fun toNano(): String {
+        val multiplier = BigDecimal.TEN.pow(decimals)
+        val multipliedValue = value.multiply(multiplier)
+        return multipliedValue.toBigInteger().toString()
+    }
+
     fun diff(coins: Coins): Float {
         if (coins.isZero || isZero) {
             return 0f
         }
-        val percentage = coins.value.divide(value, 4, RoundingMode.HALF_UP)
+        val percentage = coins.value.divide(value, 4, RoundingMode.HALF_EVEN)
             .multiply(BigDecimal("100"))
-            .setScale(2, RoundingMode.HALF_UP)
+            .setScale(2, RoundingMode.HALF_EVEN)
         return percentage.toFloat()
     }
 
-    fun setScale(scale: Int, roundingMode: RoundingMode = RoundingMode.HALF_UP): Coins {
+    fun setScale(scale: Int, roundingMode: RoundingMode = RoundingMode.HALF_EVEN): Coins {
         return of(value.setScale(scale, roundingMode), scale)
     }
 

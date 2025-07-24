@@ -7,6 +7,7 @@ import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppScreen
 import com.tonapps.tonkeeper.ui.screen.qr.QRScreen
 import com.tonapps.tonkeeper.ui.screen.send.main.SendScreen
 import com.tonapps.tonkeeper.ui.screen.swap.SwapScreen
+import com.tonapps.tonkeeper.ui.screen.swap.omniston.OmnistonScreen
 import com.tonapps.tonkeeper.ui.screen.token.viewer.list.Item
 import com.tonapps.tonkeeperx.R
 import uikit.navigation.Navigation
@@ -41,7 +42,11 @@ class ActionsHolder(parent: ViewGroup): Holder<Item.Actions>(parent, R.layout.vi
             if (item.swapMethod != null) {
                 BrowserHelper.openPurchase(context, item.swapMethod)
             } else {
-                navigation?.add(SwapScreen.newInstance(item.wallet, item.swapUri, item.walletAddress, item.tokenAddress))
+                navigation?.add(OmnistonScreen.newInstance(
+                    wallet = item.wallet,
+                    fromToken = item.tokenAddress,
+                    toToken = "TON"
+                ))
             }
         }
 

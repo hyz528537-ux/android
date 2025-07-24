@@ -16,35 +16,28 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param type 
- * @param cell 
- * @param slice 
- * @param num 
- * @param tuple 
- */
 
+@Serializable
 
 data class TvmStackRecord (
 
-    @Json(name = "type")
+    @SerialName(value = "type")
     val type: TvmStackRecord.Type,
 
-    @Json(name = "cell")
+    @SerialName(value = "cell")
     val cell: kotlin.String? = null,
 
-    @Json(name = "slice")
+    @SerialName(value = "slice")
     val slice: kotlin.String? = null,
 
-    @Json(name = "num")
+    @SerialName(value = "num")
     val num: kotlin.String? = null,
 
-    @Json(name = "tuple")
+    @SerialName(value = "tuple")
     val tuple: kotlin.collections.List<TvmStackRecord>? = null
 
 ) {
@@ -54,13 +47,14 @@ data class TvmStackRecord (
      *
      * Values: cell,num,nan,`null`,tuple
      */
-    @JsonClass(generateAdapter = false)
+    @Serializable
     enum class Type(val value: kotlin.String) {
-        @Json(name = "cell") cell("cell"),
-        @Json(name = "num") num("num"),
-        @Json(name = "nan") nan("nan"),
-        @Json(name = "null") `null`("null"),
-        @Json(name = "tuple") tuple("tuple");
+        @SerialName(value = "cell") cell("cell"),
+        @SerialName(value = "num") num("num"),
+        @SerialName(value = "nan") nan("nan"),
+        @SerialName(value = "null") `null`("null"),
+        @SerialName(value = "tuple") tuple("tuple");
     }
+
 }
 

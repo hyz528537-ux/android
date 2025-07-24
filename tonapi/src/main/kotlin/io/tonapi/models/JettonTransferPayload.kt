@@ -16,26 +16,25 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param customPayload hex-encoded BoC
- * @param stateInit hex-encoded BoC
- */
 
+@Serializable
 
 data class JettonTransferPayload (
 
     /* hex-encoded BoC */
-    @Json(name = "custom_payload")
+    @SerialName(value = "custom_payload")
     val customPayload: kotlin.String? = null,
 
     /* hex-encoded BoC */
-    @Json(name = "state_init")
+    @SerialName(value = "state_init")
     val stateInit: kotlin.String? = null
 
-)
+) {
+
+
+}
 

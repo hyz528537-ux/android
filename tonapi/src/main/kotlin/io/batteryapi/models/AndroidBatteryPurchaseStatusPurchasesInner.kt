@@ -17,31 +17,25 @@ package io.batteryapi.models
 
 import io.batteryapi.models.AndroidBatteryPurchaseStatusPurchasesInnerError
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param productId 
- * @param token 
- * @param success 
- * @param error 
- */
 
+@Serializable
 
 data class AndroidBatteryPurchaseStatusPurchasesInner (
 
-    @Json(name = "product_id")
+    @SerialName(value = "product_id")
     val productId: kotlin.String,
 
-    @Json(name = "token")
+    @SerialName(value = "token")
     val token: kotlin.String,
 
-    @Json(name = "success")
+    @SerialName(value = "success")
     val success: kotlin.Boolean,
 
-    @Json(name = "error")
+    @SerialName(value = "error")
     val error: AndroidBatteryPurchaseStatusPurchasesInnerError? = null
 
 ) {

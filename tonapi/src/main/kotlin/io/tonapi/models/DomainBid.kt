@@ -17,36 +17,32 @@ package io.tonapi.models
 
 import io.tonapi.models.AccountAddress
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param success 
- * @param `value` 
- * @param txTime 
- * @param txHash 
- * @param bidder 
- */
 
+@Serializable
 
 data class DomainBid (
 
-    @Json(name = "success")
+    @SerialName(value = "success")
     val success: kotlin.Boolean = false,
 
-    @Json(name = "value")
+    @SerialName(value = "value")
     val `value`: kotlin.Long,
 
-    @Json(name = "txTime")
+    @SerialName(value = "txTime")
     val txTime: kotlin.Long,
 
-    @Json(name = "txHash")
+    @SerialName(value = "txHash")
     val txHash: kotlin.String,
 
-    @Json(name = "bidder")
+    @SerialName(value = "bidder")
     val bidder: AccountAddress
 
-)
+) {
+
+
+}
 

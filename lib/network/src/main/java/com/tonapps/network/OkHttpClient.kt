@@ -1,6 +1,7 @@
 package com.tonapps.network
 
 import android.util.ArrayMap
+import com.tonapps.network.ws.WSEvent
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
@@ -152,3 +153,8 @@ fun OkHttpClient.sse(
         }
     }
 }.cancellable()
+
+
+fun OkHttpClient.ws(url: String): Flow<WSEvent> = callbackFlow {
+
+}

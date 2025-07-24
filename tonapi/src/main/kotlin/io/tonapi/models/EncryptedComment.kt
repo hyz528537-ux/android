@@ -16,24 +16,23 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param encryptionType 
- * @param cipherText 
- */
 
+@Serializable
 
 data class EncryptedComment (
 
-    @Json(name = "encryption_type")
+    @SerialName(value = "encryption_type")
     val encryptionType: kotlin.String,
 
-    @Json(name = "cipher_text")
+    @SerialName(value = "cipher_text")
     val cipherText: kotlin.String
 
-)
+) {
+
+
+}
 

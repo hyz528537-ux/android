@@ -16,24 +16,23 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param resolution 
- * @param url 
- */
 
+@Serializable
 
 data class ImagePreview (
 
-    @Json(name = "resolution")
+    @SerialName(value = "resolution")
     val resolution: kotlin.String,
 
-    @Json(name = "url")
+    @SerialName(value = "url")
     val url: kotlin.String
 
-)
+) {
+
+
+}
 

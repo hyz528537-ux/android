@@ -16,24 +16,23 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param b64 
- * @param b64url 
- */
 
+@Serializable
 
 data class AddressParse200ResponseBounceable (
 
-    @Json(name = "b64")
+    @SerialName(value = "b64")
     val b64: kotlin.String,
 
-    @Json(name = "b64url")
+    @SerialName(value = "b64url")
     val b64url: kotlin.String
 
-)
+) {
+
+
+}
 

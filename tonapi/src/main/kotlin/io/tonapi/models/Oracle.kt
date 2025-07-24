@@ -16,24 +16,23 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param address 
- * @param secpPubkey 
- */
 
+@Serializable
 
 data class Oracle (
 
-    @Json(name = "address")
+    @SerialName(value = "address")
     val address: kotlin.String,
 
-    @Json(name = "secp_pubkey")
+    @SerialName(value = "secp_pubkey")
     val secpPubkey: kotlin.String
 
-)
+) {
+
+
+}
 

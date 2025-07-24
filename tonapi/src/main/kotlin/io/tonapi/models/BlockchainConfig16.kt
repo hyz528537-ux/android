@@ -16,28 +16,26 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * The limits on the number of validators in the TON blockchain.
- *
- * @param maxValidators 
- * @param maxMainValidators 
- * @param minValidators 
- */
 
+@Serializable
 
 data class BlockchainConfig16 (
 
-    @Json(name = "max_validators")
+    @SerialName(value = "max_validators")
     val maxValidators: kotlin.Int,
 
-    @Json(name = "max_main_validators")
+    @SerialName(value = "max_main_validators")
     val maxMainValidators: kotlin.Int,
 
-    @Json(name = "min_validators")
+    @SerialName(value = "min_validators")
     val minValidators: kotlin.Int
 
-)
+) {
+
+
+}
 

@@ -35,7 +35,7 @@ data class PoolEntity(
         name = info.name,
         implementation = StakingPool.implementation(info.implementation),
         minStake = Coins.of(info.minStake),
-        apy = info.apy,
+        apy = BigDecimal(info.apy),
         verified = info.verified,
         cycleStart = info.cycleStart,
         cycleEnd = info.cycleEnd,

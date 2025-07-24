@@ -16,32 +16,29 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param name 
- * @param description 
- * @param url 
- * @param socials 
- */
 
+@Serializable
 
 data class PoolImplementation (
 
-    @Json(name = "name")
+    @SerialName(value = "name")
     val name: kotlin.String,
 
-    @Json(name = "description")
+    @SerialName(value = "description")
     val description: kotlin.String,
 
-    @Json(name = "url")
+    @SerialName(value = "url")
     val url: kotlin.String,
 
-    @Json(name = "socials")
+    @SerialName(value = "socials")
     val socials: kotlin.collections.List<kotlin.String>
 
-)
+) {
+
+
+}
 

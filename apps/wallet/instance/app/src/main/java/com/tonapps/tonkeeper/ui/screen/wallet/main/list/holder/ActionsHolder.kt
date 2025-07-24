@@ -10,6 +10,7 @@ import com.tonapps.tonkeeper.ui.screen.qr.QRScreen
 import com.tonapps.tonkeeper.ui.screen.send.main.SendScreen
 import com.tonapps.tonkeeper.ui.screen.staking.stake.StakingScreen
 import com.tonapps.tonkeeper.ui.screen.swap.SwapScreen
+import com.tonapps.tonkeeper.ui.screen.swap.omniston.OmnistonScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.main.list.Item
 import com.tonapps.tonkeeperx.R
 import com.tonapps.wallet.api.entity.Blockchain
@@ -26,7 +27,6 @@ class ActionsHolder(parent: ViewGroup): Holder<Item.Actions>(parent, R.layout.vi
     private val stakeView = findViewById<View>(R.id.stake)
 
     override fun onBind(item: Item.Actions) {
-        val nativeOnrmapEnabled =
         scanView.setOnClickListener {
             val chains = mutableListOf(Blockchain.TON)
 
@@ -40,7 +40,9 @@ class ActionsHolder(parent: ViewGroup): Holder<Item.Actions>(parent, R.layout.vi
             navigation?.add(QRScreen.newInstance(item.wallet))
         }
         swapView.setOnClickListener {
-            navigation?.add(SwapScreen.newInstance(item.wallet, item.swapUri, item.address, TokenEntity.TON.address))
+            navigation?.add(OmnistonScreen.newInstance(
+                wallet = item.wallet,
+            ))
         }
         buyOrSellView.setOnClickListener {
             navigation?.add(OnRampScreen.newInstance(context, item.wallet, "wallet"))

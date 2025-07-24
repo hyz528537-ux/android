@@ -16,28 +16,26 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param restOnline 
- * @param indexingLatency 
- * @param lastKnownMasterchainSeqno 
- */
 
+@Serializable
 
 data class ServiceStatus (
 
-    @Json(name = "rest_online")
+    @SerialName(value = "rest_online")
     val restOnline: kotlin.Boolean = true,
 
-    @Json(name = "indexing_latency")
+    @SerialName(value = "indexing_latency")
     val indexingLatency: kotlin.Int,
 
-    @Json(name = "last_known_masterchain_seqno")
+    @SerialName(value = "last_known_masterchain_seqno")
     val lastKnownMasterchainSeqno: kotlin.Int
 
-)
+) {
+
+
+}
 

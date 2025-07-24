@@ -16,24 +16,23 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param address 
- * @param interfaces 
- */
 
+@Serializable
 
 data class ContractDeployAction (
 
-    @Json(name = "address")
+    @SerialName(value = "address")
     val address: kotlin.String,
 
-    @Json(name = "interfaces")
+    @SerialName(value = "interfaces")
     val interfaces: kotlin.collections.List<kotlin.String>
 
-)
+) {
+
+
+}
 

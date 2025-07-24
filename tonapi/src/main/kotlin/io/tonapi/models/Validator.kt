@@ -16,32 +16,29 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param address 
- * @param adnlAddress 
- * @param stake 
- * @param maxFactor 
- */
 
+@Serializable
 
 data class Validator (
 
-    @Json(name = "address")
+    @SerialName(value = "address")
     val address: kotlin.String,
 
-    @Json(name = "adnl_address")
+    @SerialName(value = "adnl_address")
     val adnlAddress: kotlin.String,
 
-    @Json(name = "stake")
+    @SerialName(value = "stake")
     val stake: kotlin.Long,
 
-    @Json(name = "max_factor")
+    @SerialName(value = "max_factor")
     val maxFactor: kotlin.Long
 
-)
+) {
+
+
+}
 

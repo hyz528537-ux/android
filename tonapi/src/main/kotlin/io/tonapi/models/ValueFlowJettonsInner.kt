@@ -18,28 +18,30 @@ package io.tonapi.models
 import io.tonapi.models.AccountAddress
 import io.tonapi.models.JettonPreview
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param account 
- * @param jetton 
- * @param quantity 
- */
 
+@Serializable
 
 data class ValueFlowJettonsInner (
 
-    @Json(name = "account")
+    @SerialName(value = "account")
     val account: AccountAddress,
 
-    @Json(name = "jetton")
+    @SerialName(value = "jetton")
     val jetton: JettonPreview,
 
-    @Json(name = "quantity")
+    @SerialName(value = "qty")
+    val qty: kotlin.String,
+
+    @SerialName(value = "quantity")
+    @Deprecated(message = "This property is deprecated.")
     val quantity: kotlin.Long
 
-)
+) {
+
+
+}
 

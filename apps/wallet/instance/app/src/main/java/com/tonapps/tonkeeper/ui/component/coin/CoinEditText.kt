@@ -1,19 +1,30 @@
 package com.tonapps.tonkeeper.ui.component.coin
 
+import android.animation.ValueAnimator
 import android.content.Context
+import android.text.TextPaint
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
-import android.view.View
 import androidx.appcompat.R
-import androidx.core.widget.addTextChangedListener
-import androidx.core.widget.doAfterTextChanged
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.ui.component.coin.drawable.SuffixDrawable
 import com.tonapps.tonkeeper.ui.component.coin.format.CoinFormattingConfig
 import com.tonapps.tonkeeper.ui.component.coin.format.CoinFormattingFilter
 import com.tonapps.tonkeeper.ui.component.coin.format.CoinFormattingTextWatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import uikit.extensions.dp
 import uikit.extensions.isVisibleForUser
 import uikit.extensions.replaceAll
@@ -30,23 +41,43 @@ class CoinEditText @JvmOverloads constructor(
     defStyle: Int = R.attr.editTextStyle,
 ) : InputTextView(context, attrs, defStyle) {
 
+    private data class SizeState(
+        val safeAvailableWidth: Float = 0f,
+        val textWidth: Float = 0f,
+        val currentTextSize: Float = 0f
+    )
+
     private val suffixDrawable = SuffixDrawable(context)
+    private val _sizeStateFlow = MutableStateFlow(SizeState())
+    @OptIn(FlowPreview::class)
+    private val sizeStateFlow = _sizeStateFlow.asStateFlow()
+
+    @OptIn(FlowPreview::class)
+    private val textSizeFlow = sizeStateFlow.map { state ->
+        findBestTextSize(state.safeAvailableWidth)
+    }.distinctUntilChanged()
 
     private lateinit var formattingConfig: CoinFormattingConfig
-    private val initTextSize: Float by lazy { textSize }
-    private var initMeasuredHeight: Int = 0
-    private val availableWidth: Float by lazy {
-        val parentView = parent as? View ?: return@lazy 0f
-        val parentWidth = parentView.width - parentView.paddingStart - parentView.paddingEnd
-        val suffixWidth = suffixDrawable.intrinsicWidth + compoundDrawablePadding
-        (parentWidth - suffixWidth) * 0.6f
-    }
-
-    private var isAdjustingTextSize = false
+    private val stepValue = 2f.sp
     private val minTextSize = 12f.sp
+    private val initTextSize: Float by lazy { textSize }
+    private var maxWidthConstraint: Int = 0
+    private var initMeasuredHeight: Int = 0
     private var notifyUpdateRunnable: Runnable? = null
 
+    private val sizeStepsPx: List<Float> by lazy {
+        val steps = mutableSetOf<Float>()
+        var currentSize = initTextSize
+        while (currentSize >= minTextSize) {
+            steps.add(currentSize)
+            currentSize -= stepValue
+        }
+        steps.add(minTextSize)
+        steps.sortedDescending()
+    }
+
     var doOnValueChange: ((value: Double, byUser: Boolean) -> Unit)? = null
+    var doOnTextChange: ((text: String) -> Unit)? = null
 
     var suffix: String?
         get() = suffixDrawable.text
@@ -57,6 +88,20 @@ class CoinEditText @JvmOverloads constructor(
         }
 
     var valueScale = 0
+    var onTextSizeChange: ((unit: Int, textSize: Float) -> Unit)? = null
+
+    private val textWidth: Float
+        get() {
+            val value = text ?: return 0f
+            return paint.measureText(value, 0, value.length)
+        }
+
+    private val availableWidth: Float
+        get() {
+            val containerWidth = maxWidthConstraint - paddingLeft - paddingRight
+            val suffixWidth = if (suffix.isNullOrEmpty()) 0f else (suffixDrawable.intrinsicWidth + compoundDrawablePadding).toFloat()
+            return (containerWidth - suffixWidth).coerceAtLeast(0f)
+        }
 
     init {
         setMaxLength(18)
@@ -78,6 +123,8 @@ class CoinEditText @JvmOverloads constructor(
         if (isVisibleForUser) {
             val byUser = abs(lengthAfter - lengthBefore) == 1 && isFocused
             notifyUpdateDelay(byUser)
+            doOnTextChange?.invoke(text.toString())
+            checkTextSize()
         }
     }
 
@@ -93,45 +140,36 @@ class CoinEditText @JvmOverloads constructor(
     private fun notifyUpdate(byUser: Boolean) {
         val value = getValue()
         doOnValueChange?.invoke(value, byUser)
-        adjustTextSize()
     }
 
-    private fun adjustTextSize() {
-        if (isAdjustingTextSize) return
-        isAdjustingTextSize = true
+    private fun setTextSizePx(newTextSize: Float) {
+        if (textSize != newTextSize) {
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, newTextSize)
+            suffixDrawable.textSize = newTextSize
+            onTextSizeChange?.invoke(TypedValue.COMPLEX_UNIT_PX, newTextSize)
+        }
+    }
 
-        try {
-            val textStr = text.toString()
-            if (textStr.isEmpty()) return
+    private fun applyTextSize(newTextSize: Float) {
+        setTextSizePx(newTextSize)
+    }
 
-            val maxTextSize = initTextSize
-            val paint = paint
-            val availableWidth = this.availableWidth
-
-            var low = minTextSize
-            var high = maxTextSize
-            var bestSize = low
-
-            while (low <= high) {
-                val midSize = (low + high) / 2f
-                paint.textSize = midSize
-                val textWidth = paint.measureText(textStr)
-
-                if (textWidth <= availableWidth) {
-                    bestSize = midSize
-                    low = midSize + 0.5f
-                } else {
-                    high = midSize - 0.5f
-                }
+    private fun findBestTextSize(safeAvailableWidth: Float): Float {
+        val textValue = text ?: return initTextSize
+        val textPaint = TextPaint(paint)
+        for (stepSize in sizeStepsPx) {
+            textPaint.textSize = stepSize
+            if (textPaint.measureText(textValue, 0, textValue.length) <= safeAvailableWidth) {
+                return stepSize
             }
+        }
+        return minTextSize
+    }
 
-            // Only set the text size if it has changed
-            if (textSize != bestSize) {
-                setTextSize(TypedValue.COMPLEX_UNIT_PX, bestSize)
-                suffixDrawable.textSize = bestSize
-            }
-        } finally {
-            isAdjustingTextSize = false
+    private fun checkTextSize() {
+        val safeAvailableWidth = availableWidth - 24f.dp
+        if (safeAvailableWidth > 0) {
+            _sizeStateFlow.value = SizeState(safeAvailableWidth, textWidth, textSize)
         }
     }
 
@@ -156,18 +194,25 @@ class CoinEditText @JvmOverloads constructor(
         } else {
             editable.replaceAll(value.toString().removeSuffix(".0"))
         }
-        adjustTextSize()
     }
 
-    fun setValue(value: BigDecimal, notifyByUser: Boolean = false) {
-        val string = if (valueScale == 0) value.asString() else value.setScale(valueScale, RoundingMode.DOWN).asString()
-        if (string == null) {
+    fun setValue(
+        value: BigDecimal,
+        notifyByUser: Boolean = false,
+        customValueScale: Int = valueScale
+    ) {
+        val string = if (customValueScale == 0) value.asString() else value.setScale(customValueScale, RoundingMode.HALF_EVEN).asString()
+        if (string.isNullOrBlank() && value != BigDecimal.ZERO) {
+            val newCustomValueScale = CurrencyFormatter.getScale(value)
+            if (newCustomValueScale != customValueScale) {
+                setValue(value, notifyByUser, CurrencyFormatter.getScale(value))
+            }
+            return
+        } else if (string == null) {
             clear()
-            adjustTextSize()
         } else if (string != text?.toString()) {
             text?.clear()
             text?.insert(0, string)
-            adjustTextSize()
         }
         if (notifyByUser) {
             notifyUpdateDelay(true)
@@ -188,6 +233,16 @@ class CoinEditText @JvmOverloads constructor(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val specMode = MeasureSpec.getMode(widthMeasureSpec)
+        val specSize = MeasureSpec.getSize(widthMeasureSpec)
+
+        if (specMode == MeasureSpec.EXACTLY || specMode == MeasureSpec.AT_MOST) {
+            if (specSize > 0) {
+                maxWidthConstraint = specSize
+                checkTextSize()
+            }
+        }
+
         if (initMeasuredHeight > 0) {
             val heightMode = MeasureSpec.getMode(heightMeasureSpec)
             val heightSize = MeasureSpec.getSize(heightMeasureSpec)
@@ -205,7 +260,23 @@ class CoinEditText @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        adjustTextSize()
+        if (initMeasuredHeight == 0 && h > 0) {
+            initMeasuredHeight = h
+        }
+
+        if (w != oldw) {
+            checkTextSize()
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        val lifecycleOwner = findViewTreeLifecycleOwner()
+        lifecycleOwner?.lifecycleScope?.launch {
+            lifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                textSizeFlow.collect(::applyTextSize)
+            }
+        }
     }
 
     private companion object {

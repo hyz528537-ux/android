@@ -7,6 +7,8 @@ import com.tonapps.wallet.api.API
 import com.tonapps.wallet.data.collectibles.entities.NftEntity
 import com.tonapps.wallet.data.collectibles.entities.NftListResult
 import com.tonapps.wallet.data.collectibles.source.LocalDataSource
+import io.extensions.renderType
+import io.tonapi.models.TrustType
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flow
 
@@ -64,7 +66,7 @@ class CollectiblesRepository(
     ): List<NftEntity>? {
         val nftItems = api.getNftItems(address, testnet) ?: return null
         val items = nftItems.filter {
-            it.trust != "blacklist" && it.metadata["render_type"] != "hidden"
+            it.trust != TrustType.blacklist && it.renderType != "hidden"
         }.map { NftEntity(it, testnet) }
 
         localDataSource.save(address, testnet, items.toList())

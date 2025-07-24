@@ -16,27 +16,22 @@
 package io.batteryapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param address 
- * @param balanceIncreased 
- * @param error 
- */
 
+@Serializable
 
 data class CreatePromoCampaign200ResponseParticipantsInner (
 
-    @Json(name = "address")
+    @SerialName(value = "address")
     val address: kotlin.String,
 
-    @Json(name = "balance_increased")
+    @SerialName(value = "balance_increased")
     val balanceIncreased: kotlin.String? = null,
 
-    @Json(name = "error")
+    @SerialName(value = "error")
     val error: kotlin.String? = null
 
 ) {

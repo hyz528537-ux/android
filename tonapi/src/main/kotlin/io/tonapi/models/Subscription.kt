@@ -15,61 +15,66 @@
 
 package io.tonapi.models
 
+import io.tonapi.models.AccountAddress
+import io.tonapi.models.Metadata
+import io.tonapi.models.Price
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param address 
- * @param walletAddress 
- * @param beneficiaryAddress 
- * @param amount 
- * @param period 
- * @param startTime 
- * @param timeout 
- * @param lastPaymentTime 
- * @param lastRequestTime 
- * @param subscriptionId 
- * @param failedAttempts 
- */
 
+@Serializable
 
 data class Subscription (
 
-    @Json(name = "address")
-    val address: kotlin.String,
+    /* type of subscription */
+    @SerialName(value = "type")
+    val type: kotlin.String,
 
-    @Json(name = "wallet_address")
-    val walletAddress: kotlin.String,
+    @SerialName(value = "status")
+    val status: Subscription.Status,
 
-    @Json(name = "beneficiary_address")
-    val beneficiaryAddress: kotlin.String,
-
-    @Json(name = "amount")
-    val amount: kotlin.Long,
-
-    @Json(name = "period")
+    /* payment period in seconds */
+    @SerialName(value = "period")
     val period: kotlin.Long,
 
-    @Json(name = "start_time")
-    val startTime: kotlin.Long,
+    /* common identifier */
+    @SerialName(value = "subscription_id")
+    val subscriptionId: kotlin.String,
 
-    @Json(name = "timeout")
-    val timeout: kotlin.Long,
+    @SerialName(value = "payment_per_period")
+    val paymentPerPeriod: Price,
 
-    @Json(name = "last_payment_time")
-    val lastPaymentTime: kotlin.Long,
+    @SerialName(value = "wallet")
+    val wallet: AccountAddress,
 
-    @Json(name = "last_request_time")
-    val lastRequestTime: kotlin.Long,
+    @SerialName(value = "next_charge_at")
+    val nextChargeAt: kotlin.Long,
 
-    @Json(name = "subscription_id")
-    val subscriptionId: kotlin.Long,
+    @SerialName(value = "metadata")
+    val metadata: Metadata,
 
-    @Json(name = "failed_attempts")
-    val failedAttempts: kotlin.Int
+    @SerialName(value = "address")
+    val address: kotlin.String? = null,
 
-)
+    @SerialName(value = "beneficiary")
+    val beneficiary: AccountAddress? = null
+
+) {
+
+    /**
+     * 
+     *
+     * Values: not_ready,active,suspended,cancelled
+     */
+    @Serializable
+    enum class Status(val value: kotlin.String) {
+        @SerialName(value = "not_ready") not_ready("not_ready"),
+        @SerialName(value = "active") active("active"),
+        @SerialName(value = "suspended") suspended("suspended"),
+        @SerialName(value = "cancelled") cancelled("cancelled");
+    }
+
+}
 

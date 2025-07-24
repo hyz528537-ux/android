@@ -16,31 +16,25 @@
 package io.batteryapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param batteryMeanPriceSwap 
- * @param batteryMeanPriceJetton 
- * @param batteryMeanPriceNft 
- * @param batteryMeanPriceTronUsdt 
- */
 
+@Serializable
 
 data class ConfigMeanPrices (
 
-    @Json(name = "battery_mean_price_swap")
+    @SerialName(value = "battery_mean_price_swap")
     val batteryMeanPriceSwap: kotlin.Int,
 
-    @Json(name = "battery_mean_price_jetton")
+    @SerialName(value = "battery_mean_price_jetton")
     val batteryMeanPriceJetton: kotlin.Int,
 
-    @Json(name = "battery_mean_price_nft")
+    @SerialName(value = "battery_mean_price_nft")
     val batteryMeanPriceNft: kotlin.Int,
 
-    @Json(name = "battery_mean_price_tron_usdt")
+    @SerialName(value = "battery_mean_price_tron_usdt")
     val batteryMeanPriceTronUsdt: kotlin.Int? = null
 
 ) {

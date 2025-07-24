@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<uikit.widget.ColumnLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <uikit.widget.ModalHeader
+            android:id="@+id/header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:ignoreSystemOffset="true"
+            android:text="@string/swap"/>
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <uikit.widget.SlideBetweenView
+            android:id="@+id/slides"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <include
+                layout="@layout/fragment_omniston_inputs"/>
+            <include
+                layout="@layout/fragment_omniston_review"/>
+        </uikit.widget.SlideBetweenView>
+
+    </FrameLayout>
+
+</uikit.widget.ColumnLayout>

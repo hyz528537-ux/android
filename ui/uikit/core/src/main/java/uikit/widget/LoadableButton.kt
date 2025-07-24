@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import com.tonapps.uikit.color.iconSecondaryColor
 import uikit.R
+import uikit.UiButtonState
 import uikit.extensions.getDimensionPixelSize
 import uikit.extensions.useAttributes
 
@@ -52,6 +53,15 @@ class LoadableButton @JvmOverloads constructor(
 
         setOnClickListener {
             isLoading = !isLoading
+        }
+    }
+
+    fun applyUiState(state: UiButtonState) {
+        if (state is UiButtonState.Default) {
+            setDefaultState()
+            setEnabled(state.enabled)
+        } else if (state is UiButtonState.Loading) {
+            setLoadingState()
         }
     }
 

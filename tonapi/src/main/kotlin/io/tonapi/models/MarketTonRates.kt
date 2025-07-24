@@ -16,28 +16,26 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param market 
- * @param usdPrice 
- * @param lastDateUpdate 
- */
 
+@Serializable
 
 data class MarketTonRates (
 
-    @Json(name = "market")
+    @SerialName(value = "market")
     val market: kotlin.String,
 
-    @Json(name = "usd_price")
-    val usdPrice: java.math.BigDecimal,
+    @SerialName(value = "usd_price")
+    val usdPrice: kotlin.String,
 
-    @Json(name = "last_date_update")
+    @SerialName(value = "last_date_update")
     val lastDateUpdate: kotlin.Long
 
-)
+) {
+
+
+}
 

@@ -1,5 +1,6 @@
 package uikit.extensions
 
+import android.animation.Animator
 import android.animation.ValueAnimator
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -91,6 +92,12 @@ val View.statusBarHeight: Int
             }
         }
         return top
+    }
+
+val View.bottomBarsOffset: Int
+    get() {
+        val insets = getRootWindowInsetsCompat()?.getInsets(WindowInsetsCompat.Type.systemBars()) ?: return 0
+        return insets.bottom
     }
 
 fun ViewGroup.inflate(
@@ -191,6 +198,10 @@ fun View.getDrawable(@DrawableRes resId: Int): Drawable {
     } catch (e: Throwable) {
         Color.TRANSPARENT.toDrawable()
     }
+}
+
+fun View.withAnimation(duration: Long = 120) {
+    withAnimation(duration) { }
 }
 
 fun View.withAnimation(duration: Long = 120, block: () -> Unit) {
@@ -297,7 +308,7 @@ fun View.startSnakeAnimation(
     count: Int = 3,
     offset: Int = 16.dp,
     duration: Long = 400
-) {
+): Animator {
     val animator = ValueAnimator.ofFloat(0f, 1f)
     animator.addUpdateListener { animation ->
         val x = animation.animatedValue as Float
@@ -308,11 +319,13 @@ fun View.startSnakeAnimation(
     }
     animator.duration = duration
     animator.start()
+    return animator
 }
 
-fun View.reject() {
-    startSnakeAnimation()
+fun View.reject(): Animator {
+    val animator = startSnakeAnimation()
     hapticReject()
+    return animator
 }
 
 inline fun View.doKeyboardAnimation(
@@ -333,6 +346,23 @@ inline fun View.doKeyboardAnimation(
 fun View.pinToBottomInsets() {
     doKeyboardAnimation { offset, _, _ ->
         translationY = -offset.toFloat()
+    }
+}
+
+fun ViewGroup.viewMoveTo(child: View, toIndex: Int) {
+    val currentIndex = indexOfChild(child)
+    if (currentIndex == toIndex) {
+        return
+    }
+    removeViewAt(currentIndex)
+    addView(child, toIndex)
+}
+
+inline fun ViewGroup.removeViews(predicate: (View) -> Boolean) {
+    for (i in childCount - 1 downTo 0) {
+        if (predicate(getChildAt(i))) {
+            removeViewAt(i)
+        }
     }
 }
 
@@ -424,5 +454,13 @@ fun View.hideKeyboard(ignoreFocus: Boolean = true) {
     if (ignoreFocus || editText.hasFocus()) {
         editText.clearFocus()
         controller.hide(WindowInsetsCompat.Type.ime())
+    }
+}
+
+fun View.rotate180Animation() {
+    with(animate()) {
+        cancel()
+        rotation = 0f
+        rotationBy(180f).start()
     }
 }

@@ -15,25 +15,41 @@
 
 package io.tonapi.models
 
+import io.tonapi.models.CurrencyType
+import io.tonapi.models.TrustType
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param `value` 
- * @param tokenName 
- */
 
+@Serializable
 
 data class Price (
 
-    @Json(name = "value")
+    @Contextual @SerialName(value = "currency_type")
+    val currencyType: CurrencyType,
+
+    @SerialName(value = "value")
     val `value`: kotlin.String,
 
-    @Json(name = "token_name")
-    val tokenName: kotlin.String
+    @SerialName(value = "decimals")
+    val decimals: kotlin.Int,
 
-)
+    @SerialName(value = "token_name")
+    val tokenName: kotlin.String,
+
+    @Contextual @SerialName(value = "verification")
+    val verification: TrustType,
+
+    @SerialName(value = "image")
+    val image: kotlin.String,
+
+    @SerialName(value = "jetton")
+    val jetton: kotlin.String? = null
+
+) {
+
+
+}
 

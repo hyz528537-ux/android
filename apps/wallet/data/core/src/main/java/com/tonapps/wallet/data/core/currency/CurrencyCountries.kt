@@ -229,4 +229,8 @@ object CurrencyCountries {
         return currencyToCountryMap[code.uppercase()] ?: ""
     }
 
+    fun getCurrencyCode(countryCode: String): String? {
+        return currencyToCountryMap.entries.firstOrNull { it.value.equals(countryCode, ignoreCase = true) }?.key
+    }
+
 }

@@ -16,7 +16,7 @@ import com.tonapps.wallet.api.tron.entity.TronEstimationEntity
 import com.tonapps.wallet.api.tron.entity.TronEventEntity
 import com.tonapps.wallet.api.tron.entity.TronResourcesEntity
 import com.tonapps.wallet.api.withRetry
-import io.batteryapi.apis.BatteryApi
+import io.batteryapi.apis.DefaultApi
 import io.batteryapi.models.TronSendRequest
 import io.ktor.util.encodeBase64
 import kotlinx.serialization.json.buildJsonObject
@@ -28,7 +28,7 @@ import java.math.BigInteger
 class TronApi(
     private val config: ConfigEntity,
     private val okHttpClient: OkHttpClient,
-    private val batteryApi: BatteryApi
+    private val batteryApi: DefaultApi
 ) {
 
     companion object {

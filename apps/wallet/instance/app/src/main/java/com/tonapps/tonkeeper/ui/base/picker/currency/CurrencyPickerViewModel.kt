@@ -15,8 +15,17 @@ import kotlinx.coroutines.flow.map
 
 class CurrencyPickerViewModel(
     app: Application,
-    currencies: List<WalletCurrency>
+    currencies: List<WalletCurrency>,
+    extra: List<String>,
 ): BaseWalletVM(app) {
+
+    private data class WithExtra(
+        val currency: WalletCurrency,
+        val extra: String
+    ) {
+
+        fun containsQuery(query: String) = currency.containsQuery(query)
+    }
 
     private val currenciesFlow = flow {
         val list = currencies.ifEmpty {
@@ -27,17 +36,26 @@ class CurrencyPickerViewModel(
 
     private val _queryFlow = MutableStateFlow("")
 
-    val uiItemsFlow = combine(currenciesFlow, _queryFlow) { currencies, query ->
+    val uiItemsFlow = combine(currenciesFlow.map { currencies ->
+        if (extra.isEmpty()) {
+            currencies.map { WithExtra(it, "") }
+        } else {
+            currencies.mapIndexed { index, currency ->
+                WithExtra(currency, extra.getOrNull(index) ?: "")
+            }
+        }
+
+    }, _queryFlow) { currencies, query ->
         if (query.isEmpty()) {
             currencies
         } else {
-            currencies.filter { it.title.contains(query, ignoreCase = true) || it.code.contains(query, ignoreCase = true) || it.code.contains(query, ignoreCase = true) }
+            currencies.filter { it.containsQuery(query) }
         }
     }.map { currencies ->
         val uiItems = mutableListOf<Item>()
         for ((index, currency) in currencies.withIndex()) {
             val position = ListCell.getPosition(currencies.size, index)
-            uiItems.add(Item(position, currency))
+            uiItems.add(Item(position, currency.currency, currency.extra))
         }
         uiItems.toList()
     }.flowOn(Dispatchers.IO)

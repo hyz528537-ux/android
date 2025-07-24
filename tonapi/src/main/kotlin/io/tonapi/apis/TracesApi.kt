@@ -16,29 +16,31 @@
 package io.tonapi.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
-import io.tonapi.models.StatusDefaultResponse
+import io.tonapi.models.GaslessEstimateRequestMessagesInner
+import io.tonapi.models.InlineObject
 import io.tonapi.models.Trace
 
-import com.squareup.moshi.Json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-import io.tonapi.infrastructure.ApiClient
-import io.tonapi.infrastructure.ApiResponse
-import io.tonapi.infrastructure.ClientException
-import io.tonapi.infrastructure.ClientError
-import io.tonapi.infrastructure.ServerException
-import io.tonapi.infrastructure.ServerError
-import io.tonapi.infrastructure.MultiValueMap
-import io.tonapi.infrastructure.PartConfig
-import io.tonapi.infrastructure.RequestConfig
-import io.tonapi.infrastructure.RequestMethod
-import io.tonapi.infrastructure.ResponseType
-import io.tonapi.infrastructure.Success
-import io.tonapi.infrastructure.toMultiValue
+import io.infrastructure.ApiClient
+import io.infrastructure.ApiResponse
+import io.infrastructure.ClientException
+import io.infrastructure.ClientError
+import io.infrastructure.ServerException
+import io.infrastructure.ServerError
+import io.infrastructure.MultiValueMap
+import io.infrastructure.PartConfig
+import io.infrastructure.RequestConfig
+import io.infrastructure.RequestMethod
+import io.infrastructure.ResponseType
+import io.infrastructure.Success
+import io.infrastructure.toMultiValue
 
-class TracesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class TracesApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -46,17 +48,58 @@ class TracesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         }
     }
 
-    /**
-     * 
-     * Get the trace by trace ID or hash of any transaction in trace
-     * @param traceId trace ID or transaction hash in hex (without 0x) or base64url format
-     * @return Trace
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun emulateMessageToTrace(gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner, ignoreSignatureCheck: kotlin.Boolean? = null) : Trace {
+        val localVarResponse = emulateMessageToTraceWithHttpInfo(gaslessEstimateRequestMessagesInner = gaslessEstimateRequestMessagesInner, ignoreSignatureCheck = ignoreSignatureCheck)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as Trace
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun emulateMessageToTraceWithHttpInfo(gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner, ignoreSignatureCheck: kotlin.Boolean?) : ApiResponse<Trace?> {
+        val localVariableConfig = emulateMessageToTraceRequestConfig(gaslessEstimateRequestMessagesInner = gaslessEstimateRequestMessagesInner, ignoreSignatureCheck = ignoreSignatureCheck)
+
+        return request<GaslessEstimateRequestMessagesInner, Trace>(
+            localVariableConfig
+        )
+    }
+
+    fun emulateMessageToTraceRequestConfig(gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner, ignoreSignatureCheck: kotlin.Boolean?) : RequestConfig<GaslessEstimateRequestMessagesInner> {
+        val localVariableBody = gaslessEstimateRequestMessagesInner
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
+            .apply {
+                if (ignoreSignatureCheck != null) {
+                    put("ignore_signature_check", listOf(ignoreSignatureCheck.toString()))
+                }
+            }
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/v2/traces/emulate",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = false,
+            body = localVariableBody
+        )
+    }
+
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getTrace(traceId: kotlin.String) : Trace {
@@ -77,14 +120,6 @@ class TracesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         }
     }
 
-    /**
-     * 
-     * Get the trace by trace ID or hash of any transaction in trace
-     * @param traceId trace ID or transaction hash in hex (without 0x) or base64url format
-     * @return ApiResponse<Trace?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getTraceWithHttpInfo(traceId: kotlin.String) : ApiResponse<Trace?> {
@@ -95,12 +130,6 @@ class TracesApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient 
         )
     }
 
-    /**
-     * To obtain the request config of the operation getTrace
-     *
-     * @param traceId trace ID or transaction hash in hex (without 0x) or base64url format
-     * @return RequestConfig
-     */
     fun getTraceRequestConfig(traceId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()

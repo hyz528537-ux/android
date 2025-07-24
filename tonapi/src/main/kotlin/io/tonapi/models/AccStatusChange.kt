@@ -16,26 +16,25 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 
  *
- * Values: unchanged,frozen,deleted
+ * Values: acst_unchanged,acst_frozen,acst_deleted
  */
-
-@JsonClass(generateAdapter = false)
+@Serializable
 enum class AccStatusChange(val value: kotlin.String) {
 
-    @Json(name = "acst_unchanged")
-    unchanged("acst_unchanged"),
+    @SerialName(value = "acst_unchanged")
+    acst_unchanged("acst_unchanged"),
 
-    @Json(name = "acst_frozen")
-    frozen("acst_frozen"),
+    @SerialName(value = "acst_frozen")
+    acst_frozen("acst_frozen"),
 
-    @Json(name = "acst_deleted")
-    deleted("acst_deleted");
+    @SerialName(value = "acst_deleted")
+    acst_deleted("acst_deleted");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

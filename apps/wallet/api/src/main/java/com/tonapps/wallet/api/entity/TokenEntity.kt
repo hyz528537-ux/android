@@ -194,6 +194,6 @@ data class TokenEntity(
         isRequestMinting = extensions?.contains(Extension.CustomPayload.value) == true,
         isTransferable = extensions?.contains(Extension.NonTransferable.value) != true,
         lock = lock?.let { Lock(it) },
-        customPayloadApiUri = jetton.customPayloadApiUri
+        customPayloadApiUri = jetton.metadata.customPayloadApiUri
     )
 }

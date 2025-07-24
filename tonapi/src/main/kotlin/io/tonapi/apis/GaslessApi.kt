@@ -16,32 +16,34 @@
 package io.tonapi.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import io.tonapi.models.GaslessConfig
 import io.tonapi.models.GaslessEstimateRequest
 import io.tonapi.models.GaslessSendRequest
+import io.tonapi.models.GaslessTx
+import io.tonapi.models.InlineObject
 import io.tonapi.models.SignRawParams
-import io.tonapi.models.StatusDefaultResponse
 
-import com.squareup.moshi.Json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-import io.tonapi.infrastructure.ApiClient
-import io.tonapi.infrastructure.ApiResponse
-import io.tonapi.infrastructure.ClientException
-import io.tonapi.infrastructure.ClientError
-import io.tonapi.infrastructure.ServerException
-import io.tonapi.infrastructure.ServerError
-import io.tonapi.infrastructure.MultiValueMap
-import io.tonapi.infrastructure.PartConfig
-import io.tonapi.infrastructure.RequestConfig
-import io.tonapi.infrastructure.RequestMethod
-import io.tonapi.infrastructure.ResponseType
-import io.tonapi.infrastructure.Success
-import io.tonapi.infrastructure.toMultiValue
+import io.infrastructure.ApiClient
+import io.infrastructure.ApiResponse
+import io.infrastructure.ClientException
+import io.infrastructure.ClientError
+import io.infrastructure.ServerException
+import io.infrastructure.ServerError
+import io.infrastructure.MultiValueMap
+import io.infrastructure.PartConfig
+import io.infrastructure.RequestConfig
+import io.infrastructure.RequestMethod
+import io.infrastructure.ResponseType
+import io.infrastructure.Success
+import io.infrastructure.toMultiValue
 
-class GaslessApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class GaslessApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -49,16 +51,6 @@ class GaslessApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Returns configuration of gasless transfers
-     * @return GaslessConfig
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun gaslessConfig() : GaslessConfig {
@@ -79,13 +71,6 @@ class GaslessApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Returns configuration of gasless transfers
-     * @return ApiResponse<GaslessConfig?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun gaslessConfigWithHttpInfo() : ApiResponse<GaslessConfig?> {
@@ -96,11 +81,6 @@ class GaslessApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * To obtain the request config of the operation gaslessConfig
-     *
-     * @return RequestConfig
-     */
     fun gaslessConfigRequestConfig() : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -117,22 +97,10 @@ class GaslessApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * 
-     * Estimates the cost of the given messages and returns a payload to sign.
-     * @param masterId jetton to pay commission
-     * @param gaslessEstimateRequest bag-of-cells serialized to hex
-     * @return SignRawParams
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun gaslessEstimate(masterId: kotlin.String, gaslessEstimateRequest: GaslessEstimateRequest) : SignRawParams {
-        val localVarResponse = gaslessEstimateWithHttpInfo(masterId = masterId, gaslessEstimateRequest = gaslessEstimateRequest)
+    fun gaslessEstimate(masterId: kotlin.String, gaslessEstimateRequest: GaslessEstimateRequest, acceptLanguage: kotlin.String? = "en") : SignRawParams {
+        val localVarResponse = gaslessEstimateWithHttpInfo(masterId = masterId, gaslessEstimateRequest = gaslessEstimateRequest, acceptLanguage = acceptLanguage)
 
         return when (localVarResponse.responseType) {
             ResponseType.Success -> (localVarResponse as Success<*>).data as SignRawParams
@@ -149,36 +117,21 @@ class GaslessApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Estimates the cost of the given messages and returns a payload to sign.
-     * @param masterId jetton to pay commission
-     * @param gaslessEstimateRequest bag-of-cells serialized to hex
-     * @return ApiResponse<SignRawParams?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun gaslessEstimateWithHttpInfo(masterId: kotlin.String, gaslessEstimateRequest: GaslessEstimateRequest) : ApiResponse<SignRawParams?> {
-        val localVariableConfig = gaslessEstimateRequestConfig(masterId = masterId, gaslessEstimateRequest = gaslessEstimateRequest)
+    fun gaslessEstimateWithHttpInfo(masterId: kotlin.String, gaslessEstimateRequest: GaslessEstimateRequest, acceptLanguage: kotlin.String?) : ApiResponse<SignRawParams?> {
+        val localVariableConfig = gaslessEstimateRequestConfig(masterId = masterId, gaslessEstimateRequest = gaslessEstimateRequest, acceptLanguage = acceptLanguage)
 
         return request<GaslessEstimateRequest, SignRawParams>(
             localVariableConfig
         )
     }
 
-    /**
-     * To obtain the request config of the operation gaslessEstimate
-     *
-     * @param masterId jetton to pay commission
-     * @param gaslessEstimateRequest bag-of-cells serialized to hex
-     * @return RequestConfig
-     */
-    fun gaslessEstimateRequestConfig(masterId: kotlin.String, gaslessEstimateRequest: GaslessEstimateRequest) : RequestConfig<GaslessEstimateRequest> {
+    fun gaslessEstimateRequestConfig(masterId: kotlin.String, gaslessEstimateRequest: GaslessEstimateRequest, acceptLanguage: kotlin.String?) : RequestConfig<GaslessEstimateRequest> {
         val localVariableBody = gaslessEstimateRequest
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        acceptLanguage?.apply { localVariableHeaders["Accept-Language"] = this.toString() }
         localVariableHeaders["Content-Type"] = "application/json"
         localVariableHeaders["Accept"] = "application/json"
 
@@ -192,23 +145,13 @@ class GaslessApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * 
-     * 
-     * @param gaslessSendRequest bag-of-cells serialized to hex
-     * @return void
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
+    @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun gaslessSend(gaslessSendRequest: GaslessSendRequest) : Unit {
+    fun gaslessSend(gaslessSendRequest: GaslessSendRequest) : GaslessTx {
         val localVarResponse = gaslessSendWithHttpInfo(gaslessSendRequest = gaslessSendRequest)
 
         return when (localVarResponse.responseType) {
-            ResponseType.Success -> Unit
+            ResponseType.Success -> (localVarResponse as Success<*>).data as GaslessTx
             ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
             ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
             ResponseType.ClientError -> {
@@ -222,29 +165,16 @@ class GaslessApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * 
-     * @param gaslessSendRequest bag-of-cells serialized to hex
-     * @return ApiResponse<Unit?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
+    @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun gaslessSendWithHttpInfo(gaslessSendRequest: GaslessSendRequest) : ApiResponse<Unit?> {
+    fun gaslessSendWithHttpInfo(gaslessSendRequest: GaslessSendRequest) : ApiResponse<GaslessTx?> {
         val localVariableConfig = gaslessSendRequestConfig(gaslessSendRequest = gaslessSendRequest)
 
-        return request<GaslessSendRequest, Unit>(
+        return request<GaslessSendRequest, GaslessTx>(
             localVariableConfig
         )
     }
 
-    /**
-     * To obtain the request config of the operation gaslessSend
-     *
-     * @param gaslessSendRequest bag-of-cells serialized to hex
-     * @return RequestConfig
-     */
     fun gaslessSendRequestConfig(gaslessSendRequest: GaslessSendRequest) : RequestConfig<GaslessSendRequest> {
         val localVariableBody = gaslessSendRequest
         val localVariableQuery: MultiValueMap = mutableMapOf()

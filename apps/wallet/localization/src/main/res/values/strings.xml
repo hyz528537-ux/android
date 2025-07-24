@@ -96,6 +96,7 @@
         <item quantity="many">%1$d NFTs</item>
         <item quantity="other">%1$d NFTs</item>
     </plurals>
+    <string name="exchange_rate">Exchange rate</string>
     <string name="address_prefix">Address:</string>
     <string name="your_address">Your address:</string>
     <string name="safe_mode_tokens_footer">Safe mode is enabled. Only verified tokens are available. <annotation colorAttr="textAccentColor">Settings</annotation></string>
@@ -172,6 +173,7 @@
     <string name="liquid_staking">Liquid Staking</string>
     <string name="other">Other</string>
     <string name="minimum_amount">Minimum %1$s</string>
+    <string name="min_amount">Min. amount: %1$s</string>
     <string name="stake_ethena_description">The tsUSDe token represents USDe held through Ethena, a decentralized staking service. tsUSDe automatically accrues staking rewards, with minimal lock up.</string>
     <string name="stake_ethena_disclaimer">This is the estimated annual return based on the past week’s average protocol rewards and the average amount of staked USDe. The return is annualized with weekly compounding. <annotation colorAttr="textSecondaryColor">Past performance does not guarantee future results.</annotation> Staking and rewards are provided by Ethena, a third-party service, and are subject to their <annotation colorAttr="textAccentColor">terms</annotation>.</string>
     <string name="stake_tonstakers_description">When you stake TON in a Tonstakers pool, you receive a token called tsTON that represents your share in the pool. As the pool accumulates profits, your tsTON represents larger amount of TON.</string>
@@ -302,6 +304,8 @@
     <string name="yesterday">Yesterday</string>
     <string name="collectibles">Collectibles</string>
     <string name="purchases">Purchases</string>
+    <string name="choose_token">Choose Token</string>
+    <string name="enter_amount">Enter Amount</string>
     <string name="call_contract">Call contract</string>
     <string name="contract_address">Contract address</string>
     <string name="about_collection">About collection</string>
@@ -321,7 +325,7 @@
     <string name="new_wallet">New wallet</string>
     <string name="buy_toncoin">Buy Toncoin</string>
     <string name="buy_ton">Buy TON</string>
-    <string name="buy_or_sell_dot">Buy · Sell</string>
+    <string name="buy_or_sell_dot">Buy &amp; Sell Crypto</string>
     <string name="buy_or_sell">Buy or sell</string>
     <string name="fiat_open_description">You are opening an external app not operated by Tonkeeper.</string>
     <string name="buy">Buy</string>
@@ -496,6 +500,7 @@
     <string name="logout_confirmation">I have a backup copy of the recovery phrase for %1$s</string>
     <string name="last_updated">Updated %1$s</string>
     <string name="back_up_now">Back up</string>
+    <string name="confirm_swap">Confirm Swap</string>
     <string name="max">Max</string>
     <string name="confirm_and_send">Confirm and send</string>
     <string name="confirm_action">Confirm Action</string>

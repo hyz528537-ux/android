@@ -69,6 +69,7 @@ dependencies {
     implementation(project(Dependence.Wallet.Data.battery))
     implementation(project(Dependence.Wallet.Data.dapps))
     implementation(project(Dependence.Wallet.Data.contacts))
+    implementation(project(Dependence.Wallet.Data.swap))
 
     implementation(project(Dependence.UIKit.core))
     implementation(project(Dependence.UIKit.flag))
@@ -90,9 +91,6 @@ dependencies {
 
     implementation(Dependence.UI.material)
     implementation(Dependence.UI.flexbox)
-
-    implementation(Dependence.Squareup.moshi)
-    implementation(Dependence.Squareup.moshiAdapters)
 
     implementation(platform(Dependence.Firebase.bom))
     implementation(Dependence.Firebase.analytics)
