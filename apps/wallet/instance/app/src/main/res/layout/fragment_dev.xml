@@ -53,6 +53,14 @@
                     app:position="first"
                     android:text="Blur"/>
 
+                <uikit.widget.item.ItemTextView
+                    android:id="@+id/copy_firebase_push"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/offsetMedium"
+                    android:text="Firebase push token"
+                    app:position="middle"/>
+
                 <uikit.widget.item.ItemSwitchView
                     android:id="@+id/ignore_system_font_size"
                     android:layout_width="match_parent"
@@ -108,6 +116,7 @@
                     android:layout_marginHorizontal="@dimen/offsetMedium"
                     android:text="Import mnemonic again from RN"
                     app:position="last"/>
+
 
             </uikit.widget.ColumnLayout>
 

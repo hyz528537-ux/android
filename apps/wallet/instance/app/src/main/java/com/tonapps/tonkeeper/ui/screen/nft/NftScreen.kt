@@ -13,11 +13,14 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.net.toUri
 import androidx.core.widget.NestedScrollView
+import androidx.lifecycle.lifecycleScope
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.imagepipeline.request.ImageRequest
 import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.tonapps.blockchain.ton.extensions.equalsAddress
+import com.tonapps.extensions.currentTimeSeconds
 import com.tonapps.extensions.getParcelableCompat
+import com.tonapps.extensions.locale
 import com.tonapps.extensions.short4
 import com.tonapps.extensions.toUriOrNull
 import com.tonapps.tonkeeper.core.AnalyticsHelper
@@ -25,6 +28,7 @@ import com.tonapps.tonkeeper.extensions.copyWithToast
 import com.tonapps.tonkeeper.extensions.isLightTheme
 import com.tonapps.tonkeeper.extensions.toast
 import com.tonapps.tonkeeper.extensions.toastLoading
+import com.tonapps.tonkeeper.helper.DateHelper
 import com.tonapps.tonkeeper.koin.serverConfig
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.popup.ActionSheet
@@ -32,18 +36,25 @@ import com.tonapps.tonkeeper.ui.base.WalletContextScreen
 import com.tonapps.tonkeeper.ui.component.LottieView
 import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppArgs
 import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppScreen
+import com.tonapps.tonkeeper.ui.screen.dns.renew.DNSRenewScreen
+import com.tonapps.tonkeeper.ui.screen.dns.renew.DNSRenewViewModel
 import com.tonapps.tonkeeper.ui.screen.root.RootViewModel
 import com.tonapps.tonkeeper.ui.screen.send.main.SendScreen
+import com.tonapps.tonkeeper.ui.screen.send.transaction.SendTransactionScreen
 import com.tonapps.tonkeeperx.R
+import com.tonapps.uikit.color.UIKitColor
 import com.tonapps.uikit.color.accentBlueColor
 import com.tonapps.uikit.color.accentOrangeColor
 import com.tonapps.uikit.color.accentRedColor
+import com.tonapps.uikit.color.resolveColor
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.uikit.list.ListCell
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.collectibles.entities.NftEntity
 import com.tonapps.wallet.data.core.Trust
+import com.tonapps.wallet.data.core.entity.SignRequestEntity
 import com.tonapps.wallet.localization.Localization
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.core.parameter.parametersOf
 import uikit.base.BaseFragment
@@ -81,6 +92,7 @@ class NftScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_nft
     private lateinit var headerView: HeaderView
     private lateinit var spamView: View
     private lateinit var previewView: FrameLayout
+    private lateinit var domainExpirationView: AppCompatTextView
 
     private var lottieView: LottieView? = null
 
@@ -104,6 +116,7 @@ class NftScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_nft
         spamView = view.findViewById(R.id.spam)
 
         previewView = view.findViewById(R.id.preview)
+        domainExpirationView = view.findViewById(R.id.domain_expiration)
 
         view.findViewById<Button>(R.id.report_spam).setOnClickListener { reportSpam(true) }
         view.findViewById<Button>(R.id.not_spam).setOnClickListener { reportSpam(false) }
@@ -146,35 +159,15 @@ class NftScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_nft
             ))
         }
 
-        val domainLinkButton = view.findViewById<Button>(R.id.domain_link)
         val domainRenewButton = view.findViewById<Button>(R.id.domain_renew)
 
-        if (nftEntity.isDomain && nftEntity.metadata.buttons.isEmpty()) {
-            val url = "https://dns.tonkeeper.com/manage?v=${nftEntity.userFriendlyAddress}".toUri()
-            val dAppArgs = DAppArgs(
-                title = url.host ?: nftEntity.name,
-                url = url,
-                iconUrl = "",
-                source = "nft"
-            )
-            domainLinkButton.setOnClickListener {
-                navigation?.add(DAppScreen.newInstance(wallet, dAppArgs))
-                finish()
-            }
-            if (nftEntity.isTelegramUsername) {
-                domainLinkButton.setBackgroundResource(uikit.R.drawable.bg_button_secondary)
-                domainLinkButton.setTextColor(getColor(uikit.R.color.button_secondary_foreground_selector))
-                domainRenewButton.visibility = View.GONE
-            } else {
-                domainRenewButton.visibility = View.VISIBLE
-                domainRenewButton.setOnClickListener {
-                    navigation?.add(DAppScreen.newInstance(wallet, dAppArgs))
-                    finish()
-                }
-            }
-        } else {
-            domainLinkButton.visibility = View.GONE
-            domainRenewButton.visibility = View.GONE
+        if (nftEntity.isDomain && !nftEntity.isTelegramUsername) {
+            domainRenewButton.visibility = View.VISIBLE
+            domainRenewButton.text = getString(Localization.renew_signel_dns_until, DateHelper.untilDate(
+                locale = requireContext().locale
+            ))
+            domainRenewButton.setOnClickListener { viewModel.renewDomain() }
+            domainRenewButton.isEnabled = !nftEntity.inSale
         }
 
         val buttonsContainer = view.findViewById<ColumnLayout>(R.id.buttons_container)
@@ -214,7 +207,6 @@ class NftScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_nft
 
         if (!wallet.isTonConnectSupported) {
             buttonsContainer.visibility = View.GONE
-            domainLinkButton.visibility = View.GONE
             domainRenewButton.visibility = View.GONE
             transferButton.visibility = View.GONE
         }
@@ -228,6 +220,15 @@ class NftScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_nft
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ))
+        }
+        collectFlow(viewModel.expiresFlow) { entity ->
+            domainExpirationView.visibility = View.VISIBLE
+            domainExpirationView.text = getString(Localization.renew_dns_expires, entity.daysUntilExpiration)
+            if (30 >= entity.daysUntilExpiration) {
+                domainExpirationView.setTextColor(requireContext().resolveColor(UIKitColor.accentRedColor))
+            } else {
+                domainExpirationView.setTextColor(requireContext().resolveColor(UIKitColor.textSecondaryColor))
+            }
         }
     }
 

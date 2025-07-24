@@ -256,7 +256,13 @@
     <string name="report_encrypted_comment">Комментарий из этой транзакции будет отправлен вместе с жалобой в расшифрованном виде.</string>
     <string name="report_encrypted_comment_button">Пожаловаться всё равно</string>
     <string name="tx_marked_as_not_spam">Отмечено как не спам</string>
-
+    <string name="renew_dns_title">Истекающие домены</string>
+    <string name="renew_dns_expires">Истекает через %1$d д.</string>
+    <string name="wallet_renew_dns">У вас есть %1$d домена с истекающим сроком аренды. Продлите все до %2$s.</string>
+    <string name="renew_dns_until">Продлить все до %1$s</string>
+    <string name="renew_signel_dns_until">Продлить  до %1$s</string>
+    <string name="renew_dns_all">Продлить все</string>
+    <string name="renew_dns_done">Домен продлён на 1 год</string>
 
     <!-- not reviewed -->
     <string name="unstake_amount">Сумма снятия ставки</string>

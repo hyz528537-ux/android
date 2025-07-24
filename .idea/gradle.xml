@@ -70,6 +70,9 @@
             <option value="$PROJECT_DIR$/lib/security" />
             <option value="$PROJECT_DIR$/lib/sqlite" />
             <option value="$PROJECT_DIR$/lib/ur" />
+            <option value="$PROJECT_DIR$/shared" />
+            <option value="$PROJECT_DIR$/shared/core" />
+            <option value="$PROJECT_DIR$/shared/ui" />
             <option value="$PROJECT_DIR$/tonapi" />
             <option value="$PROJECT_DIR$/ui" />
             <option value="$PROJECT_DIR$/ui/blur" />

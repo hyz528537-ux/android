@@ -17,6 +17,7 @@ import com.tonapps.wallet.api.entity.ConfigEntity
 import com.tonapps.wallet.api.entity.NotificationEntity
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
+import com.tonapps.wallet.data.collectibles.entities.DnsExpiringEntity
 import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.core.isAvailableBiometric
 import com.tonapps.wallet.data.dapps.entities.AppPushEntity
@@ -295,6 +296,7 @@ sealed class State {
             setup: Setup?,
             lastUpdatedFormat: String,
             prefixYourAddress: Boolean,
+            renewDomains: List<DnsExpiringEntity>
         ): List<Item> {
             val uiItems = mutableListOf<Item>()
             if (apkStatus != APKManager.Status.Default && apkStatus !is APKManager.Status.UpdateAvailable) {
@@ -310,6 +312,10 @@ sealed class State {
             uiItems.add(uiItemActions(config))
             if (!dAppNotifications.isEmpty) {
                 uiItems.add(Item.Push(dAppNotifications.pushes))
+            }
+
+            if (renewDomains.isNotEmpty()) {
+                uiItems.add(Item.RenewDomains(wallet, renewDomains))
             }
 
             setup?.let {

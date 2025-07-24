@@ -6,16 +6,15 @@ import android.text.SpannableString
 import android.text.method.LinkMovementMethod
 import android.text.style.ForegroundColorSpan
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.updateLayoutParams
 import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.extensions.getUserMessage
 import com.tonapps.extensions.isPositive
-import com.tonapps.extensions.short4
 import com.tonapps.extensions.shortTron
 import com.tonapps.extensions.uri
 import com.tonapps.icu.CurrencyFormatter
@@ -28,7 +27,6 @@ import com.tonapps.tonkeeper.extensions.copyToClipboard
 import com.tonapps.tonkeeper.extensions.getTitle
 import com.tonapps.tonkeeper.extensions.hideKeyboard
 import com.tonapps.tonkeeper.helper.BrowserHelper
-import com.tonapps.tonkeeper.koin.settingsRepository
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.popup.ActionSheet
 import com.tonapps.tonkeeper.ui.base.WalletContextScreen
@@ -53,7 +51,6 @@ import com.tonapps.uikit.color.fieldActiveBorderColor
 import com.tonapps.uikit.color.fieldErrorBorderColor
 import com.tonapps.uikit.color.textAccentColor
 import com.tonapps.uikit.color.textSecondaryColor
-import com.tonapps.uikit.color.textTertiaryColor
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.wallet.api.entity.Blockchain
 import com.tonapps.wallet.api.entity.TokenEntity
@@ -77,6 +74,7 @@ import uikit.extensions.getDimensionPixelSize
 import uikit.extensions.hideKeyboard
 import uikit.extensions.setEndDrawable
 import uikit.span.ClickableSpanCompat
+import uikit.widget.ColumnLayout
 import uikit.widget.FrescoView
 import uikit.widget.HeaderView
 import uikit.widget.InputView
@@ -128,7 +126,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
     private lateinit var reviewTitleView: AppCompatTextView
     private lateinit var reviewWalletView: TransactionDetailView
     private lateinit var reviewRecipientView: TransactionDetailView
-    private lateinit var reviewRecipientAddressView: TransactionDetailView
+    private lateinit var reviewRecipientAddressView: ColumnLayout
     private lateinit var reviewRecipientAmountView: TransactionDetailView
     private lateinit var reviewRecipientFeeView: TransactionDetailView
     private lateinit var reviewRecipientCommentView: TransactionDetailView
@@ -608,23 +606,42 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
             amount.convertedFormat.withCustomSymbol(requireContext())
     }
 
+    private fun reviewRecipientAddressTitle(): AppCompatTextView {
+        return reviewRecipientAddressView.getChildAt(0) as AppCompatTextView
+    }
+
+    private fun reviewRecipientAddressValue(): AppCompatTextView {
+        return reviewRecipientAddressView.getChildAt(1) as AppCompatTextView
+    }
+
     private fun applyTransactionAccount(destination: SendDestination) {
         if (destination is SendDestination.TonAccount) {
             if (destination.displayName == null) {
+                reviewRecipientView.visibility = View.GONE
+                reviewRecipientView.orientation = LinearLayoutCompat.VERTICAL
                 reviewRecipientView.value = destination.displayAddress
                 reviewRecipientView.setOnClickListener {
                     requireContext().copyToClipboard(destination.displayAddress)
                 }
 
-                reviewRecipientAddressView.visibility = View.GONE
+                reviewRecipientAddressView.visibility = View.VISIBLE
+                reviewRecipientAddressTitle().setText(Localization.recipient)
+                reviewRecipientAddressValue().text = destination.displayAddress
+                reviewRecipientAddressView.setOnClickListener {
+                    requireContext().copyToClipboard(
+                        destination.displayAddress
+                    )
+                }
             } else {
+                reviewRecipientView.orientation = LinearLayoutCompat.HORIZONTAL
                 reviewRecipientView.value = destination.displayName
                 reviewRecipientView.setOnClickListener {
                     requireContext().copyToClipboard(destination.displayName!!)
                 }
 
                 reviewRecipientAddressView.visibility = View.VISIBLE
-                reviewRecipientAddressView.value = destination.displayAddress
+                reviewRecipientAddressTitle().setText(Localization.recipient_address)
+                reviewRecipientAddressValue().text = destination.displayAddress
                 reviewRecipientAddressView.setOnClickListener {
                     requireContext().copyToClipboard(
                         destination.displayAddress

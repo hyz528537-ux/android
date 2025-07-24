@@ -1,5 +1,6 @@
 package com.tonapps.tonkeeper.ui.screen.browser.dapp
 
+import android.Manifest
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -7,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import androidx.appcompat.widget.AppCompatTextView
@@ -123,6 +125,24 @@ class DAppScreen(wallet: WalletEntity): InjectedTonConnectScreen(R.layout.fragme
             super.openFilePicker(fileChooserParams)
             startActivityForResult(fileChooserParams.createIntent(), REQUEST_CODE_FILE)
         }
+
+        override fun onPermissionRequest(request: PermissionRequest) {
+            super.onPermissionRequest(request)
+            val resources = request.resources
+            val androidPermissions = mutableListOf<String>()
+            resources.forEach { resource ->
+                if (resource == PermissionRequest.RESOURCE_VIDEO_CAPTURE) {
+                    androidPermissions.add(Manifest.permission.CAMERA)
+                } else if (resource == PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
+                    androidPermissions.add(Manifest.permission.RECORD_AUDIO)
+                }
+            }
+            if (hasPermissions(androidPermissions.toTypedArray())) {
+                request.grant(resources)
+            } else if (androidPermissions.isNotEmpty()) {
+                requestPermissions(androidPermissions.toTypedArray(), REQUEST_CODE_PERMISSIONS)
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -130,6 +150,20 @@ class DAppScreen(wallet: WalletEntity): InjectedTonConnectScreen(R.layout.fragme
         if (requestCode == REQUEST_CODE_FILE) {
             val uris = data?.data?.let { arrayOf(it) } ?: emptyArray()
             webView.setFilePickerResult(uris)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String?>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            val granted = grantResults.all { it == android.content.pm.PackageManager.PERMISSION_GRANTED }
+            if (granted) {
+                webView.reload()
+            }
         }
     }
 
@@ -158,13 +192,27 @@ class DAppScreen(wallet: WalletEntity): InjectedTonConnectScreen(R.layout.fragme
                 val deeplink = DeepLink(url.toUri(), false, null)
                 when (deeplink.route) {
                     is DeepLinkRoute.DApp -> webView.loadUrl(url)
-                    is DeepLinkRoute.Unknown -> BrowserHelper.open(requireActivity(), url)
+                    is DeepLinkRoute.Unknown -> BrowserHelper.open(requireContext(), url)
                     else -> processDeeplink(deeplink, url)
                 }
+            } else if (url.startsWith("https://x.com")) {
+                BrowserHelper.openX(requireActivity(), url.toUri())
+            } else if (url.startsWith("https://t.me")) {
+                BrowserHelper.openTG(requireContext(), url.toUri())
             } else {
-                BrowserHelper.open(requireActivity(), url)
+                openNewDApp(url.toUri())
             }
         }
+    }
+
+    private fun openNewDApp(uri: Uri) {
+        navigation?.add(newInstance(
+            wallet = wallet,
+            title = uri.host ?: "unknown",
+            iconUrl = "https://www.google.com/s2/favicons?sz=256&domain=${uri.host}",
+            url = uri,
+            source = args.source
+        ))
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -383,6 +431,7 @@ class DAppScreen(wallet: WalletEntity): InjectedTonConnectScreen(R.layout.fragme
         private const val ADD_HOME_SCREEN_ID = 6L
 
         private const val REQUEST_CODE_FILE = 1933
+        private const val REQUEST_CODE_PERMISSIONS = 1934
 
         fun newInstance(
             wallet: WalletEntity,

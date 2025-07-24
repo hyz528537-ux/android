@@ -2,7 +2,7 @@ package com.tonapps.tonkeeper.ui.screen.send.contacts.add
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
-import com.tonapps.blockchain.ton.extensions.isTestnetAddress
+import com.tonapps.blockchain.ton.TonAddressTags
 import com.tonapps.blockchain.tron.isValidTronAddress
 import com.tonapps.extensions.bestMessage
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
@@ -65,11 +65,12 @@ class AddContactViewModel(
 
     init {
         userInputAddressFlow.collectFlow { address ->
+            val tags = TonAddressTags.of(address)
             if (address.isBlank()) {
                 _accountFlow.value = AddressAccount.Empty
-            } else if (address.contains(":")) {
+            } else if (!tags.userFriendly) {
                 _accountFlow.value = AddressAccount.Error
-            } else if (address.isTestnetAddress() && !wallet.testnet) {
+            } else if (tags.isTestnet == true && !wallet.testnet) {
                 _accountFlow.value = AddressAccount.Error
             } else if (address.isValidTronAddress() && tronUsdtEnabled) {
                 _accountFlow.value = AddressAccount.TronAccount(address)

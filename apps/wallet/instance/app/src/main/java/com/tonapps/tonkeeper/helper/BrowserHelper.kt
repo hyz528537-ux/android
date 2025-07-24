@@ -127,6 +127,17 @@ object BrowserHelper {
         }
     }
 
+    fun openX(activity: Activity, uri: Uri) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.setPackage("com.twitter.android")
+            activity.startActivity(intent)
+        } catch (e: Throwable) {
+            external(activity, uri)
+        }
+    }
+
     fun external(context: Context, uri: Uri) {
         context.activity?.let {
             external(it, uri)

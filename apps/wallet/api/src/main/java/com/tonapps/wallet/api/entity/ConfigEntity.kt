@@ -8,6 +8,7 @@ import com.tonapps.icu.Coins
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
+import androidx.core.net.toUri
 
 @Parcelize
 data class ConfigEntity(
@@ -58,12 +59,12 @@ data class ConfigEntity(
     val stories: List<String>,
     val apkDownloadUrl: String?,
     val apkName: AppVersion?,
-    val tronApiUrl: String,
+    val tronApiUrl: String
 ): Parcelable {
 
     @IgnoredOnParcel
     val swapUri: Uri
-        get() = Uri.parse(stonfiUrl)
+        get() = stonfiUrl.toUri()
 
     @IgnoredOnParcel
     val isBatteryDisabled: Boolean
@@ -206,7 +207,7 @@ data class ConfigEntity(
         stories = emptyList(),
         apkDownloadUrl = null,
         apkName = null,
-        tronApiUrl = "https://api.trongrid.io",
+        tronApiUrl = "https://api.trongrid.io"
     )
 
     companion object {

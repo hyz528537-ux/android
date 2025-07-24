@@ -8,13 +8,13 @@ android {
 }
 
 dependencies {
-    implementation(Dependence.Squareup.okhttp)
+    implementation(libs.okhttp)
 
-    implementation(project(Dependence.Wallet.api))
-    implementation(project(Dependence.Wallet.Data.core))
-    implementation(project(Dependence.Wallet.Data.account))
+    implementation(project(ProjectModules.Wallet.api))
+    implementation(project(ProjectModules.Wallet.Data.core))
+    implementation(project(ProjectModules.Wallet.Data.account))
 
-    implementation(project(Dependence.Lib.network))
-    implementation(project(Dependence.Lib.extensions))
+    implementation(project(ProjectModules.Lib.network))
+    implementation(project(ProjectModules.Lib.extensions))
 }
 

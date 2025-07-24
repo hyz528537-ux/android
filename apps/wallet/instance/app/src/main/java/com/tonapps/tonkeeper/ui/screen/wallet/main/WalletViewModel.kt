@@ -22,6 +22,8 @@ import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.backup.BackupRepository
 import com.tonapps.wallet.data.battery.BatteryRepository
+import com.tonapps.wallet.data.collectibles.CollectiblesRepository
+import com.tonapps.wallet.data.collectibles.entities.DnsExpiringEntity
 import com.tonapps.wallet.data.core.ScreenCacheSource
 import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.rates.RatesRepository
@@ -58,6 +60,7 @@ class WalletViewModel(
     private val apkManager: APKManager,
     private val remoteConfig: RemoteConfig,
     private val environment: Environment,
+    private val collectiblesRepository: CollectiblesRepository,
 ) : BaseWalletVM(app) {
 
     val installId: String
@@ -75,6 +78,9 @@ class WalletViewModel(
 
     private val _stateMainFlow = MutableStateFlow<State.Main?>(null)
     private val stateMainFlow = _stateMainFlow.asStateFlow().filterNotNull()
+
+    private val _domainRenewFlow = MutableStateFlow<List<DnsExpiringEntity>>(emptyList())
+    private val domainRenewFlow = _domainRenewFlow.asStateFlow().filterNotNull()
 
     private val updateWalletSettings = combine(
         settingsRepository.tokenPrefsChangedFlow,
@@ -113,6 +119,8 @@ class WalletViewModel(
             _uiItemsFlow.value = cached
         }
 
+        requestDnsExpiring()
+
         collectFlow(transactionManager.eventsFlow(wallet)) { event ->
             if (event.pending) {
                 setStatus(Status.SendingTransaction)
@@ -121,6 +129,7 @@ class WalletViewModel(
                 delay(2000)
                 setStatus(Status.Default)
                 _lastLtFlow.value = event.lt
+                _domainRenewFlow.value = collectiblesRepository.getDnsSoonExpiring(wallet.accountId, wallet.testnet)
             }
         }
 
@@ -223,7 +232,8 @@ class WalletViewModel(
             alertNotificationsFlow,
             _stateSettingsFlow,
             updateWalletSettings,
-        ) { state, alerts, settings, _ ->
+            domainRenewFlow,
+        ) { state, alerts, settings, _, renewDomains ->
             val status = settings.status /* if (settings.status == Status.NoInternet) {
                 settings.status
             } else if (settings.status != Status.SendingTransaction && settings.status != Status.TransactionConfirmed) {
@@ -261,7 +271,8 @@ class WalletViewModel(
                     lastUpdated,
                     settingsRepository.getLocale()
                 ),
-                prefixYourAddress = 3 > settingsRepository.addressCopyCount
+                prefixYourAddress = 3 > settingsRepository.addressCopyCount,
+                renewDomains = renewDomains
             )
             if (uiItems.isNotEmpty()) {
                 _uiItemsFlow.value = uiItems
@@ -280,8 +291,15 @@ class WalletViewModel(
     }
 
     fun refresh() {
+        requestDnsExpiring()
         _statusFlow.value = Status.Updating
         _lastLtFlow.value += 1
+    }
+
+    private fun requestDnsExpiring() {
+        viewModelScope.launch {
+            _domainRenewFlow.value = collectiblesRepository.getDnsSoonExpiring(wallet.accountId, wallet.testnet)
+        }
     }
 
     private suspend fun checkAutoRefresh() {

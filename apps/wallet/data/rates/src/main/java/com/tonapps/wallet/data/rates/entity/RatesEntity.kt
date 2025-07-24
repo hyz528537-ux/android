@@ -32,6 +32,9 @@ data class RatesEntity(
     val currencyCode: String
         get() = currency.code
 
+    val tokens: List<String>
+        get() = map.keys.toList()
+
     fun hasToken(token: String): Boolean {
         return map.containsKey(token)
     }
@@ -126,6 +129,20 @@ data class RatesEntity(
 
         val rate = rateValue(token)
         return (value * rate)
+    }
+
+    fun convertJetton(fromToken: String, toToken: String, value: Coins): Coins {
+        if (fromToken == toToken || value == Coins.ZERO) {
+            return value
+        }
+        val fromRate = rateValue(fromToken)
+        val toRate = rateValue(toToken)
+
+        if (fromRate.isZero || toRate.isZero) {
+            return Coins.ZERO
+        }
+        val valueInMaster = value * fromRate
+        return valueInMaster.div(toRate, roundingMode = RoundingMode.HALF_DOWN)
     }
 
     fun convertFromFiat(token: String, value: Coins): Coins {

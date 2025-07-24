@@ -102,7 +102,7 @@ baselineProfile {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
-    implementation(project(Dependence.Wallet.app))
+    implementation(project(ProjectModules.Wallet.app))
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:core:1.6.1")

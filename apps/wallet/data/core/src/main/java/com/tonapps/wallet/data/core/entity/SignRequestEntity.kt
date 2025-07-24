@@ -26,7 +26,8 @@ data class SignRequestEntity(
     val validUntil: Long,
     val messages: List<RawMessageEntity>,
     val network: TonNetwork,
-    val messagesVariants: MessagesVariantsEntity? = null
+    val messagesVariants: MessagesVariantsEntity? = null,
+    val seqNo: Int? = null
 ): Parcelable {
 
     @IgnoredOnParcel
@@ -73,6 +74,9 @@ data class SignRequestEntity(
         private var validUntil: Long? = null
         private var network: TonNetwork = TonNetwork.MAINNET
         private val messages = mutableListOf<RawMessageEntity>()
+        private var seqNo: Int? = null
+
+        fun setSeqNo(seqNo: Int) = apply { this.seqNo = seqNo }
 
         fun setFrom(from: AddrStd) = apply { this.from = from }
 
@@ -84,6 +88,8 @@ data class SignRequestEntity(
 
         fun addMessage(message: RawMessageEntity) = apply { messages.add(message) }
 
+        fun addMessages(messages: List<RawMessageEntity>) = apply { this.messages.addAll(messages) }
+
         fun build(appUri: Uri): SignRequestEntity {
             return SignRequestEntity(
                 fromValue = from?.toAccountId(),
@@ -91,7 +97,8 @@ data class SignRequestEntity(
                 validUntil = validUntil ?: 0,
                 messages = messages.toList(),
                 network = network,
-                appUri = appUri
+                appUri = appUri,
+                seqNo = seqNo
             )
         }
     }

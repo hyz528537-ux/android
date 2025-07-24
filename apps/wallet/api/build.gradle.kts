@@ -24,16 +24,16 @@ android {
 }
 
 dependencies {
-    implementation(Dependence.KotlinX.serialization)
-    implementation(Dependence.KotlinX.serializationJSON)
-    implementation(Dependence.Koin.core)
-    implementation(Dependence.KotlinX.guava)
-    implementation(project(Dependence.Module.tonApi))
-    implementation(project(Dependence.Lib.network))
-    implementation(project(Dependence.Lib.blockchain))
-    implementation(project(Dependence.Lib.extensions))
-    implementation(project(Dependence.Lib.icu))
-    implementation(Dependence.GooglePlay.cronet)
-    implementation(Dependence.Squareup.okhttp)
-    implementation(Dependence.Squareup.sse)
+    implementation(libs.kotlinX.serialization.core)
+    implementation(libs.kotlinX.serialization.json)
+    implementation(libs.kotlinX.coroutines.guava)
+    implementation(libs.koin.core)
+    implementation(project(ProjectModules.Module.tonApi))
+    implementation(project(ProjectModules.Lib.network))
+    implementation(project(ProjectModules.Lib.blockchain))
+    implementation(project(ProjectModules.Lib.extensions))
+    implementation(project(ProjectModules.Lib.icu))
+    implementation(libs.google.play.cronet)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.sse)
 }

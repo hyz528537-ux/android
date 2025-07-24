@@ -22,7 +22,7 @@ android {
 }
 
 dependencies {
-    implementation(Dependence.Squareup.okhttp)
-    implementation(Dependence.KotlinX.serialization)
-    implementation(Dependence.KotlinX.serializationJSON)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinX.serialization.core)
+    implementation(libs.kotlinX.serialization.json)
 }

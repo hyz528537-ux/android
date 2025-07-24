@@ -58,36 +58,36 @@ android {
 }
 
 dependencies {
-    implementation(Dependence.AndroidX.core)
-    implementation(Dependence.AndroidX.appCompat)
-    implementation(Dependence.AndroidX.activity)
-    implementation(Dependence.AndroidX.fragment)
-    implementation(Dependence.AndroidX.recyclerView)
-    implementation(Dependence.AndroidX.viewPager2)
-    implementation(Dependence.AndroidX.splashscreen)
+    implementation(libs.androidX.core)
+    implementation(libs.androidX.appCompat)
+    implementation(libs.androidX.activity)
+    implementation(libs.androidX.fragment)
+    implementation(libs.androidX.recyclerView)
+    implementation(libs.androidX.viewPager2)
+    implementation(libs.androidX.splashscreen)
 
-    implementation(Dependence.UI.material)
-    implementation(Dependence.UI.flexbox)
-    implementation(Dependence.AndroidX.Camera.base)
-    implementation(Dependence.AndroidX.Camera.core)
-    implementation(Dependence.AndroidX.Camera.lifecycle)
-    implementation(Dependence.AndroidX.Camera.view)
-    implementation(Dependence.AndroidX.security)
-    implementation(Dependence.AndroidX.constraintlayout)
-    implementation(Dependence.AndroidX.lifecycleSavedState)
-    implementation(project(Dependence.Lib.blockchain))
-    implementation(project(Dependence.Lib.extensions))
+    implementation(libs.material)
+    implementation(libs.flexbox)
+    implementation(libs.cameraX.base)
+    implementation(libs.cameraX.core)
+    implementation(libs.cameraX.lifecycle)
+    implementation(libs.cameraX.view)
+    implementation(libs.androidX.security)
+    implementation(libs.androidX.constraintlayout)
+    implementation(libs.androidX.lifecycleSavedState)
+    implementation(project(ProjectModules.Lib.blockchain))
+    implementation(project(ProjectModules.Lib.extensions))
 
-    implementation(Dependence.KotlinX.guava)
+    implementation(libs.kotlinX.coroutines.guava)
 
-    implementation(project(Dependence.UIKit.core)) {
+    implementation(project(ProjectModules.UIKit.core)) {
         exclude("com.airbnb.android", "lottie")
         exclude("com.facebook.fresco", "fresco")
     }
 
-    implementation(project(Dependence.Lib.qr))
-    implementation(project(Dependence.Lib.security))
-    implementation(project(Dependence.Lib.icu))
-    implementation(Dependence.Koin.core)
+    implementation(project(ProjectModules.Lib.qr))
+    implementation(project(ProjectModules.Lib.security))
+    implementation(project(ProjectModules.Lib.icu))
+    implementation(libs.koin.core)
 }
 

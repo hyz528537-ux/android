@@ -28,6 +28,7 @@ import android.webkit.WebSettings
 import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.webkit.OutcomeReceiverCompat
 import androidx.webkit.PrefetchException
 import androidx.webkit.Profile
@@ -63,6 +64,7 @@ open class WebViewFixed @JvmOverloads constructor(
         open fun onWindowClose() { }
         open fun onNewTab(url: String) { }
         open fun openFilePicker(fileChooserParams: FileChooserParams) { }
+        open fun onPermissionRequest(request: PermissionRequest) {  }
     }
 
     private var isPageLoaded = false
@@ -161,10 +163,9 @@ open class WebViewFixed @JvmOverloads constructor(
                 callbacks.forEach { it.onProgressChanged(newProgress) }
             }
 
-            /*override fun onPermissionRequest(request: PermissionRequest) {
-                val resources = request.resources
-                request.grant(resources)
-            }*/
+            override fun onPermissionRequest(request: PermissionRequest) {
+                callbacks.forEach { it.onPermissionRequest(request) }
+            }
 
             override fun onCreateWindow(
                 view: WebView,
@@ -203,7 +204,6 @@ open class WebViewFixed @JvmOverloads constructor(
     }
 
     fun setFilePickerResult(arrays: Array<Uri>) {
-        Log.d("DAppScreenLog", "setFilePickerResult: ${arrays.joinToString(", ")}")
         filePathCallback?.onReceiveValue(arrays)
         filePathCallback = null
     }

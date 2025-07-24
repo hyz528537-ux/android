@@ -8,6 +8,7 @@ import com.android.billingclient.api.BillingClient.ProductType
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ConsumeParams
+import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
@@ -44,7 +45,7 @@ class BillingManager(
 
     private var billingClient: BillingClient = BillingClient.newBuilder(context)
         .setListener(this)
-        .enablePendingPurchases()
+        .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().enablePrepaidPlans().build())
         .build()
 
     private val _productsFlow = MutableStateFlow<List<ProductDetails>?>(null)
@@ -90,7 +91,7 @@ class BillingManager(
     private suspend fun getProductDetails(client: BillingClient, params: QueryProductDetailsParams): List<ProductDetails> = suspendCancellableCoroutine { continuation ->
         client.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                continuation.resume(productDetailsList)
+                continuation.resume(productDetailsList.productDetailsList)
             } else {
                 continuation.resumeWithException(BillingException(billingResult))
             }

@@ -23,6 +23,14 @@ class RatesRepository(
 
     private val localDataSource = BlobDataSource(context)
 
+    suspend fun updateAll(currency: WalletCurrency, tokens: List<String>) = withContext(Dispatchers.IO) {
+        load(currency, tokens.take(100).toMutableList())
+    }
+
+    suspend fun updateAll(currency: WalletCurrency) = withContext(Dispatchers.IO) {
+        updateAll(currency, localDataSource.get(currency).tokens)
+    }
+
     fun cache(currency: WalletCurrency, tokens: List<String>): RatesEntity {
         return localDataSource.get(currency).filter(tokens)
     }

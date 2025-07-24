@@ -1,17 +1,19 @@
 import com.android.build.gradle.AppExtension
 
 plugins {
-    id("com.android.application") version "8.11.1" apply false
-    id("org.jetbrains.kotlin.android") version "2.0.0" apply false
-    id("com.android.library") version "8.11.1" apply false
-    id("com.google.gms.google-services") version "4.4.2" apply false
-    id("com.google.firebase.crashlytics") version "3.0.3" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
-    id("com.android.test") version "8.11.1" apply false
-    id("androidx.baselineprofile") version "1.3.4"
-    id("org.jetbrains.kotlin.jvm") version "1.9.0" apply false
-    id("com.google.firebase.firebase-perf") version "1.4.2" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0"
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.kotlin) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.android.test) apply false
+    alias(libs.plugins.android.baselineprofile)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.kotlin.multiplatform.library) apply false
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.firebase.services) apply false
+    alias(libs.plugins.firebase.crashlytics) apply false
+    alias(libs.plugins.firebase.performance) apply false
 }
 
 allprojects {

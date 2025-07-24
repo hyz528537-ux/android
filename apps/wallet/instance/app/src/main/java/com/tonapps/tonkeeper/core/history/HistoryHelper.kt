@@ -568,7 +568,41 @@ class HistoryHelper(
         val dateDetails = DateHelper.formatTransactionDetailsTime(timestamp, settingsRepository.getLocale())
 
         // actionArgs.isTon && !actionArgs.isOut && !actionArgs.isScam && actionArgs.comment != null
-        if (action.jettonSwap != null) {
+        if (action.purchase != null) {
+            val purchase = action.purchase!!
+
+            val tokenCode = purchase.amount.tokenName
+            val isTon = tokenCode.equals("TON", true)
+            val token = if (isTon) TokenEntity.TON else TokenEntity.USDT
+            val amount = Coins.ofNano(purchase.amount.value, token.decimals)
+            val value = CurrencyFormatter.format(tokenCode, amount, 2)
+
+            val isOut = wallet.isMyAddress(purchase.destination.address)
+            val rates = ratesRepository.getRates(currency, token.address)
+            val inCurrency = rates.convert(token.address, amount)
+
+            return HistoryItem.Event(
+                index = index,
+                txId = txId,
+                action = ActionType.Purchase,
+                title = simplePreview.name,
+                subtitle = purchase.invoiceId.shortAddress,
+                value = if (isOut) value.withPlus else value.withMinus,
+                tokenCode = tokenCode,
+                coinIconUrl = if (isTon) TokenEntity.TON.imageUri.toString() else TokenEntity.USDT.imageUri.toString(),
+                timestamp = timestamp,
+                date = date,
+                dateDetails = dateDetails,
+                isOut = isOut,
+                sender = HistoryItem.Account.ofSender(action, wallet.testnet),
+                recipient = HistoryItem.Account.ofRecipient(action, wallet.testnet),
+                failed = action.status == Action.Status.failed,
+                currency = CurrencyFormatter.formatFiat(currency.code, inCurrency),
+                isScam = isScam,
+                wallet = wallet,
+                actionOutStatus = if (isOut) ActionOutStatus.Send else ActionOutStatus.Received,
+            )
+        } else if (action.jettonSwap != null) {
             val jettonSwap = action.jettonSwap!!
             val tokenIn = jettonSwap.tokenIn
             val tokenOut = jettonSwap.tokenOut

@@ -68,6 +68,7 @@ import com.tonapps.tonkeeper.ui.screen.browser.confirm.DAppConfirmScreen
 import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppScreen
 import com.tonapps.tonkeeper.ui.screen.browser.safe.DAppSafeScreen
 import com.tonapps.tonkeeper.ui.screen.camera.CameraScreen
+import com.tonapps.tonkeeper.ui.screen.dns.renew.DNSRenewScreen
 import com.tonapps.tonkeeper.ui.screen.init.list.AccountItem
 import com.tonapps.tonkeeper.ui.screen.name.edit.EditNameScreen
 import com.tonapps.tonkeeper.ui.screen.onramp.main.OnRampScreen
@@ -87,6 +88,7 @@ import com.tonapps.tonkeeper.ui.screen.token.viewer.TokenScreen
 import com.tonapps.tonkeeper.ui.screen.transaction.TransactionScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.manage.TokensManageScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.picker.PickerScreen
+import com.tonapps.tonkeeperx.BuildConfig
 import com.tonapps.tonkeeperx.R
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.entity.TokenEntity
@@ -100,6 +102,7 @@ import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.passcode.LockScreen
 import com.tonapps.wallet.data.passcode.PasscodeManager
 import com.tonapps.wallet.data.purchase.PurchaseRepository
+import com.tonapps.wallet.data.rates.RatesRepository
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.data.token.TokenRepository
 import com.tonapps.wallet.localization.Localization
@@ -141,6 +144,7 @@ class RootViewModel(
     private val referrerClientHelper: ReferrerClientHelper,
     private val dAppsRepository: DAppsRepository,
     private val safeModeClient: SafeModeClient,
+    private val ratesRepository: RatesRepository,
     savedStateHandle: SavedStateHandle,
 ): BaseWalletVM(app) {
 
@@ -240,7 +244,14 @@ class RootViewModel(
         }.flowOn(Dispatchers.IO).launchIn(viewModelScope)
 
         viewModelScope.launch(Dispatchers.IO) {
-            settingsRepository.firebaseToken = FirebasePush.requestToken()
+            val firebaseToken = FirebasePush.requestToken()
+            settingsRepository.firebaseToken = firebaseToken
+            ratesRepository.updateAll(settingsRepository.currency)
+            if (firebaseToken.isNullOrBlank()) {
+                Log.e("TonkeeperFirebasePush", "Failed to get Firebase push token")
+            } else {
+                Log.d("TonkeeperFirebasePush", "Firebase push token: $firebaseToken")
+            }
         }
 
         selectedWalletFlow.collectFlow { wallet ->
@@ -534,6 +545,9 @@ class RootViewModel(
 
     private suspend fun processDeepLinkPush(uri: Uri, bundle: Bundle) {
         val wallet = deeplinkResolveWallet(bundle) ?: return
+        if (accountRepository.getSelectedWallet()?.id != wallet.id) {
+            accountRepository.setSelectedWallet(wallet.id)
+        }
         val deeplink = DeepLink(uri, false, null)
         processDeepLink(wallet, deeplink, null)
     }
@@ -591,7 +605,9 @@ class RootViewModel(
         fromPackageName: String?
     ) {
         val route = deeplink.route
-        if (route is DeepLinkRoute.TonConnect) {
+        if (route is DeepLinkRoute.DnsRenew) {
+            openScreen(DNSRenewScreen.newInstance(wallet, emptyList()))
+        } else if (route is DeepLinkRoute.TonConnect) {
             if (!wallet.isTonConnectSupported && accountRepository.getWallets().count { it.isTonConnectSupported } == 0) {
                 openScreen(AddWalletScreen.newInstance(true))
                 return

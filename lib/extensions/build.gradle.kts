@@ -24,15 +24,15 @@ android {
 }
 
 dependencies {
-    implementation(Dependence.KotlinX.coroutines)
-    implementation(Dependence.KotlinX.serialization)
-    implementation(Dependence.KotlinX.serializationJSON)
-    implementation(Dependence.Koin.core)
-    implementation(Dependence.AndroidX.core)
-    implementation(Dependence.AndroidX.security)
-    implementation(project(Dependence.UIKit.core))
-    implementation(project(Dependence.Lib.icu))
-    implementation(project(Dependence.Lib.base64))
-    implementation(Dependence.GooglePlay.installreferrer)
-    implementation("com.google.android.gms:play-services-base:18.6.0")
+    implementation(libs.kotlinX.coroutines.android)
+    implementation(libs.kotlinX.serialization.core)
+    implementation(libs.kotlinX.serialization.json)
+    implementation(libs.koin.core)
+    implementation(libs.androidX.core)
+    implementation(libs.androidX.security)
+    implementation(project(ProjectModules.UIKit.core))
+    implementation(project(ProjectModules.Lib.icu))
+    implementation(project(ProjectModules.Lib.base64))
+    implementation(libs.google.play.installreferrer)
+    implementation(libs.google.play.base)
 }

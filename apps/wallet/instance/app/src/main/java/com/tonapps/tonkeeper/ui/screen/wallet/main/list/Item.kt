@@ -30,6 +30,7 @@ import com.tonapps.wallet.api.entity.NotificationEntity
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.account.entities.WalletEntity
+import com.tonapps.wallet.data.collectibles.entities.DnsExpiringEntity
 import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.dapps.entities.AppPushEntity
 import com.tonapps.wallet.data.staking.StakingPool
@@ -55,6 +56,7 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
         const val TYPE_SETUP_LINK = 11
         const val TYPE_STAKED = 12
         const val TYPE_APK_STATUS = 13
+        const val TYPE_RENEW_DOMAINS = 14
 
         fun createFromParcel(parcel: Parcel): Item {
             return when (parcel.readInt()) {
@@ -70,6 +72,7 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
                 TYPE_SETUP_LINK -> SetupLink(parcel)
                 TYPE_STAKED -> Stake(parcel)
                 TYPE_APK_STATUS -> ApkStatus(parcel)
+                TYPE_RENEW_DOMAINS -> RenewDomains(parcel)
                 else -> throw IllegalArgumentException("Unknown type")
             }
         }
@@ -455,6 +458,28 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
             override fun createFromParcel(parcel: Parcel) = Skeleton(parcel)
 
             override fun newArray(size: Int): Array<Skeleton?> = arrayOfNulls(size)
+        }
+    }
+
+    data class RenewDomains(
+        val wallet: WalletEntity,
+        val items: List<DnsExpiringEntity>
+    ): Item(TYPE_RENEW_DOMAINS) {
+
+        constructor(parcel: Parcel) : this(
+            parcel.readParcelableCompat()!!,
+            parcel.readArrayCompat(DnsExpiringEntity::class.java)?.toList() ?: emptyList()
+        )
+
+        override fun marshall(dest: Parcel, flags: Int) {
+            dest.writeParcelable(wallet, flags)
+            dest.writeArrayCompat(items.toTypedArray())
+        }
+
+        companion object CREATOR : Parcelable.Creator<Push> {
+            override fun createFromParcel(parcel: Parcel) = Push(parcel)
+
+            override fun newArray(size: Int): Array<Push?> = arrayOfNulls(size)
         }
     }
 

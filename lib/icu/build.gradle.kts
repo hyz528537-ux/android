@@ -23,5 +23,5 @@ android {
 
 
 dependencies {
-    implementation(Dependence.Squareup.okio)
+    implementation(libs.okio)
 }

@@ -107,6 +107,8 @@ sealed class DeepLinkRoute {
         )
     }
 
+    data object DnsRenew: DeepLinkRoute()
+
     data class Transfer(
         val exp: Long?,
         val address: String,
@@ -274,6 +276,9 @@ sealed class DeepLinkRoute {
             val uri = normalize(input)
             val from = input.query("from") ?: "deep-link"
             val domain = uri.hostOrNull ?: return Unknown(uri)
+            if (domain == "dns" && uri.pathOrNull == "expiring") {
+                return DnsRenew
+            }
             try {
                 return when (domain) {
                     "backup", "backups" -> Backups

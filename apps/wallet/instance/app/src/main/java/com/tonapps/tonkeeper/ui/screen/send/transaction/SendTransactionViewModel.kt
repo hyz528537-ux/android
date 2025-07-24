@@ -109,7 +109,8 @@ class SendTransactionViewModel(
             val useBattery = BatteryHelper.isBatteryIsEnabledTx(wallet, batteryTransactionType, settingsRepository, accountRepository, batteryRepository)
             try {
                 val transfers = transfers(tokens.filter { it.isRequestMinting }, true, useBattery)
-                message = accountRepository.messageBody(wallet, request.validUntil, transfers)
+
+                message = messageBody(transfers)
 
                 val tonDeferred = async {
                     emulationUseCase(
@@ -274,11 +275,21 @@ class SendTransactionViewModel(
         return transactions.toList()
     }
 
+    private suspend fun messageBody(transfers: List<WalletTransfer>): MessageBodyEntity {
+        val seqNo = request.seqNo ?: accountRepository.getSeqno(wallet)
+        return accountRepository.messageBody(
+            wallet = wallet,
+            seqNo = seqNo,
+            validUntil = request.validUntil,
+            transfers = transfers
+        )
+    }
+
     fun send() = flow {
         val isBattery = isBattery.get()
         val compressedTokens = getTokens().filter { it.isRequestMinting }
         val transfers = transfers(compressedTokens, false, isBattery)
-        val message = accountRepository.messageBody(wallet, request.validUntil, transfers)
+        val message = messageBody(transfers)
         val unsignedBody = message.createUnsignedBody(isBattery)
         val ledgerTransactions = getLedgerTransaction(message)
 

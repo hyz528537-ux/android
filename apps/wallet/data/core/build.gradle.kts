@@ -23,23 +23,23 @@ android {
 }
 
 dependencies {
-    api(platform(Dependence.Firebase.bom))
-    api(Dependence.Firebase.crashlytics)
+    api(platform(libs.firebase.bom))
+    api(libs.firebase.crashlytics)
 
-    implementation(Dependence.TON.tvm)
-    implementation(Dependence.TON.crypto)
-    implementation(Dependence.TON.tlb)
-    implementation(Dependence.TON.blockTlb)
-    implementation(Dependence.TON.tonapiTl)
-    implementation(Dependence.TON.contract)
-    implementation(Dependence.Koin.core)
-    implementation(Dependence.AndroidX.biometric)
-    implementation(project(Dependence.Wallet.api))
-    implementation(project(Dependence.Lib.extensions))
-    implementation(project(Dependence.Lib.blockchain))
-    implementation(project(Dependence.Lib.sqlite))
-    implementation(project(Dependence.Module.tonApi))
-    implementation(project(Dependence.UIKit.flag))
+    implementation(libs.ton.tvm)
+    implementation(libs.ton.crypto)
+    implementation(libs.ton.tlb)
+    implementation(libs.ton.blockTlb)
+    implementation(libs.ton.tonapiTl)
+    implementation(libs.ton.contract)
+    implementation(libs.koin.core)
+    implementation(libs.androidX.biometric)
+    implementation(project(ProjectModules.Wallet.api))
+    implementation(project(ProjectModules.Lib.extensions))
+    implementation(project(ProjectModules.Lib.blockchain))
+    implementation(project(ProjectModules.Lib.sqlite))
+    implementation(project(ProjectModules.Module.tonApi))
+    implementation(project(ProjectModules.UIKit.flag))
 }
 
 

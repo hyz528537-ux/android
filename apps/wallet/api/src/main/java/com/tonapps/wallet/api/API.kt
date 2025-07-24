@@ -288,6 +288,14 @@ class API(
         "UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ"
     }
 
+    suspend fun getDnsExpiring(
+        accountId: String,
+        testnet: Boolean,
+        period: Int
+    ) = withContext(Dispatchers.IO) {
+        withRetry { accounts(testnet).getAccountDnsExpiring(accountId, period).items } ?: emptyList()
+    }
+
     fun swapOmnistonBuild(args: SwapEntity.Args) = withRetry {
         internalApi.swapOmnistonBuild(args)
     } ?: throw Exception("Failed to build swap messages")

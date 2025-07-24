@@ -3,7 +3,6 @@ package com.tonapps.tonkeeper.ui.screen.send.contacts.main
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.viewModelScope
-import com.tonapps.blockchain.ton.extensions.equalsAddress
 import com.tonapps.blockchain.ton.extensions.toRawAddress
 import com.tonapps.extensions.filterList
 import com.tonapps.tonkeeper.RemoteConfig
@@ -11,7 +10,6 @@ import com.tonapps.tonkeeper.core.entities.WalletExtendedEntity
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.send.contacts.main.list.Item
 import com.tonapps.uikit.list.ListCell
-import com.tonapps.wallet.api.API
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.account.entities.WalletEntity
@@ -21,19 +19,13 @@ import com.tonapps.wallet.data.events.EventsRepository
 import com.tonapps.wallet.data.settings.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.internal.filterList
 
 class SendContactsViewModel(
     app: Application,

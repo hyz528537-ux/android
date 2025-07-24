@@ -9,15 +9,15 @@ android {
 }
 
 dependencies {
-    implementation(project(Dependence.Wallet.Data.core))
-    implementation(project(Dependence.Wallet.api))
-    implementation(project(Dependence.Lib.extensions))
-    implementation(project(Dependence.Module.tonApi))
+    implementation(project(ProjectModules.Wallet.Data.core))
+    implementation(project(ProjectModules.Wallet.api))
+    implementation(project(ProjectModules.Lib.extensions))
+    implementation(project(ProjectModules.Module.tonApi))
 
-    api(Dependence.TON.tvm)
-    api(Dependence.TON.crypto)
-    api(Dependence.TON.tlb)
-    api(Dependence.TON.blockTlb)
-    api(Dependence.TON.tonapiTl)
-    api(Dependence.TON.contract)
+    api(libs.ton.tvm)
+    api(libs.ton.crypto)
+    api(libs.ton.tlb)
+    api(libs.ton.blockTlb)
+    api(libs.ton.tonapiTl)
+    api(libs.ton.contract)
 }

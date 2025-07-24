@@ -26,6 +26,7 @@
     <declare-styleable name="TransactionDetailView">
         <attr name="position"/>
         <attr name="android:title" format="string|reference"/>
+        <attr name="android:orientation" format="integer"/>
     </declare-styleable>
 
     <declare-styleable name="BatteryView">

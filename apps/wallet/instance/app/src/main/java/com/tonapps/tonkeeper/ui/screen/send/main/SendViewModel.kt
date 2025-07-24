@@ -4,9 +4,10 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.tonapps.blockchain.ton.TonAddressTags
 import com.tonapps.blockchain.ton.contract.WalletFeature
 import com.tonapps.blockchain.ton.extensions.equalsAddress
-import com.tonapps.blockchain.ton.extensions.isTestnetAddress
+import com.tonapps.blockchain.ton.extensions.isValidTonAddress
 import com.tonapps.blockchain.tron.TronTransfer
 import com.tonapps.blockchain.tron.isValidTronAddress
 import com.tonapps.extensions.MutableEffectFlow
@@ -169,22 +170,20 @@ class SendViewModel(
             userInputAddressFlow,
             tronAvailableFlow,
             selectedTokenFlow
-        ) { address, isTronAvailable, selectedToken ->
-            if (address.isEmpty()) {
+        ) { userInput, isTronAvailable, selectedToken ->
+            if (userInput.isEmpty()) {
                 SendDestination.Empty
-            } else if (isTronAvailable && address.isValidTronAddress()) {
+            } else if (isTronAvailable && userInput.isValidTronAddress()) {
                 if (selectedToken.isTrc20) {
-                    SendDestination.TronAccount(address)
+                    SendDestination.TronAccount(userInput)
                 } else {
                     SendDestination.TokenError(
                         addressBlockchain = Blockchain.TRON,
                         selectedToken = selectedToken.token
                     )
                 }
-            } else if (wallet.testnet != address.isTestnetAddress()) {
-                SendDestination.NotFound
             } else {
-                val destination = getDestinationAccount(address, wallet.testnet)
+                val destination = getDestinationAccount(userInput)
 
                 if (destination is SendDestination.TonAccount && selectedToken.isTrc20) {
                     SendDestination.TokenError(
@@ -548,16 +547,26 @@ class SendViewModel(
         }
     }
 
-    private suspend fun getDestinationAccount(
-        address: String, testnet: Boolean
-    ) = withContext(Dispatchers.IO) {
-        val accountDeferred = async { api.resolveAccount(address, testnet) }
-        val publicKeyDeferred = async { api.safeGetPublicKey(address, testnet) }
+    private suspend fun getDestinationAccount(userInput: String) = withContext(Dispatchers.IO) {
+        val tonAddressTags = TonAddressTags.of(userInput)
+        if (tonAddressTags.userFriendly && tonAddressTags.isTestnet != wallet.testnet) {
+            return@withContext SendDestination.NotFound
+        }
+
+        val accountDeferred = async { api.resolveAccount(userInput, wallet.testnet) }
+        val publicKeyDeferred = async { api.safeGetPublicKey(userInput, wallet.testnet) }
 
         val account = accountDeferred.await() ?: return@withContext SendDestination.NotFound
         val publicKey = publicKeyDeferred.await()
 
-        SendDestination.TonAccount(address, publicKey, account, wallet.testnet)
+        SendDestination.TonAccount(
+            userInput = userInput,
+            isUserInputAddress = userInput.isValidTonAddress(),
+            publicKey = publicKey,
+            account = account,
+            testnet = wallet.testnet,
+            tonAddressTags = tonAddressTags
+        )
     }
 
     private fun getFee(): Fee {

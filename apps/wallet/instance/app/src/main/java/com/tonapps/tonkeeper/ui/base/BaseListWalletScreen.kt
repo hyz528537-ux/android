@@ -7,6 +7,7 @@ import android.widget.FrameLayout
 import androidx.annotation.DrawableRes
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -71,6 +72,10 @@ abstract class BaseListWalletScreen<C: ScreenContext>(
         collectFlow(listView.topScrolled, headerView::setDivider)
     }
 
+    fun setNestedScrollingEnabled(enabled: Boolean) {
+        listView.isNestedScrollingEnabled = enabled
+    }
+
     fun addViewHeader(view: View, params: FrameLayout.LayoutParams? = null) {
         headerContainer.addView(view, params)
     }
@@ -112,6 +117,12 @@ abstract class BaseListWalletScreen<C: ScreenContext>(
         bottom: Int = listView.paddingBottom
     ) {
         listView.updatePadding(left, top, right, bottom)
+    }
+
+    fun setBottomMargin(margin: Int) {
+        listView.updateLayoutParams<FrameLayout.LayoutParams> {
+            bottomMargin = margin
+        }
     }
 
     fun setActionIcon(@DrawableRes resId: Int, onClick: (view: View) -> Unit) {

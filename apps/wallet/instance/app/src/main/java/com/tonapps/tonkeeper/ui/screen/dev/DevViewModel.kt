@@ -161,7 +161,7 @@ class DevViewModel(
                     }
                     val activity = context.activity ?: throw IllegalStateException("Activity not found")
                     val vaultState = rnLegacy.requestVault(activity)
-                    if (vaultState.keys.isEmpty) {
+                    if (vaultState.keys.isEmpty()) {
                         lines.add("No keys in vault")
                     } else {
                         for ((walletId, decryptedData) in vaultState.keys) {

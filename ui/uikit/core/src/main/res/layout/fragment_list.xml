@@ -22,4 +22,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </FrameLayout>
+
+    <Button
+        style="@style/Widget.App.Button"
+        android:id="@+id/action"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="@dimen/offsetMedium"
+        android:textAppearance="@style/TextAppearance.Label1"
+        android:visibility="gone"/>
 </FrameLayout>

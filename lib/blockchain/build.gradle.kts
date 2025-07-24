@@ -26,20 +26,20 @@ android {
 }
 
 dependencies {
-    api(platform(Dependence.Firebase.bom))
-    api(Dependence.Firebase.crashlytics)
+    api(platform(libs.firebase.bom))
+    api(libs.firebase.crashlytics)
 
-    api(Dependence.TON.tvm)
-    api(Dependence.TON.crypto)
-    api(Dependence.TON.tlb)
-    api(Dependence.TON.blockTlb)
-    api(Dependence.TON.tonapiTl)
-    api(Dependence.TON.contract)
-    api(Dependence.KotlinX.io)
-    implementation(project(Dependence.Lib.extensions))
-    implementation(project(Dependence.Lib.base64))
-    implementation(Dependence.bcprovjdk)
-    implementation(Dependence.web3j) {
+    api(libs.ton.tvm)
+    api(libs.ton.crypto)
+    api(libs.ton.tlb)
+    api(libs.ton.blockTlb)
+    api(libs.ton.tonapiTl)
+    api(libs.ton.contract)
+    api(libs.kotlinX.io.core)
+    implementation(project(ProjectModules.Lib.extensions))
+    implementation(project(ProjectModules.Lib.base64))
+    implementation(libs.bcprovjdk)
+    implementation(libs.web3j) {
         exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
     }
     implementation("org.bitcoinj:bitcoinj-core:0.15.10") {

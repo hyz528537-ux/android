@@ -1,7 +1,6 @@
 package com.tonapps.tonkeeper.ui.screen.token.viewer
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.tonapps.blockchain.ton.contract.BaseWalletContract
 import com.tonapps.blockchain.ton.contract.WalletVersion
@@ -40,14 +39,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.internal.toImmutableList
 
 // TODO Refactor this class
 class TokenViewModel(
@@ -85,7 +81,7 @@ class TokenViewModel(
     val uiItemsFlow = _uiItemsFlow.asStateFlow().filterNotNull()
 
     private val _uiHistoryFlow =
-        MutableStateFlow<List<HistoryItem>>(listOf(HistoryItem.Loader(0, 0)))
+        MutableStateFlow<MutableList<HistoryItem>>(mutableListOf(HistoryItem.Loader(0, 0)))
     val uiHistoryFlow = _uiHistoryFlow.asStateFlow().filterNotNull()
 
     private val _chartFlow = MutableStateFlow<List<ChartEntity>?>(null)
@@ -153,8 +149,8 @@ class TokenViewModel(
         viewModelScope.launch {
             val lastLt = lastLt() ?: return@launch
             val data = _tokenFlow.value ?: return@launch
-            val oldValues = _uiHistoryFlow.value ?: emptyList()
-            _uiHistoryFlow.value = historyHelper.withLoadingItem(oldValues)
+            val oldValues = _uiHistoryFlow.value
+            _uiHistoryFlow.value = historyHelper.withLoadingItem(oldValues).toMutableList()
             loadHistory(data, lastLt)
         }
     }
@@ -311,7 +307,7 @@ class TokenViewModel(
             setEvents(walletEventItems)
         } else {
             val oldValue =
-                (_uiHistoryFlow.value).toImmutableList().filter { it !is HistoryItem.Loader }
+                (_uiHistoryFlow.value).filter { it !is HistoryItem.Loader }
             setEvents(oldValue + walletEventItems)
         }
     }
@@ -340,7 +336,7 @@ class TokenViewModel(
             setEvents(walletEventItems)
         } else {
             val oldValue =
-                (_uiHistoryFlow.value).toImmutableList().filter { it !is HistoryItem.Loader }
+                (_uiHistoryFlow.value).filter { it !is HistoryItem.Loader }
             setEvents((oldValue + walletEventItems).distinctBy { it.uniqueId })
         }
     }
@@ -363,15 +359,15 @@ class TokenViewModel(
     private fun setEvents(
         items: List<HistoryItem>
     ) {
-        _uiHistoryFlow.value = historyHelper.groupByDate(items)
+        _uiHistoryFlow.value = historyHelper.groupByDate(items).toMutableList()
     }
 
     private fun foundLastItem(): HistoryItem.Event? {
-        return _uiHistoryFlow.value?.lastOrNull { it is HistoryItem.Event } as? HistoryItem.Event
+        return _uiHistoryFlow.value.lastOrNull { it is HistoryItem.Event } as? HistoryItem.Event
     }
 
     private fun isLoading(): Boolean {
-        return _uiHistoryFlow.value?.lastOrNull { it is HistoryItem.Loader } != null
+        return _uiHistoryFlow.value.lastOrNull { it is HistoryItem.Loader } != null
     }
 
     private fun lastLt(): Long? {

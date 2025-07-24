@@ -74,3 +74,7 @@ include(":apps:wallet:data:battery")
 include(":apps:wallet:data:dapps")
 include(":apps:wallet:data:contacts")
 include(":apps:wallet:data:swap")
+
+
+include(":shared:core")
+include(":shared:ui")

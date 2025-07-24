@@ -8,10 +8,10 @@ android {
 }
 
 dependencies {
-    implementation(Dependence.Koin.core)
-    implementation(Dependence.KotlinX.guava)
-    implementation(project(Dependence.Wallet.api))
-    implementation(project(Dependence.Wallet.Data.core))
-    implementation(project(Dependence.Lib.extensions))
-    implementation(project(Dependence.Lib.icu))
+    implementation(libs.koin.core)
+    implementation(libs.kotlinX.coroutines.guava)
+    implementation(project(ProjectModules.Wallet.api))
+    implementation(project(ProjectModules.Wallet.Data.core))
+    implementation(project(ProjectModules.Lib.extensions))
+    implementation(project(ProjectModules.Lib.icu))
 }

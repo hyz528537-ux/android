@@ -303,7 +303,7 @@ class RootActivity : BaseWalletActivity() {
                     title = uri.host ?: "unknown",
                     url = uri,
                     iconUrl = "",
-                    source = "shortcut",
+                    source = "push",
                 )
             )
         }, DAppScreen::class.java)

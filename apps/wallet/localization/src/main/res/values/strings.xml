@@ -75,6 +75,7 @@
     <string name="payment_method_not_found">Payment method not available</string>
     <string name="app_not_found">App not found</string>
     <string name="name">Name</string>
+    <string name="purchase">Purchase</string>
     <string name="new_contact">New Address</string>
     <string name="contact_delete_dialog">Are you sure you want to delete “%1$s” from your Address Book?</string>
     <string name="add_to_contact">Add to Address Book</string>
@@ -104,6 +105,13 @@
     <string name="safe_mode_tonconnect_title">Connections are available only to verified apps</string>
     <string name="safe_mode_tonconnect_description">You can change this in your wallet’s Security Settings.</string>
 
+    <string name="renew_dns_title">Expiring domains</string>
+    <string name="renew_dns_expires">Expires in %1$d days</string>
+    <string name="wallet_renew_dns">You have %1$d expiring domains. Renew all until %2$s.</string>
+    <string name="renew_dns_until">Renew all until %1$s</string>
+    <string name="renew_signel_dns_until">Renew until %1$s</string>
+    <string name="renew_dns_all">Renew all</string>
+    <string name="renew_dns_done">Domain extended for 1 year</string>
     <string name="staking_unstake_cycle">Unstake request will be processed after the end of the validation cycle in %1$s</string>
 
     <string name="send_transaction_scroll">Check all details to confirm</string>
@@ -280,6 +288,9 @@
     <string name="unsubscribed">Unsubscribed</string>
     <string name="subscribed">Subscribed</string>
     <string name="received">Received</string>
+    <string name="dns_onsale_error_title">Domain is on sale at the marketplace now</string>
+    <string name="dns_onsale_error_desc">For renew domain, you should remove it from sale first.</string>
+    <string name="on_sale">ON SALE</string>
     <string name="nft_transfer">NFT Transfer</string>
     <string name="nft_disabled_transfer">NFT is on sale at the marketplace now. For transfer, you should remove it from sale first.</string>
     <string name="continue_action">Continue</string>

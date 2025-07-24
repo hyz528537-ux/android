@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.Button
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.tonapps.extensions.deviceCountry
 import com.tonapps.extensions.locale
@@ -12,13 +13,17 @@ import com.tonapps.security.Security
 import com.tonapps.tonkeeper.core.DevSettings
 import com.tonapps.tonkeeper.extensions.copyToClipboard
 import com.tonapps.tonkeeper.extensions.showToast
+import com.tonapps.tonkeeper.extensions.toast
+import com.tonapps.tonkeeper.manager.push.FirebasePush
 import com.tonapps.tonkeeper.ui.base.BaseWalletScreen
 import com.tonapps.tonkeeper.ui.base.ScreenContext
 import com.tonapps.tonkeeper.ui.screen.dev.list.launcher.LauncherAdapter
 import com.tonapps.tonkeeper.view.TransactionDetailView
 import com.tonapps.tonkeeperx.R
+import com.tonapps.uikit.color.accentRedColor
 import com.tonapps.uikit.list.LinearLayoutManager
 import com.tonapps.uikit.list.ListCell
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import uikit.base.BaseFragment
 import uikit.dialog.alert.AlertDialog
@@ -108,7 +113,23 @@ class DevScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_dev, Scr
             true
         }
 
+        view.findViewById<View>(R.id.copy_firebase_push).setOnClickListener {
+            copyFirebasePushToken()
+        }
+
         logCopy = view.findViewById(R.id.log_copy)
+    }
+
+    private fun copyFirebasePushToken() {
+        lifecycleScope.launch {
+            val token = FirebasePush.requestToken()
+            if (token.isNullOrBlank()) {
+                navigation?.toast("Failed to get Firebase push token", requireContext().accentRedColor)
+            } else {
+                requireContext().copyToClipboard(token, true)
+                navigation?.toast("Firebase push token copied to clipboard")
+            }
+        }
     }
 
     private fun toastAfterChange() {

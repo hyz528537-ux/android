@@ -3,10 +3,12 @@ package com.tonapps.tonkeeper.ui.screen.battery.recharge
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
+import com.tonapps.blockchain.ton.TonAddressTags
 import com.tonapps.blockchain.ton.TonNetwork
 import com.tonapps.blockchain.ton.TonTransferHelper
 import com.tonapps.blockchain.ton.extensions.base64
 import com.tonapps.blockchain.ton.extensions.equalsAddress
+import com.tonapps.blockchain.ton.extensions.isValidTonAddress
 import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.extensions.filterList
 import com.tonapps.extensions.state
@@ -548,15 +550,23 @@ class BatteryRechargeViewModel(
     }
 
     private suspend fun getDestinationAccount(
-        address: String, testnet: Boolean
+        userInput: String, testnet: Boolean
     ) = withContext(Dispatchers.IO) {
-        val accountDeferred = async { api.resolveAccount(address, testnet) }
-        val publicKeyDeferred = async { api.safeGetPublicKey(address, testnet) }
+        val addressTags = TonAddressTags.of(userInput)
+        val accountDeferred = async { api.resolveAccount(userInput, testnet) }
+        val publicKeyDeferred = async { api.safeGetPublicKey(userInput, testnet) }
 
         val account = accountDeferred.await() ?: return@withContext SendDestination.NotFound
         val publicKey = publicKeyDeferred.await()
 
-        SendDestination.TonAccount(address, publicKey, account, wallet.testnet)
+        SendDestination.TonAccount(
+            userInput = userInput,
+            isUserInputAddress = userInput.isValidTonAddress(),
+            publicKey = publicKey,
+            account = account,
+            testnet = wallet.testnet,
+            tonAddressTags = addressTags
+        )
     }
 
     fun applyPromo(promo: String) {

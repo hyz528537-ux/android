@@ -23,6 +23,6 @@ android {
 }
 
 dependencies {
-    implementation(Dependence.AndroidX.appCompat)
-    implementation(Dependence.AndroidX.Emoji.core)
+    implementation(libs.androidX.appCompat)
+    implementation(libs.androidX.emoji)
 }
