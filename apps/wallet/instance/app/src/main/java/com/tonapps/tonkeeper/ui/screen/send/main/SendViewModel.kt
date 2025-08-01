@@ -115,6 +115,7 @@ class SendViewModel(
     private val transactionManager: TransactionManager,
     private val signUseCase: SignUseCase,
     private val purchaseRepository: PurchaseRepository,
+    private val analytics: AnalyticsHelper
 ) : BaseWalletVM(app) {
 
     private val isNft: Boolean
@@ -1332,7 +1333,7 @@ class SendViewModel(
             tronAddress = transfer.from,
             tonProofToken = tonProofToken,
         )
-        AnalyticsHelper.simpleTrackEvent("send_success", settingsRepository.installId)
+        analytics.simpleTrackEvent("send_success")
         getBatteryBalance()
     }.catch {
         FirebaseCrashlytics.getInstance().recordException(it)
@@ -1361,7 +1362,7 @@ class SendViewModel(
     private fun Flow<Triple<Cell, WalletEntity, Boolean>>.sendTransfer() {
         this.map { (boc, wallet, withBattery) ->
             send(boc, wallet, withBattery)
-            AnalyticsHelper.simpleTrackEvent("send_success", settingsRepository.installId)
+            analytics.simpleTrackEvent("send_success")
         }.catch {
             FirebaseCrashlytics.getInstance().recordException(it)
             _uiEventFlow.tryEmit(SendEvent.Failed(it))

@@ -39,7 +39,7 @@ class QRScreen(wallet: WalletEntity) : ComposeWalletScreen(wallet), BaseFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.simpleTrackEvent("receive_open", viewModel.installId)
+        analytics?.simpleTrackEvent("receive_open")
     }
 
     private fun getQrContent(address: String, token: TokenEntity): String {

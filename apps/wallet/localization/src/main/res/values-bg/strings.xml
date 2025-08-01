@@ -10,6 +10,7 @@
     <string name="staking_pending_withdraw">%1$s ще бъде изтеглен след %2$s</string>
     <string name="edit_full">Редактиране</string>
     <string name="safe_mode_tonconnect_description">Можете да промените това в настройките за сигурност на портфейла си.</string>
+    <string name="renew_dns_done">Домейнът е удължен за 1 година</string>
     <string name="staking_unstake_cycle">Заявката за премахване на залагане ще бъде обработена след края на цикъла на валидиране в %1$s</string>
     <string name="send_transaction_scroll">Проверете всички подробности, за да потвърдите</string>
     <string name="send_transaction_detail">Общата стойност на токените, които ще бъдат изпратени от вашия портфейл. Възстановяванията не са включени в общата стойност.</string>
@@ -188,6 +189,7 @@
     <string name="unsubscribed">Отписано</string>
     <string name="subscribed">Абонирано</string>
     <string name="received">Получено</string>
+    <string name="on_sale">В ПРОМОЦИЯ</string>
     <string name="nft_transfer">Трансфер на NFT</string>
     <string name="nft_disabled_transfer">NFT в момента е на продажба в пазара. За трансфер, трябва първо да го премахнете от продажба.</string>
 
@@ -213,6 +215,7 @@
     <string name="yesterday">Вчера</string>
     <string name="collectibles">Колекционерски предмети</string>
     <string name="purchases">Покупки</string>
+    <string name="enter_amount">Въведете сума</string>
     <string name="call_contract">Повикване на договор</string>
     <string name="contract_address">Адрес на договора</string>
     <string name="about_collection">За колекцията</string>
@@ -393,6 +396,7 @@
     <string name="logout_confirmation">Имам резервно копие на възстановителната фраза</string>
     <string name="last_updated">Актуализиран %1$s</string>
     <string name="back_up_now">Направете резервно копие сега</string>
+    <string name="confirm_swap">Потвърждаване на размяната</string>
     <string name="max">Макс</string>
     <string name="confirm_and_send">Потвърди и изпрати</string>
     <string name="confirm_action">Потвърдете действие</string>
@@ -527,6 +531,7 @@
     <string name="name">Име</string>
     <string name="ledger_blind_signing_error">Сляпото подписване трябва да е активирано в Настройки на Ledger</string>
     <string name="nothing_to_restore">Нищо за възстановяване</string>
+    <string name="purchase">Покупка</string>
     <string name="new_contact">Нов адрес</string>
     <string name="contact_delete_dialog">Сигурни ли сте, че искате да изтриете „%1$s“ от вашата адресна книга?</string>
     <string name="add_to_contact">Добавяне към адресната книга</string>
@@ -554,6 +559,7 @@
     <string name="stories_safemode_2_subtitle">За да избегнете спам и фалшиви артикули.</string>
     <string name="stories_safemode_3_title">Само проверени токени</string>
     <string name="tx_marked_as_spam">Транзакцията е маркирана като спам</string>
+    <string name="exchange_rate">Валутен курс</string>
     <string name="address_prefix">Адрес:</string>
     <string name="your_address">Вашият адрес:</string>
     <string name="safe_mode_tokens_footer">Безопасният режим е активиран. Налични са само потвърдени токени. <annotation colorAttr="textAccentColor">Настройки</annotation></string>
@@ -624,9 +630,19 @@
     <string name="credit_card_subtitle">Visa или Mastercard</string>
     <string name="currency_not_found">Валутата не е намерена</string>
     <string name="onrmap_provider_description">Други доставчици са налични за различни валутни двойки.</string>
+    <string name="min_amount">Мин. сума: %1$s</string>
     <string name="stake_ethena_description">Токенът tsUSDe представлява USDe, държан чрез Ethena, децентрализирана услуга за стейкинг. tsUSDe автоматично натрупва награди за стейкинг, с минимално заключване.</string>
     <string name="support_title">Нуждаете се от помощ?</string>
     <string name="support_subtitle">Пишете ни в Telegram — ще направим всичко възможно да помогнем.</string>
     <string name="ask_question">Задайте въпрос</string>
+    <string name="renew_dns_title">Изтичащи домейни</string>
+    <string name="renew_dns_expires">Изтича след %1$d дни</string>
+    <string name="wallet_renew_dns">Имате %1$d изтичащи домейна. Подновете всички до %2$s.</string>
+    <string name="renew_dns_until">Подновяване на всички до %1$s</string>
+    <string name="renew_signel_dns_until">Подновяване до %1$s</string>
+    <string name="renew_dns_all">Подновяване на всички</string>
+    <string name="dns_onsale_error_title">Домейнът е в продажба на пазара сега</string>
+    <string name="dns_onsale_error_desc">За подновяване на домейн, първо трябва да го премахнете от продажба.</string>
+    <string name="choose_token">Изберете токен</string>
 
 </resources>

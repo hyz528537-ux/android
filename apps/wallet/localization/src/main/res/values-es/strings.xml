@@ -10,6 +10,7 @@
     <string name="staking_pending_withdraw">%1$s se retirarán en %2$s</string>
     <string name="edit_full">Editar</string>
     <string name="safe_mode_tonconnect_description">Puedes cambiar esto en la configuración de seguridad de tu billetera.</string>
+    <string name="renew_dns_done">Dominio extendido por 1 año</string>
     <string name="staking_unstake_cycle">La solicitud de cancelación de participación se procesará después del final del ciclo de validación en %1$s</string>
     <string name="send_transaction_scroll">Verifique todos los detalles para confirmar</string>
     <string name="send_transaction_detail">El valor total de los tokens que se enviarán desde su billetera. Los reembolsos no están incluidos en el valor total.</string>
@@ -149,6 +150,7 @@
     <string name="unsubscribed">Dado de baja</string>
     <string name="subscribed">Suscrito</string>
     <string name="received">Recibido</string>
+    <string name="on_sale">EN VENTA</string>
     <string name="nft_transfer">Transferencia de NFT</string>
     <string name="nft_disabled_transfer">El NFT está en venta en el mercado ahora. Para transferirlo, primero debes quitarlo de la venta.</string>
     <string name="continue_action">Continuar</string>
@@ -172,6 +174,7 @@
     <string name="yesterday">Ayer</string>
     <string name="collectibles">Coleccionables</string>
     <string name="purchases">Compras</string>
+    <string name="enter_amount">Ingrese el monto</string>
     <string name="call_contract">Llamar contrato</string>
     <string name="contract_address">Dirección del contrato</string>
     <string name="about_collection">Sobre la colección</string>
@@ -329,6 +332,7 @@
     <string name="logout_confirmation">Tengo una copia de seguridad de la frase de recuperación para %1$s</string>
     <string name="last_updated">Actualizado %1$s</string>
     <string name="back_up_now">Hacer copia de seguridad</string>
+    <string name="confirm_swap">Confirmar intercambio</string>
     <string name="max">Máx</string>
     <string name="confirm_and_send">Confirmar y enviar</string>
     <string name="confirm_action">Confirmar acción</string>
@@ -478,6 +482,7 @@
     <string name="name">Nombre</string>
     <string name="ledger_blind_signing_error">La firma ciega debe estar habilitada en la configuración de Ledger</string>
     <string name="nothing_to_restore">Nada que restaurar</string>
+    <string name="purchase">Compra</string>
     <string name="new_contact">Nueva dirección</string>
     <string name="contact_delete_dialog">¿Está seguro de que desea eliminar “%1$s” de su libreta de direcciones?</string>
     <string name="add_to_contact">Agregar a la libreta de direcciones</string>
@@ -507,6 +512,7 @@
     <string name="stories_safemode_2_subtitle">Para evitar spam y artículos falsos.</string>
     <string name="stories_safemode_3_title">Solo tokens verificados</string>
     <string name="tx_marked_as_spam">Transacción marcada como Spam</string>
+    <string name="exchange_rate">Tipo de cambio</string>
     <string name="address_prefix">DIRECCIÓN:</string>
     <string name="your_address">Su dirección:</string>
     <string name="safe_mode_tokens_footer">El modo seguro está habilitado. Solo están disponibles los tokens verificados. <annotation colorAttr="textAccentColor">Configuración</annotation></string>
@@ -578,8 +584,18 @@
     <string name="credit_card_subtitle">Visa o Mastercard</string>
     <string name="currency_not_found">Moneda no encontrada</string>
     <string name="onrmap_provider_description">Otros proveedores disponibles para diferentes pares de divisas.</string>
+    <string name="min_amount">Importe mínimo: %1$s</string>
     <string name="stake_ethena_description">El token tsUSDe representa USDe mantenido a través de Ethena, un servicio de staking descentralizado. tsUSDe acumula automáticamente recompensas de staking, con un bloqueo mínimo.</string>
     <string name="support_title">¿Necesitas ayuda?</string>
     <string name="support_subtitle">Pregúntanos en Telegram — haremos todo lo posible por ayudarte.</string>
     <string name="ask_question">Hacer una pregunta</string>
+    <string name="renew_dns_title">Dominios que expiran</string>
+    <string name="renew_dns_expires">Caduca en %1$d días</string>
+    <string name="wallet_renew_dns">Tienes %1$d dominios a punto de expirar. Renueva todos hasta %2$s.</string>
+    <string name="renew_dns_until">Renovar todo hasta %1$s</string>
+    <string name="renew_signel_dns_until">Renovar hasta %1$s</string>
+    <string name="renew_dns_all">Renovar todo</string>
+    <string name="dns_onsale_error_title">El dominio está a la venta en el mercado ahora</string>
+    <string name="dns_onsale_error_desc">Para renovar el dominio, primero debes eliminarlo de la venta.</string>
+    <string name="choose_token">Elija token</string>
 </resources>

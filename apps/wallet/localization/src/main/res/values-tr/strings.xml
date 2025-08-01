@@ -10,6 +10,7 @@
     <string name="staking_pending_withdraw">%1$s %2$s içinde çekilecek</string>
     <string name="edit_full">Düzenlemek</string>
     <string name="safe_mode_tonconnect_description">Bunu cüzdanınızın Güvenlik Ayarları\'ndan değiştirebilirsiniz.</string>
+    <string name="renew_dns_done">Alan adı 1 yıl uzatıldı</string>
     <string name="staking_unstake_cycle">Paydan çıkarma isteği, %1$s\'deki doğrulama döngüsünün bitiminden sonra işlenecektir.</string>
     <string name="send_transaction_scroll">Onaylamak için tüm ayrıntıları kontrol edin</string>
     <string name="send_transaction_detail">Cüzdanınızdan gönderilecek tokenların toplam değeri. İadeler toplam değere dahil değildir.</string>
@@ -62,6 +63,7 @@
     <string name="liquid_staking">Sıvı Hisse Senedi</string>
     <string name="other">Diğer</string>
     <string name="minimum_amount">En az %1$s</string>
+    <string name="min_amount">Min. tutar: %1$s</string>
     <string name="stake_ethena_description">tsUSDe token\'ı, merkezi olmayan bir staking hizmeti olan Ethena aracılığıyla tutulan USDE\'yi temsil eder. tsUSDe, minimum kilitlemeyle otomatik olarak staking ödülleri biriktirir.</string>
     <string name="stake_ethena_disclaimer">Bu, geçen haftanın ortalama protokol ödüllerine ve stake edilmiş ortalama USDe miktarına dayalı tahmini yıllık getiridir. Getiri, haftalık bileşik faizle yıllık hale getirilir. <annotation colorAttr="textSecondaryColor">Geçmiş performans gelecekteki sonuçları garanti etmez.</annotation> Stake ve ödüller, üçüncü taraf bir hizmet olan Ethena tarafından sağlanır ve <annotation colorAttr="textAccentColor">şartlarına</annotation> tabidir.</string>
     <string name="stake_tonstakers_description">Tonstakers havuzunda TON stake ettiğinizde, havuzdaki payınızı temsil eden tsTON adlı bir token alırsınız. Havuz kar biriktirdikçe, tsTON\'unuz daha büyük miktarda TON\'u temsil eder.</string>
@@ -150,6 +152,7 @@
     <string name="unsubscribed">Abonelik İptal Edildi</string>
     <string name="subscribed">Abone Olundu</string>
     <string name="received">Alındı</string>
+    <string name="on_sale">SATIŞTA</string>
     <string name="nft_transfer">NFT Transferi</string>
     <string name="nft_disabled_transfer">NFT şu anda pazarda satışta. Transfer için önce satıştan kaldırmalısınız.</string>
     <string name="continue_action">Devam Et</string>
@@ -173,6 +176,7 @@
     <string name="yesterday">Dün</string>
     <string name="collectibles">Koleksiyonlar</string>
     <string name="purchases">Satın Alımlar</string>
+    <string name="enter_amount">Tutarı Girin</string>
     <string name="call_contract">Sözleşmeyi ara</string>
     <string name="contract_address">Sözleşme adresi</string>
     <string name="about_collection">Koleksiyon hakkında</string>
@@ -330,6 +334,7 @@
     <string name="logout_confirmation">%1$s için kurtarma ifadesinin yedek kopyası var</string>
     <string name="last_updated">Güncellendi %1$s</string>
     <string name="back_up_now">Yedekle</string>
+    <string name="confirm_swap">Takas Onayını Onayla</string>
     <string name="max">Maks</string>
     <string name="confirm_and_send">Onayla ve gönder</string>
     <string name="confirm_action">İşlemi onayla</string>
@@ -479,6 +484,7 @@
     <string name="name">İsim</string>
     <string name="ledger_blind_signing_error">Kör İmzalama, Defter Ayarlarında etkinleştirilmelidir</string>
     <string name="nothing_to_restore">Geri yüklenecek bir şey yok</string>
+    <string name="purchase">Satın almak</string>
     <string name="new_contact">Yeni Adres</string>
     <string name="contact_delete_dialog">“%1$s” adresini Adres Defterinizden silmek istediğinizden emin misiniz?</string>
     <string name="add_to_contact">Adres Defterine Ekle</string>
@@ -508,6 +514,7 @@
     <string name="stories_safemode_2_subtitle">Spam ve sahte ürünlerden kaçınmak için.</string>
     <string name="stories_safemode_3_title">Sadece Doğrulanmış Tokenlar</string>
     <string name="tx_marked_as_spam">İşlem Spam olarak işaretlendi</string>
+    <string name="exchange_rate">Döviz kuru</string>
     <string name="address_prefix">Adres:</string>
     <string name="your_address">Adresiniz:</string>
     <string name="safe_mode_tokens_footer">Güvenli mod etkinleştirildi. Yalnızca doğrulanmış tokenlar kullanılabilir. <annotation colorAttr="textAccentColor">Ayarlar</annotation></string>
@@ -582,4 +589,13 @@
     <string name="support_title">Yardıma mı ihtiyacınız var?</string>
     <string name="support_subtitle">Telegram’dan bize sorun — size yardımcı olmak için elimizden geleni yapacağız.</string>
     <string name="ask_question">Soru Sor</string>
+    <string name="renew_dns_title">Son kullanma tarihi dolan alan adları</string>
+    <string name="renew_dns_expires">%1$d gün içinde sona eriyor</string>
+    <string name="wallet_renew_dns">%1$d tane süresi dolacak alan adınız var. %2$s tarihine kadar hepsini yenileyin.</string>
+    <string name="renew_dns_until">%1$s tarihine kadar tümünü yenile</string>
+    <string name="renew_signel_dns_until">%1$s tarihine kadar yenile</string>
+    <string name="renew_dns_all">Tümünü yenile</string>
+    <string name="dns_onsale_error_title">Alan adı şu anda pazaryerinde satışta</string>
+    <string name="dns_onsale_error_desc">Alan adını yenilemek için öncelikle onu satıştan kaldırmanız gerekmektedir.</string>
+    <string name="choose_token">Jeton Seçin</string>
 </resources>

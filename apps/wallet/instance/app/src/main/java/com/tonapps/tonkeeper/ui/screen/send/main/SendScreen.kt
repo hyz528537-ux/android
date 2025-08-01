@@ -140,7 +140,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.simpleTrackEvent("send_open", viewModel.installId)
+        analytics?.simpleTrackEvent("send_open")
 
         navigation?.setFragmentResultListener(contractsRequestKey) { bundle ->
             val contact = bundle.getParcelableCompat<SendContact>("contact")
@@ -228,7 +228,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
 
         button = view.findViewById(R.id.button)
         button.setOnClickListener {
-            AnalyticsHelper.simpleTrackEvent("send_click", viewModel.installId)
+            analytics?.simpleTrackEvent("send_click")
             next()
         }
 
@@ -265,7 +265,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
         }
 
         confirmButton.setOnClickListener {
-            AnalyticsHelper.simpleTrackEvent("send_confirm", viewModel.installId)
+            analytics?.simpleTrackEvent("send_confirm")
             signAndSend()
         }
         confirmButton.setText(if (wallet.hasPrivateKey) Localization.confirm else Localization.continue_action)

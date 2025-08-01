@@ -76,6 +76,7 @@ class BatteryRechargeViewModel(
     private val settingsRepository: SettingsRepository,
     private val ratesRepository: RatesRepository,
     private val api: API,
+    private val analytics: AnalyticsHelper
 ) : BaseWalletVM(app) {
 
     private val _tokenFlow = MutableStateFlow<AccountTokenEntity?>(null)
@@ -292,9 +293,8 @@ class BatteryRechargeViewModel(
             .distinctUntilChanged()
             .debounce(300L) // wait 300ms before emitting
             .onEach { params ->
-                AnalyticsHelper.simpleTrackEvent(
+                analytics.simpleTrackEvent(
                     "battery_select",
-                    settingsRepository.installId,
                     HashMap(params)
                 )
             }
@@ -598,8 +598,7 @@ class BatteryRechargeViewModel(
         val promoCode = (promoStateFlow.value as? PromoState.Applied)?.appliedPromo ?: "null"
         val tokenSymbol = _tokenFlow.value?.token?.symbol ?: "null"
         val size = if (_customAmountFlow.value) "custom" else _selectedPackTypeFlow.value?.name?.lowercase() ?: "null"
-        AnalyticsHelper.batterySuccess(
-            settingsRepository.installId,
+        analytics.batterySuccess(
             "crypto",
             promoCode,
             tokenSymbol,

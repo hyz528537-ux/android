@@ -124,7 +124,7 @@ class TonConnectScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_t
 
         setDefaultState()
 
-        AnalyticsHelper.tcRequest(viewModel.installId, args.app.url.toString())
+        analytics?.tcRequest(args.app.url.toString())
     }
 
     private fun connect(wallet: WalletEntity) {
@@ -157,7 +157,7 @@ class TonConnectScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_t
         proof: TONProof.Result? = null,
         proofError: BridgeError? = null,
     ) {
-        AnalyticsHelper.tcConnect(viewModel.installId, args.app.url.toString(), pushCheckBoxView.checked)
+        analytics?.tcConnect(args.app.url.toString(), pushCheckBoxView.checked)
         setResponse(TonConnectResponse(
             notifications = pushCheckBoxView.checked,
             proof = proof,

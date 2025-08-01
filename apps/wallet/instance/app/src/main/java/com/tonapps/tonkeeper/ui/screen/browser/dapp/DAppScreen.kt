@@ -169,10 +169,9 @@ class DAppScreen(wallet: WalletEntity): InjectedTonConnectScreen(R.layout.fragme
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.trackEventClickDApp(
+        analytics?.trackEventClickDApp(
             url = args.url.toString(),
             name = args.title,
-            installId = installId,
             source = args.source,
             country = viewModel.country
         )
@@ -382,8 +381,7 @@ class DAppScreen(wallet: WalletEntity): InjectedTonConnectScreen(R.layout.fragme
 
     private fun analyticsSharingCopy(from: String) {
         val app = buildAppEntity()
-        AnalyticsHelper.dappSharingCopy(
-            installId = viewModel.installId,
+        analytics?.dappSharingCopy(
             name = app.name,
             from = from,
             url = currentUrl.toString()

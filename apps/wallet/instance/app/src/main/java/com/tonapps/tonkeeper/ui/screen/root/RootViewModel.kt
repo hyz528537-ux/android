@@ -124,6 +124,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import uikit.extensions.activity
+import uikit.extensions.collectFlow
 import java.util.concurrent.CancellationException
 import kotlin.math.abs
 
@@ -145,6 +146,7 @@ class RootViewModel(
     private val dAppsRepository: DAppsRepository,
     private val safeModeClient: SafeModeClient,
     private val ratesRepository: RatesRepository,
+    private val analyticsHelper: AnalyticsHelper,
     savedStateHandle: SavedStateHandle,
 ): BaseWalletVM(app) {
 
@@ -189,7 +191,7 @@ class RootViewModel(
         if (0 >= DevSettings.firstLaunchDate) {
             val referrer = referrerClientHelper.getInstallReferrer()
             val deeplink = DevSettings.firstLaunchDeeplink.ifBlank { null }
-            AnalyticsHelper.firstLaunch(settingsRepository.installId, referrer, deeplink)
+            analyticsHelper.firstLaunch(referrer, deeplink)
             DevSettings.firstLaunchDate = currentTimeSeconds()
         }
     }
@@ -260,7 +262,7 @@ class RootViewModel(
         }
 
         api.configFlow.filter { !it.empty }.take(1).collectFlow { config ->
-            AnalyticsHelper.setConfig(context, config)
+            analyticsHelper.setConfig(context, config)
             sendFirstLaunchEvent()
         }
 
@@ -272,12 +274,6 @@ class RootViewModel(
                 showStories(config.stories)
             }
         }.launch()
-
-        settingsRepository.countryFlow.take(1).filter { it.isBlank() }.map {
-            api.resolveCountry()
-        }.filterNotNull().onEach {
-            settingsRepository.country = it
-        }.flowOn(Dispatchers.IO).launchIn(viewModelScope)
 
         viewModelScope.launch(Dispatchers.IO) {
             if (environment.isGooglePlayServicesAvailable) {
@@ -513,8 +509,7 @@ class RootViewModel(
                 processDAppPush(bundle)
             } else {
                 val deeplink = bundle.getString("deeplink")?.toUriOrNull() ?: return@collectFlow
-                AnalyticsHelper.trackPushClick(
-                    installId = installId,
+                analyticsHelper.trackPushClick(
                     pushId = pushId ?: pushType,
                     payload = deeplink.toString(),
                 )

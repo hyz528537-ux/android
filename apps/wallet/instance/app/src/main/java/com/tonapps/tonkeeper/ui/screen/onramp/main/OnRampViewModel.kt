@@ -1,10 +1,13 @@
 package com.tonapps.tonkeeper.ui.screen.onramp.main
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
+import com.tonapps.tonkeeper.Environment
+import com.tonapps.tonkeeper.billing.BillingManager
 import com.tonapps.tonkeeper.extensions.getProvidersByCountry
 import com.tonapps.tonkeeper.extensions.onRampDataFlow
 import com.tonapps.tonkeeper.helper.TwinInput
@@ -52,7 +55,8 @@ class OnRampViewModel(
     private val assetsManager: AssetsManager,
     private val purchaseRepository: PurchaseRepository,
     private val api: API,
-    private val accountRepository: AccountRepository
+    private val accountRepository: AccountRepository,
+    private val environment: Environment,
 ): BaseWalletVM(app) {
 
     val installId: String
@@ -78,17 +82,20 @@ class OnRampViewModel(
     private val _stepFlow = MutableStateFlow(UiState.Step.Input)
     val stepFlow = _stepFlow.asStateFlow()
 
-    private val onRampDataFlow = purchaseRepository.onRampDataFlow(settingsRepository, api)
+    private val onRampDataFlow = purchaseRepository.onRampDataFlow(environment)
 
-    private val paymentMerchantsFlow = settingsRepository.countryFlow.map(purchaseRepository::getPaymentMethods)
+    private val paymentMerchantsFlow = environment.countryFlow.map(purchaseRepository::getPaymentMethods)
 
     private val paymentMethodsFlow = paymentMerchantsFlow.map { merchants ->
         merchants.map { it.methods }.flatten().distinctBy { it.type }.filter { it.type != "apple_pay" }
     }
 
-    private val merchantsFlow = settingsRepository.countryFlow.map {
+    private val merchantsFlow = environment.countryFlow.map {
         purchaseRepository.getProvidersByCountry(wallet, settingsRepository, it)
     }
+
+    val country: String
+        get() = environment.country
 
     val providersFlow = combine(
         availableProvidersFlow,
@@ -120,13 +127,19 @@ class OnRampViewModel(
     }.distinctUntilChanged()
 
     val minAmountFlow = combine(
-        twinInput.currenciesStateFlow.map { it.send }.distinctUntilChanged(),
+        twinInput.stateFlow.map { it.send }.distinctUntilChanged(),
         allowedPairFlow.map { it?.min }.distinctUntilChanged()
-    ) { sendCurrency, minAmount ->
+    ) { sendValue, minAmount ->
         val coins = minAmount?.let {
-            Coins.of(it, sendCurrency.decimals)
+            Coins.of(it, sendValue.decimals)
         } ?: return@combine null
-        val formatted = CurrencyFormatter.format(sendCurrency.symbol, coins, replaceSymbol = false)
+        if (!coins.isPositive) {
+            return@combine null
+        }
+        if (sendValue.coins > coins || sendValue.coins.isZero) {
+            return@combine null
+        }
+        val formatted = CurrencyFormatter.format(sendValue.symbol, coins, replaceSymbol = false)
         UiState.MinAmount(coins, formatted)
     }
 
@@ -194,12 +207,13 @@ class OnRampViewModel(
 
     val paymentMethodUiStateFlow = combine(
         selectedPaymentMethodFlow,
-        paymentMethodsFlow
-    ) { selectedType, methods ->
+        paymentMethodsFlow,
+        environment.countryFlow,
+    ) { selectedType, methods, country ->
         OnRampPaymentMethodState(
             selectedType = selectedType,
             methods = methods.map {
-                OnRampPaymentMethodState.createMethod(context, it, settingsRepository.country)
+                OnRampPaymentMethodState.createMethod(context, it, country)
             }.sortedBy { method ->
                 val index = OnRampPaymentMethodState.sortKeys.indexOf(method.type)
                 if (index == -1) Int.MAX_VALUE else index
@@ -233,9 +247,6 @@ class OnRampViewModel(
             "crypto_$to"
         }
 
-    val country: String
-        get() = settingsRepository.country
-
     val paymentMethod: String
         get() = _selectedPaymentMethodFlow.value ?: "unknown"
 
@@ -249,6 +260,10 @@ class OnRampViewModel(
         ) { _, methods ->
             setSelectedPaymentMethod(methods.first().type)
         }.launch()
+
+        collectFlow(environment.countryFlow) {
+            Log.d("EnvironmentLog", "Country changed: $it")
+        }
     }
 
     fun updateFocusInput(type: TwinInput.Type) {
@@ -315,7 +330,7 @@ class OnRampViewModel(
     }
 
     private fun currencyByCountry(): WalletCurrency {
-        val code = CurrencyCountries.getCurrencyCode(settingsRepository.country)
+        val code = CurrencyCountries.getCurrencyCode(environment.country)
         return WalletCurrency.ofOrDefault(code)
     }
 
@@ -334,14 +349,16 @@ class OnRampViewModel(
                 send = forType == TwinInput.Type.Send
             )
         }.onSuccess { currency ->
-            _requestFocusFlow.emit(forType)
             if (currency == twinInput.state.getCurrency(forType)) {
                 return@onSuccess
             } else if (twinInput.state.hasCurrency(currency)) {
+                _requestFocusFlow.tryEmit(forType)
                 switch()
             } else if (forType == TwinInput.Type.Send) {
+                _requestFocusFlow.emit(twinInput.state.focus)
                 updateSendCurrency(currency)
             } else if (forType == TwinInput.Type.Receive) {
+                _requestFocusFlow.emit(twinInput.state.focus)
                 updateReceiveCurrency(currency)
             }
         }
@@ -374,7 +391,7 @@ class OnRampViewModel(
             wallet = walletAddress,
             purchaseType = purchaseType,
             amount = twinInput.state.send.coins,
-            country = settingsRepository.country,
+            country = environment.country,
             paymentMethod = paymentMethod
         )
     }

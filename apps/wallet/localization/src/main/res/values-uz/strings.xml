@@ -10,6 +10,7 @@
     <string name="staking_pending_withdraw">%1$s %2$s ichida yechib olinadi</string>
     <string name="edit_full">Tahrirlash</string>
     <string name="safe_mode_tonconnect_description">Buni hamyoningiz Xavfsizlik sozlamalarida oʻzgartirishingiz mumkin.</string>
+    <string name="renew_dns_done">Domen 1 yilga uzaytirildi</string>
     <string name="staking_unstake_cycle">Toʻlovni bekor qilish soʻrovi %1$s da tekshirish davri tugaganidan keyin koʻrib chiqiladi</string>
     <string name="send_transaction_scroll">Tasdiqlash uchun barcha tafsilotlarni tekshiring</string>
     <string name="send_transaction_detail">Hamyoningizdan yuboriladigan tokenlarning umumiy qiymati. To\'lovlar umumiy qiymatga kiritilmagan.</string>
@@ -62,6 +63,7 @@
     <string name="liquid_staking">Suyuqlikni to\'ldirish</string>
     <string name="other">Boshqa</string>
     <string name="minimum_amount">Minimal %1$s</string>
+    <string name="min_amount">Min. miqdori: %1$s</string>
     <string name="stake_ethena_description">tsUSDe tokeni markazlashtirilmagan staking xizmati Ethena orqali o\'tkaziladigan USDe ni ifodalaydi. tsUSDe minimal blokirovka bilan avtomatik ravishda staking mukofotlarini oladi.</string>
     <string name="stake_ethena_disclaimer">Bu o\'tgan haftadagi o\'rtacha protokol mukofotlari va stavkaga qo\'yilgan o\'rtacha USDe miqdoriga asoslangan taxminiy yillik daromaddir. Daromad haftalik birikma bilan yillik hisoblanadi. <annotation colorAttr="textSecondaryColor">O‘tgan ishlash kelajakdagi natijalarni kafolatlamaydi.</annotation> Staking va mukofotlar uchinchi tomon xizmati Ethena tomonidan taqdim etiladi va ularning <annotation colorAttr="textAccentColor">shartlariga</annotation> bo‘ysunadi.</string>
     <string name="stake_tonstakers_description">Tonstakerlar hovuziga TON qo‘shganingizda, siz hovuzdagi ulushingizni ifodalovchi tsTON deb nomlangan token olasiz. Hovuz daromadni to\'plaganligi sababli, sizning tsTON ko\'proq TON miqdorini bildiradi.</string>
@@ -150,6 +152,7 @@
     <string name="unsubscribed">Obuna bekor qilindi</string>
     <string name="subscribed">Obuna bo\'ldi</string>
     <string name="received">Qabul qilindi</string>
+    <string name="on_sale">SOTISHDA</string>
     <string name="nft_transfer">NFT O\'tkazmasi</string>
     <string name="nft_disabled_transfer">NFT hozir bozorda sotilmoqda. Uni o\'tkazish uchun avval sotuvdan olib tashlashingiz kerak.</string>
     <string name="continue_action">Davom etish</string>
@@ -173,6 +176,7 @@
     <string name="yesterday">Kecha</string>
     <string name="collectibles">Kolleksiya buyumlari</string>
     <string name="purchases">Xaridlar</string>
+    <string name="enter_amount">Miqdorni kiriting</string>
     <string name="call_contract">Shartnomani chaqirish</string>
     <string name="contract_address">Shartnoma manzili</string>
     <string name="about_collection">Kolleksiya haqida</string>
@@ -331,6 +335,7 @@
     <string name="logout_confirmation">Men %1$s uchun tiklash iborasining zaxira nusxasiga egaman</string>
     <string name="last_updated">Yangilangan %1$s</string>
     <string name="back_up_now">Hozir nusxa oling</string>
+    <string name="confirm_swap">Almashtirishni tasdiqlang</string>
     <string name="max">Maks</string>
     <string name="confirm_and_send">Tasdiqlang va yuboring</string>
     <string name="confirm_action">Harakatni tasdiqlang</string>
@@ -483,6 +488,7 @@
     <string name="nothing_to_restore">Qayta tiklash uchun hech narsa yo\'q</string>
     <string name="name">Ism</string>
     <string name="ledger_blind_signing_error">Ledger sozlamalarida koʻr-koʻrona imzo qoʻyish yoqilishi kerak</string>
+    <string name="purchase">Sotib olish</string>
     <string name="new_contact">Yangi manzil</string>
     <string name="contact_delete_dialog">Haqiqatan ham “%1$s” manzillar kitobingizdan o‘chirib tashlansinmi?</string>
     <string name="add_to_contact">Manzillar kitobiga qo\'shish</string>
@@ -513,6 +519,7 @@
     <string name="stories_safemode_3_title">Faqat tasdiqlangan tokenlar</string>
     <string name="open_explorer">Explorerda oching</string>
     <string name="tx_marked_as_spam">Tranzaksiya Spam sifatida belgilandi</string>
+    <string name="exchange_rate">Valyuta kursi</string>
     <string name="address_prefix">Manzil:</string>
     <string name="your_address">Sizning manzilingiz:</string>
     <string name="safe_mode_tokens_footer">Xavfsiz rejim yoqilgan. Faqat tasdiqlangan tokenlar mavjud. <annotation colorAttr="textAccentColor">Sozlamalar</annotation></string>
@@ -582,4 +589,13 @@
     <string name="support_title">Yordam kerakmi?</string>
     <string name="support_subtitle">Telegram orqali bizga murojaat qiling — yordam berishga harakat qilamiz.</string>
     <string name="ask_question">Savol berish</string>
+    <string name="renew_dns_title">Domenlar muddati tugayapti</string>
+    <string name="renew_dns_expires">Muddati %1$d kundan keyin tugaydi</string>
+    <string name="wallet_renew_dns">Sizda muddati tugagan %1$d domen bor. Hammasini %2$sgacha yangilang.</string>
+    <string name="renew_dns_until">%1$sgacha hammasini yangilang</string>
+    <string name="renew_signel_dns_until">%1$s gacha yangilang</string>
+    <string name="renew_dns_all">Hammasini yangilang</string>
+    <string name="dns_onsale_error_title">Domen hozirda bozorda sotilmoqda</string>
+    <string name="dns_onsale_error_desc">Domenni yangilash uchun avval uni sotuvdan olib tashlashingiz kerak.</string>
+    <string name="choose_token">Token-ni tanlang</string>
 </resources>

@@ -10,6 +10,7 @@
     <string name="staking_pending_withdraw">%1$s 将在 %2$s 内被提取</string>
     <string name="edit_full">编辑</string>
     <string name="safe_mode_tonconnect_description">您可以在钱包的安全设置中更改此设置。</string>
+    <string name="renew_dns_done">域名续期 1 年</string>
     <string name="staking_unstake_cycle">取消质押请求将在 %1$s 的验证周期结束后处理</string>
     <string name="send_transaction_scroll">检查所有详细信息以确认</string>
     <string name="send_transaction_detail">将从您的钱包发送的代币总价值。退款不包含在总价值中。</string>
@@ -62,6 +63,7 @@
     <string name="liquid_staking">流动性质押</string>
     <string name="other">其他</string>
     <string name="minimum_amount">最低 %1$s</string>
+    <string name="min_amount">最低金额：%1$s</string>
     <string name="stake_ethena_description">tsUSDe 代币代表通过 Ethena（一种去中心化的质押服务）持有的 USDe。tsUSDe 会自动累积质押奖励，且锁定时间最少。</string>
     <string name="stake_ethena_disclaimer">这是根据过去一周的平均协议奖励和平均质押 USDe 数量估算的年化收益。收益按周复利计算，以年化形式呈现。<annotation colorAttr="textSecondaryColor">过往表现不保证未来结果。</annotation> 质押和奖励由第三方服务商 Ethena 提供，并受其<annotation colorAttr="textAccentColor">条款</annotation>约束。</string>
     <string name="stake_tonstakers_description">当您在 Tonstakers 池中质押 TON 时，您会收到一个名为 tsTON 的代币，它代表您在池中的份额。随着池子积累利润，您的 tsTON 代表的 TON 数量会越来越多。</string>
@@ -150,6 +152,7 @@
     <string name="unsubscribed">取消订阅</string>
     <string name="subscribed">已订阅</string>
     <string name="received">已接收</string>
+    <string name="on_sale">特价</string>
     <string name="nft_transfer">NFT转移</string>
     <string name="nft_disabled_transfer">NFT目前在市场上出售。要进行转让，您应先将其从销售中移除。</string>
     <string name="continue_action">继续</string>
@@ -173,6 +176,7 @@
     <string name="yesterday">昨天</string>
     <string name="collectibles">收藏品</string>
     <string name="purchases">购买</string>
+    <string name="enter_amount">输入金额</string>
     <string name="call_contract">调用合约</string>
     <string name="contract_address">合约地址</string>
     <string name="about_collection">关于收藏</string>
@@ -330,6 +334,7 @@
     <string name="logout_confirmation">我有%1$s的恢复短语备份副本</string>
     <string name="last_updated">更新 %1$s</string>
     <string name="back_up_now">备份</string>
+    <string name="confirm_swap">确认交换</string>
     <string name="max">最大</string>
     <string name="confirm_and_send">确认并发送</string>
     <string name="confirm_action">确认操作</string>
@@ -474,6 +479,7 @@
     <string name="name">姓名</string>
     <string name="ledger_blind_signing_error">必须在 Ledger 设置中启用盲签名</string>
     <string name="nothing_to_restore">没什么可恢复的</string>
+    <string name="purchase">购买</string>
     <string name="new_contact">新地址</string>
     <string name="contact_delete_dialog">您确实要从地址簿中删除“%1$s”吗？</string>
     <string name="add_to_contact">添加到地址簿</string>
@@ -503,6 +509,7 @@
     <string name="stories_safemode_2_subtitle">以避免垃圾邮件和假冒物品。</string>
     <string name="stories_safemode_3_title">仅限已验证的代币</string>
     <string name="tx_marked_as_spam">交易被标记为垃圾邮件</string>
+    <string name="exchange_rate">汇率</string>
     <string name="address_prefix">地址：</string>
     <string name="your_address">您的地址：</string>
     <string name="safe_mode_tokens_footer">安全模式已启用。仅可使用经过验证的令牌。<annotation colorAttr="textAccentColor">设置</annotation></string>
@@ -577,5 +584,14 @@
     <string name="support_title">需要帮助吗？</string>
     <string name="support_subtitle">在 Telegram 上联系我，我们会尽力提供帮助。</string>
     <string name="ask_question">提出问题</string>
+    <string name="renew_dns_title">域名到期</string>
+    <string name="renew_dns_expires">%1$d 天后过期</string>
+    <string name="wallet_renew_dns">您有 %1$d 个域名即将过期。请全部续订至 %2$s。</string>
+    <string name="renew_dns_until">全部续订至 %1$s</string>
+    <string name="renew_signel_dns_until">续订至 %1$s</string>
+    <string name="renew_dns_all">全部续订</string>
+    <string name="dns_onsale_error_title">域名现在在市场上出售</string>
+    <string name="dns_onsale_error_desc">要续订域名，您应该先将其从销售中移除。</string>
+    <string name="choose_token">选择代币</string>
 
 </resources>

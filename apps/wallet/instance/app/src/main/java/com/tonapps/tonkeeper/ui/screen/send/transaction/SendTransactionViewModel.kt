@@ -75,8 +75,8 @@ class SendTransactionViewModel(
     private val emulationUseCase: EmulationUseCase,
     private val transactionManager: TransactionManager,
     private val batteryRepository: BatteryRepository,
-    private val assetsManager: AssetsManager,
     private val ratesRepository: RatesRepository,
+    private val analytics: AnalyticsHelper
 ) : BaseWalletVM(app) {
 
     private val currency = settingsRepository.currency
@@ -99,8 +99,7 @@ class SendTransactionViewModel(
         )
 
     init {
-        AnalyticsHelper.tcViewConfirm(
-            settingsRepository.installId,
+        analytics.tcViewConfirm(
             request.appUri.toString(),
             request.targetAddressValue
         )
@@ -347,8 +346,7 @@ class SendTransactionViewModel(
                 isBattery -> "battery"
                 else -> "ton"
             }
-            AnalyticsHelper.tcSendSuccess(
-                installId = settingsRepository.installId,
+            analytics.tcSendSuccess(
                 url = request.appUri.toString(),
                 address = request.targetAddressValue,
                 feePaid = feePaid

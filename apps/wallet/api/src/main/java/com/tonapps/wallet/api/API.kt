@@ -100,9 +100,6 @@ class API(
     private val bridgeUrl: String
         get() = "${config.tonConnectBridgeHost}/bridge"
 
-    @Volatile
-    private var cachedCountry: String? = null
-
     suspend fun tonapiFetch(
         url: String,
         options: String
@@ -938,12 +935,7 @@ class API(
         return time
     }
 
-    suspend fun resolveCountry(): String? = withContext(Dispatchers.IO) {
-        if (cachedCountry == null) {
-            cachedCountry = internalApi.resolveCountry()
-        }
-        cachedCountry
-    }
+    suspend fun resolveCountry(): String? = internalApi.resolveCountry()
 
     suspend fun reportNtfSpam(
         nftAddress: String,

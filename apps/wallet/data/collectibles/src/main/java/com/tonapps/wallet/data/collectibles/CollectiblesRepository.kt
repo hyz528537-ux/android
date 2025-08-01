@@ -34,7 +34,7 @@ class CollectiblesRepository(
         )
     }.sortedBy { it.daysUntilExpiration }
 
-    suspend fun getDnsSoonExpiring(accountId: String, testnet: Boolean) = getDnsExpiring(accountId, testnet, 30)
+    suspend fun getDnsSoonExpiring(accountId: String, testnet: Boolean, period: Int = 30) = getDnsExpiring(accountId, testnet, period)
 
     suspend fun getDnsNftExpiring(
         accountId: String,

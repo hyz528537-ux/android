@@ -6,6 +6,7 @@ import com.tonapps.icu.Coins
 import com.tonapps.network.NetworkMonitor
 import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.RemoteConfig
+import com.tonapps.tonkeeper.core.DevSettings
 import com.tonapps.tonkeeper.core.entities.AssetsEntity.Companion.sort
 import com.tonapps.tonkeeper.extensions.hasPushPermission
 import com.tonapps.tonkeeper.helper.DateHelper
@@ -138,6 +139,8 @@ class WalletViewModel(
                 setStatus(Status.NoInternet)
                 delay(3000)
                 setStatus(Status.LastUpdated)
+            } else {
+                updateCuntryByIP()
             }
         }
 
@@ -290,6 +293,12 @@ class WalletViewModel(
         }
     }
 
+    private fun updateCuntryByIP() {
+        viewModelScope.launch {
+            environment.setCountryByIPAddress(api.resolveCountry())
+        }
+    }
+
     fun refresh() {
         requestDnsExpiring()
         _statusFlow.value = Status.Updating
@@ -298,7 +307,8 @@ class WalletViewModel(
 
     private fun requestDnsExpiring() {
         viewModelScope.launch {
-            _domainRenewFlow.value = collectiblesRepository.getDnsSoonExpiring(wallet.accountId, wallet.testnet)
+            val period = if (DevSettings.dnsAll) 366 else 30
+            _domainRenewFlow.value = collectiblesRepository.getDnsSoonExpiring(wallet.accountId, wallet.testnet, period)
         }
     }
 

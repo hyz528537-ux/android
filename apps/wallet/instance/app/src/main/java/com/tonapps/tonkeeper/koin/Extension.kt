@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.recyclerview.widget.RecyclerView
 import com.tonapps.tonkeeper.RemoteConfig
+import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.history.HistoryHelper
 import com.tonapps.tonkeeper.manager.apk.APKManager
 import com.tonapps.tonkeeper.manager.push.PushManager
@@ -107,3 +108,6 @@ val Context.apkManager: APKManager?
 
 val Context.installId: String
     get() = settingsRepository?.installId ?: ""
+
+val Context.analytics: AnalyticsHelper?
+    get() = koin?.get<AnalyticsHelper>()

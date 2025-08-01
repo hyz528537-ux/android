@@ -3,11 +3,11 @@ package com.tonapps.tonkeeper.ui.screen.token.viewer.list.holder
 import android.view.View
 import android.view.ViewGroup
 import com.tonapps.tonkeeper.helper.BrowserHelper
+import com.tonapps.tonkeeper.koin.remoteConfig
 import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppScreen
 import com.tonapps.tonkeeper.ui.screen.qr.QRScreen
 import com.tonapps.tonkeeper.ui.screen.send.main.SendScreen
 import com.tonapps.tonkeeper.ui.screen.swap.SwapScreen
-import com.tonapps.tonkeeper.ui.screen.swap.omniston.OmnistonScreen
 import com.tonapps.tonkeeper.ui.screen.token.viewer.list.Item
 import com.tonapps.tonkeeperx.R
 import uikit.navigation.Navigation
@@ -42,10 +42,12 @@ class ActionsHolder(parent: ViewGroup): Holder<Item.Actions>(parent, R.layout.vi
             if (item.swapMethod != null) {
                 BrowserHelper.openPurchase(context, item.swapMethod)
             } else {
-                navigation?.add(OmnistonScreen.newInstance(
+                navigation?.add(SwapScreen.newInstance(
                     wallet = item.wallet,
                     fromToken = item.tokenAddress,
-                    toToken = "TON"
+                    toToken = "TON",
+                    nativeSwap = context.remoteConfig?.newSwapEnabled == true,
+                    uri = item.swapUri
                 ))
             }
         }

@@ -8,6 +8,7 @@ import com.android.billingclient.api.BillingClient.ProductType
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ConsumeParams
+import com.android.billingclient.api.GetBillingConfigParams
 import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
@@ -18,6 +19,7 @@ import com.android.billingclient.api.consumePurchase
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.extensions.filterList
+import com.tonapps.tonkeeper.Environment
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
@@ -41,6 +43,7 @@ import kotlin.time.Duration.Companion.seconds
 class BillingManager(
     context: Context,
     scope: CoroutineScope,
+    private val environment: Environment,
 ) : PurchasesUpdatedListener {
 
     private var billingClient: BillingClient = BillingClient.newBuilder(context)
@@ -65,6 +68,7 @@ class BillingManager(
     }
 
     suspend fun consumeProduct(purchaseToken: String) = billingClient.ready { client ->
+        requestCountry(client)
         val params = ConsumeParams.newBuilder().setPurchaseToken(purchaseToken).build()
         client.consumePurchase(params)
     }
@@ -102,6 +106,7 @@ class BillingManager(
         productIds: List<String>,
         productType: String = ProductType.INAPP
     ): List<ProductDetails> = billingClient.ready { client ->
+        requestCountry(client)
         if (productIds.isEmpty()) {
             return@ready emptyList()
         }
@@ -161,6 +166,7 @@ class BillingManager(
         wallet: WalletEntity,
         productDetails: ProductDetails
     ) = billingClient.ready { client ->
+        requestCountry(client)
         val productDetailsParams = BillingFlowParams.ProductDetailsParams.newBuilder()
             .setProductDetails(productDetails)
             .build()
@@ -176,12 +182,19 @@ class BillingManager(
         Unit
     }
 
+    private fun requestCountry(client: BillingClient) {
+        client.getBillingConfigAsync(GetBillingConfigParams.newBuilder().build()) { billingResult, billingConfig ->
+            billingConfig?.countryCode?.let(environment::setCountryFromStore)
+        }
+    }
+
     @OptIn(FlowPreview::class)
     fun productFlow(productId: String) = productsFlow.take(1).filterList { product ->
         product.productId == productId
     }.mapNotNull { it.firstOrNull() }.timeout(5.seconds)
 
     suspend fun restorePurchases(): List<Purchase> = billingClient.ready {
+        requestCountry(it)
         getPendingPurchases(it)
     }
 }

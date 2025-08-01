@@ -10,6 +10,7 @@
     <string name="staking_pending_withdraw">%1$s akan ditarik dalam %2$s</string>
     <string name="edit_full">Sunting</string>
     <string name="safe_mode_tonconnect_description">Anda dapat mengubahnya di Pengaturan Keamanan dompet Anda.</string>
+    <string name="renew_dns_done">Domain diperpanjang selama 1 tahun</string>
     <string name="staking_unstake_cycle">Permintaan pembatalan taruhan akan diproses setelah akhir siklus validasi dalam %1$s</string>
     <string name="send_transaction_scroll">Periksa semua detail untuk konfirmasi</string>
     <string name="send_transaction_detail">Nilai total token yang akan dikirim dari dompet Anda. Pengembalian dana tidak termasuk dalam nilai total.</string>
@@ -149,6 +150,7 @@
     <string name="unsubscribed">Berhenti Berlangganan</string>
     <string name="subscribed">Berlangganan</string>
     <string name="received">Diterima</string>
+    <string name="on_sale">DI JUAL</string>
     <string name="nft_transfer">Transfer NFT</string>
     <string name="nft_disabled_transfer">NFT sedang dijual di marketplace sekarang. Untuk mentransfer, Anda harus menghapusnya dari penjualan terlebih dahulu.</string>
     <string name="continue_action">Lanjutkan</string>
@@ -172,6 +174,7 @@
     <string name="yesterday">Kemarin</string>
     <string name="collectibles">Koleksi</string>
     <string name="purchases">Pembelian</string>
+    <string name="enter_amount">Masukkan Jumlah</string>
     <string name="call_contract">Panggil kontrak</string>
     <string name="contract_address">Alamat kontrak</string>
     <string name="about_collection">Tentang koleksi</string>
@@ -329,6 +332,7 @@
     <string name="logout_confirmation">Saya memiliki salinan cadangan dari frasa pemulihan untuk %1$s</string>
     <string name="last_updated">Diperbarui %1$s</string>
     <string name="back_up_now">Cadangkan sekarang</string>
+    <string name="confirm_swap">Konfirmasi Pertukaran</string>
     <string name="max">Maks</string>
     <string name="confirm_and_send">Konfirmasi dan kirim</string>
     <string name="confirm_action">Konfirmasi tindakan</string>
@@ -473,6 +477,7 @@
     <string name="name">Nama</string>
     <string name="ledger_blind_signing_error">Penandatanganan Buta harus diaktifkan di Pengaturan Buku Besar</string>
     <string name="nothing_to_restore">Tidak ada yang perlu dikembalikan</string>
+    <string name="purchase">Pembelian</string>
     <string name="new_contact">Alamat Baru</string>
     <string name="contact_delete_dialog">Apakah Anda yakin ingin menghapus “%1$s” dari Buku Alamat Anda?</string>
     <string name="add_to_contact">Tambahkan ke Buku Alamat</string>
@@ -502,6 +507,7 @@
     <string name="stories_safemode_2_subtitle">Untuk menghindari spam dan barang palsu.</string>
     <string name="stories_safemode_3_title">Hanya Token Terverifikasi</string>
     <string name="tx_marked_as_spam">Transaksi ditandai sebagai Spam</string>
+    <string name="exchange_rate">Kurs</string>
     <string name="address_prefix">Alamat:</string>
     <string name="your_address">Alamat Anda:</string>
     <string name="safe_mode_tokens_footer">Mode aman diaktifkan. Hanya token terverifikasi yang tersedia. <annotation colorAttr="textAccentColor">Pengaturan</annotation></string>
@@ -573,8 +579,18 @@
     <string name="credit_card_subtitle">Visa atau Mastercard</string>
     <string name="currency_not_found">Mata uang tidak ditemukan</string>
     <string name="onrmap_provider_description">Penyedia lain tersedia untuk pasangan mata uang yang berbeda.</string>
+    <string name="min_amount">Jumlah minimum: %1$s</string>
     <string name="stake_ethena_description">Token tsUSDe mewakili USDe yang disimpan melalui Ethena, layanan staking yang terdesentralisasi. tsUSDe secara otomatis mengumpulkan imbalan staking, dengan penguncian minimal.</string>
     <string name="support_title">Butuh bantuan?</string>
     <string name="support_subtitle">Tanyakan pada kami di Telegram — kami akan berusaha sebaik mungkin untuk membantu.</string>
     <string name="ask_question">Ajukan Pertanyaan</string>
+    <string name="renew_dns_title">Domain yang kedaluwarsa</string>
+    <string name="renew_dns_expires">Kedaluwarsa dalam %1$d hari</string>
+    <string name="wallet_renew_dns">Anda memiliki %1$d domain yang akan kedaluwarsa. Perpanjang semuanya hingga %2$s.</string>
+    <string name="renew_dns_until">Perbarui semuanya hingga %1$s</string>
+    <string name="renew_signel_dns_until">Perpanjang hingga %1$s</string>
+    <string name="renew_dns_all">Perbarui semuanya</string>
+    <string name="dns_onsale_error_title">Domain sekarang dijual di pasar</string>
+    <string name="dns_onsale_error_desc">Untuk memperbarui domain, Anda harus menghapusnya dari penjualan terlebih dahulu.</string>
+    <string name="choose_token">Pilih Token</string>
 </resources>

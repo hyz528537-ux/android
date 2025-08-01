@@ -7,9 +7,11 @@ import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.lifecycle.lifecycleScope
+import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.extensions.addFeeItem
 import com.tonapps.tonkeeper.extensions.finishDelay
 import com.tonapps.tonkeeper.extensions.hideKeyboard
@@ -46,6 +48,7 @@ import uikit.extensions.withBlueBadge
 import uikit.extensions.withClickable
 import uikit.extensions.withInterpunct
 import uikit.span.ClickableSpanCompat
+import uikit.widget.HeaderView
 import uikit.widget.LoaderView
 import uikit.widget.ModalHeader
 import uikit.widget.ProcessTaskView
@@ -66,7 +69,8 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
     private val rootViewMode: RootViewModel by activityViewModel()
 
     private lateinit var slidesView: SlideBetweenView
-    private lateinit var headerView: ModalHeader
+    private lateinit var headerView: HeaderView
+    private lateinit var modalHeaderView: ModalHeader
     private lateinit var sendInputView: CurrencyInputView
     private lateinit var receiveInputView: CurrencyInputView
     private lateinit var continueButton: Button
@@ -80,9 +84,18 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
     private lateinit var taskView: ProcessTaskView
     private lateinit var feeView: ItemLineView
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        analytics?.swapOpen(viewModel.swapUri, true)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.findViewById<View>(R.id.edit).setOnClickListener { viewModel.reset() }
+
+        headerView = view.findViewById(R.id.header)
+        headerView.doOnCloseClick = { onBackPressed() }
+        headerView.doOnActionClick = { finish() }
 
         taskView = view.findViewById(R.id.task)
         priceView = view.findViewById(R.id.price)
@@ -94,8 +107,8 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         val bottomReviewView = view.findViewById<View>(R.id.bottom_review)
         slidesView = view.findViewById(R.id.slides)
 
-        headerView = view.findViewById(R.id.header)
-        headerView.onCloseClick = { finish() }
+        modalHeaderView = view.findViewById(R.id.modal_header)
+        modalHeaderView.onCloseClick = { finish() }
 
         reviewSendView = view.findViewById(R.id.review_send)
         reviewSendView.setTitleTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
@@ -134,6 +147,15 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
 
         view.findViewById<View>(R.id.switch_button).setOnClickListener(::switch)
 
+        reviewReceiveView.setOnClickListener {
+            receiveInputView.focusWithKeyboard()
+            viewModel.reset()
+        }
+        reviewSendView.setOnClickListener {
+            sendInputView.focusWithKeyboard()
+            viewModel.reset()
+        }
+
         continueButton = view.findViewById(R.id.continue_button)
         continueButton.setOnClickListener { next() }
 
@@ -146,14 +168,42 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
             actionContainerView.translationY = -offset.toFloat()
         }
 
+        sendInputView.doOnEditorAction = { actionId ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                if (sendInputView.isEmpty) {
+                    receiveInputView.focusWithKeyboard()
+                } else {
+                    next()
+                }
+                true
+            } else {
+                false
+            }
+        }
+
+        receiveInputView.doOnEditorAction = { actionId ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                if (receiveInputView.isEmpty) {
+                    sendInputView.focusWithKeyboard()
+                } else {
+                    next()
+                }
+                true
+            } else {
+                false
+            }
+        }
+
         collectFlow(viewModel.quoteStateFlow, ::applyQuoteState)
         collectFlow(viewModel.priceFlow, priceView::setText)
         collectFlow(viewModel.stepFlow) { step ->
             if (step == OmnistonStep.Input) {
-                headerView.setTitle(Localization.swap)
+                headerView.visibility = View.GONE
+                modalHeaderView.visibility = View.VISIBLE
                 slidesView.prev()
             } else {
-                headerView.setTitle(Localization.confirm_swap)
+                headerView.visibility = View.VISIBLE
+                modalHeaderView.visibility = View.GONE
                 slidesView.next()
                 loaderView.visibility = View.GONE
                 continueButton.visibility = View.VISIBLE
@@ -236,6 +286,14 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
     }
 
     private fun signSuccess() {
+        analytics?.swapSuccess(
+            jettonSymbolFrom = viewModel.jettonSymbolFrom,
+            jettonSymbolTo = viewModel.jettonSymbolTo,
+            providerName = viewModel.providerName,
+            providerUrl = viewModel.providerUrl,
+            native = true,
+        )
+
         rootViewMode.routeToHistoryTab("swap")
         taskView.visibility = View.VISIBLE
         taskView.state = ProcessTaskView.State.SUCCESS
@@ -250,6 +308,13 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
 
     private fun sign() {
         signLoading()
+        analytics?.swapConfirm(
+            jettonSymbolFrom = viewModel.jettonSymbolFrom,
+            jettonSymbolTo = viewModel.jettonSymbolTo,
+            providerName = viewModel.providerName,
+            providerUrl = viewModel.providerUrl,
+            native = true,
+        )
         viewModel.sign { isSuccessful ->
             if (isSuccessful) {
                 signSuccess()
@@ -287,6 +352,12 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
                 continueButton.visibility = View.VISIBLE
             }
         }
+        analytics?.swapClick(
+            jettonSymbolFrom = viewModel.jettonSymbolFrom,
+            jettonSymbolTo = viewModel.jettonSymbolTo,
+            native = true,
+            providerName = viewModel.providerName,
+        )
     }
 
     private fun applyQuoteState(state: SwapQuoteState) {

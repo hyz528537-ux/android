@@ -62,7 +62,7 @@ class TokenScreen(wallet: WalletEntity) :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.simpleTrackEvent("token_open", viewModel.installId)
+        analytics?.simpleTrackEvent("token_open")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

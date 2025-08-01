@@ -19,7 +19,8 @@ class RemoteConfig(context: Context) {
         IS_TRON_DISABLED("isTronDisabled"),
         NATIVE_ONRAMP_ENABLED("native_onrmap_enabled"),
         ETHENA_ENABLED("ethena_enabled"),
-        ONBOARDING_STORIES_ENABLED("onboarding_stories_enabled");
+        ONBOARDING_STORIES_ENABLED("onboarding_stories_enabled"),
+        NEW_SWAP_ENABLED("new_swap_enabled");
     }
 
     init {
@@ -49,6 +50,9 @@ class RemoteConfig(context: Context) {
             }
         }
     }
+
+    val newSwapEnabled: Boolean
+        get() = remoteConfig.getBoolean(FeatureFlag.NEW_SWAP_ENABLED.key)
 
     val inAppUpdateAvailable: Boolean
         get() = remoteConfig.getBoolean(FeatureFlag.IN_APP_UPDATE_AVAILABLE.key)

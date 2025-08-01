@@ -7,6 +7,7 @@ import com.tonapps.extensions.containsQuery
 import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.extensions.toUriOrNull
 import com.tonapps.tonkeeper.core.AnalyticsHelper
+import com.tonapps.tonkeeper.koin.analytics
 import com.tonapps.wallet.api.entity.StoryEntity
 import com.tonapps.wallet.data.settings.SettingsRepository
 import org.koin.android.ext.android.inject
@@ -41,8 +42,7 @@ class RemoteStoriesScreen : BaseStoriesScreen() {
             )
         })
 
-        AnalyticsHelper.trackStoryOpen(
-            installId = installId,
+        context?.analytics?.trackStoryOpen(
             storiesId = stories.id,
             from = from
         )
@@ -50,8 +50,7 @@ class RemoteStoriesScreen : BaseStoriesScreen() {
 
     override fun onStoryItem(item: Item) {
         super.onStoryItem(item)
-        AnalyticsHelper.trackStoryView(
-            installId = installId,
+        context?.analytics?.trackStoryView(
             storiesId = stories.id,
             index = currentIndex + 1
         )
@@ -61,8 +60,7 @@ class RemoteStoriesScreen : BaseStoriesScreen() {
         super.onStoryButton(index)
         val button = stories.list.getOrNull(index)?.button ?: return
 
-        AnalyticsHelper.trackStoryClick(
-            installId = installId,
+        context?.analytics?.trackStoryClick(
             storiesId = stories.id,
             button = button,
             index = index

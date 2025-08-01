@@ -98,6 +98,12 @@ class OmnistonViewModel(
         private val defaultToCurrency = WalletCurrency.USDT_TON
     }
 
+    val installId: String
+        get() = settingsRepository.installId
+
+    val swapUri: Uri
+        get() = api.config.swapUri
+
     private val twinInput = TwinInput(viewModelScope)
 
     private val _requestFocusFlow = MutableEffectFlow<TwinInput.Type?>()
@@ -168,6 +174,18 @@ class OmnistonViewModel(
         !insufficientBalance && !isEmpty
     }
 
+    val jettonSymbolFrom: String
+        get() = twinInput.state.getCurrency(TwinInput.Type.Send).symbol + "_ton"
+
+    val jettonSymbolTo: String
+        get() = twinInput.state.getCurrency(TwinInput.Type.Receive).symbol + "_ton"
+
+    val providerName: String
+        get() = _quoteStateFlow.value.provider.ifEmpty { "unknown" }
+
+    val providerUrl: String
+        get() = "unknown"
+
     private var pollingJob: Job? = null
     private var setSendCurrencyJob: Job? = null
 
@@ -225,12 +243,13 @@ class OmnistonViewModel(
             val ignoreCurrency = twinInput.getCurrency(forType.opposite)
             SwapPickerScreen.run(context, wallet, selectedCurrency, ignoreCurrency, forType == TwinInput.Type.Send)
         }.onSuccess { currency ->
-            _requestFocusFlow.tryEmit(forType)
             if (currency == twinInput.state.getCurrency(forType)) {
                 return@onSuccess
             } else if (twinInput.state.hasCurrency(currency)) {
+                _requestFocusFlow.tryEmit(forType)
                 switch()
             } else {
+                _requestFocusFlow.tryEmit(twinInput.state.focus)
                 twinInput.updateCurrency(forType, currency)
             }
         }
@@ -402,9 +421,14 @@ class OmnistonViewModel(
         forEmulation: Boolean,
         batteryEnabled: Boolean
     ): List<WalletTransfer> {
-        val excessesAddress = if (!forEmulation && _quoteStateFlow.value.isPreferredFeeMethodBattery) {
+        val excessesAddress = if (!forEmulation) {
             batteryRepository.getConfig(wallet.testnet).excessesAddress
         } else null
+
+        Log.d("EnvironmentLog", "forEmulation: $forEmulation")
+        Log.d("EnvironmentLog", "batteryEnabled: $batteryEnabled")
+        Log.d("EnvironmentLog", "isPreferredFeeMethodBattery: ${_quoteStateFlow.value.isPreferredFeeMethodBattery}")
+        Log.d("EnvironmentLog", "excessesAddress: $excessesAddress")
 
         return request.getTransfers(
             wallet = wallet,
@@ -483,7 +507,7 @@ class OmnistonViewModel(
                 fromUnits = Coins.ofNano(args.fromAmount, fromCurrency.decimals),
                 gasBudget = Coins.ofNano(messages.gasBudget),
                 estimatedGasConsumption = Coins.ofNano(messages.estimatedGasConsumption),
-                tx = createEmulationTx(signRequest, batteryEnabled),
+                tx = tx,
                 selectedFee = selectedFee,
             )
 

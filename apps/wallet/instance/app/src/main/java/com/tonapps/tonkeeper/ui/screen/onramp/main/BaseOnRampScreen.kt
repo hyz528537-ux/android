@@ -45,11 +45,11 @@ open class BaseOnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.
 
     private lateinit var headerView: HeaderView
     private lateinit var nextContainerView: ViewGroup
-    private lateinit var button: LoadableButton
+    lateinit var button: LoadableButton
     private lateinit var pairNotAvailableView: AppCompatTextView
     private lateinit var providerContainerView: ViewGroup
     private lateinit var providerTitleView: AppCompatTextView
-    private lateinit var minMaxView: AppCompatTextView
+    lateinit var minMaxView: AppCompatTextView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -172,12 +172,11 @@ open class BaseOnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.
         }
     }
 
-    private fun requestAvailableProviders() {
+    fun requestAvailableProviders() {
         hideKeyboard()
         viewModel.requestAvailableProviders()
 
-        AnalyticsHelper.onRampEnterAmount(
-            installId = viewModel.installId,
+        analytics?.onRampEnterAmount(
             type = viewModel.purchaseType,
             sellAsset = viewModel.fromForAnalytics,
             buyAsset = viewModel.toForAnalytics,
@@ -210,8 +209,7 @@ open class BaseOnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.
             button.isLoading = false
         }
 
-        AnalyticsHelper.onRampOpenWebview(
-            installId = viewModel.installId,
+        analytics?.onRampOpenWebview(
             type = viewModel.purchaseType,
             sellAsset = viewModel.fromForAnalytics,
             buyAsset = viewModel.toForAnalytics,

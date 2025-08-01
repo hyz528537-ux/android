@@ -197,7 +197,7 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
         val wallet: WalletEntity,
         val token: TokenEntity,
         val swapUri: Uri,
-        val tronEnabled: Boolean,
+        val tronEnabled: Boolean
     ): Item(TYPE_ACTIONS) {
 
         val address: String

@@ -12,6 +12,7 @@
         android:src="@drawable/ic_globe_28"
         android:background="@drawable/bg_oval"
         android:scaleType="centerInside"
+        android:tint="?attr/textPrimaryColor"
         android:backgroundTint="?attr/backgroundContentAttentionColor"/>
 
     <androidx.appcompat.widget.AppCompatTextView

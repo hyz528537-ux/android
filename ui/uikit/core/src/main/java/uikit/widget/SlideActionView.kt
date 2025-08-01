@@ -13,8 +13,10 @@ import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.graphics.toColorInt
 import androidx.core.math.MathUtils
 import androidx.customview.widget.ViewDragHelper
+import com.tonapps.uikit.color.backgroundContentColor
 import com.tonapps.uikit.color.stateList
 import com.tonapps.uikit.color.textTertiaryColor
 import com.tonapps.uikit.icon.UIKitIcon
@@ -23,6 +25,7 @@ import uikit.HapticHelper
 import uikit.extensions.dp
 import uikit.extensions.getDimension
 import uikit.extensions.getDimensionPixelSize
+import uikit.extensions.isDark
 import uikit.extensions.useAttributes
 
 class SlideActionView @JvmOverloads constructor(
@@ -191,8 +194,8 @@ class SlideActionView @JvmOverloads constructor(
     ) : AppCompatTextView(context, attrs, defStyle), ValueAnimator.AnimatorUpdateListener {
 
         private val gradientWidth = 84f.dp * 2
-        private val color = Color.parseColor("#C2DAFF")
         private val textColor = context.textTertiaryColor
+        private val color = (if (textColor.isDark()) "#C2DAFF" else "#c8d3f7").toColorInt()
         private val gradientColors = intArrayOf(textColor, color, color, textColor)
         private val matrix = Matrix()
 
@@ -202,6 +205,10 @@ class SlideActionView @JvmOverloads constructor(
             repeatMode = ValueAnimator.RESTART
             interpolator = LinearInterpolator()
             addUpdateListener(this@GradientTextView)
+        }
+
+        init {
+            setBackgroundResource(R.drawable.bg_content)
         }
 
         override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

@@ -5,16 +5,13 @@ import android.view.ViewGroup
 import com.tonapps.tonkeeper.koin.remoteConfig
 import com.tonapps.tonkeeper.ui.screen.camera.CameraScreen
 import com.tonapps.tonkeeper.ui.screen.onramp.main.OnRampScreen
-import com.tonapps.tonkeeper.ui.screen.purchase.PurchaseScreen
 import com.tonapps.tonkeeper.ui.screen.qr.QRScreen
 import com.tonapps.tonkeeper.ui.screen.send.main.SendScreen
 import com.tonapps.tonkeeper.ui.screen.staking.stake.StakingScreen
 import com.tonapps.tonkeeper.ui.screen.swap.SwapScreen
-import com.tonapps.tonkeeper.ui.screen.swap.omniston.OmnistonScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.main.list.Item
 import com.tonapps.tonkeeperx.R
 import com.tonapps.wallet.api.entity.Blockchain
-import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.Wallet
 
 class ActionsHolder(parent: ViewGroup): Holder<Item.Actions>(parent, R.layout.view_wallet_actions) {
@@ -39,9 +36,12 @@ class ActionsHolder(parent: ViewGroup): Holder<Item.Actions>(parent, R.layout.vi
         receiveView.setOnClickListener {
             navigation?.add(QRScreen.newInstance(item.wallet))
         }
+
         swapView.setOnClickListener {
-            navigation?.add(OmnistonScreen.newInstance(
+            navigation?.add(SwapScreen.newInstance(
                 wallet = item.wallet,
+                nativeSwap = context.remoteConfig?.newSwapEnabled == true,
+                uri = item.swapUri
             ))
         }
         buyOrSellView.setOnClickListener {

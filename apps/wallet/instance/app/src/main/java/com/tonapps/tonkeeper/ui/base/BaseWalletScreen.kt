@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.core.view.WindowInsetsControllerCompat
 import com.tonapps.tonkeeper.RemoteConfig
+import com.tonapps.tonkeeper.core.AnalyticsHelper
+import com.tonapps.tonkeeper.koin.analytics
 import com.tonapps.tonkeeper.koin.remoteConfig
 import com.tonapps.tonkeeper.koin.serverConfig
 import com.tonapps.wallet.api.entity.ConfigEntity
@@ -28,6 +30,9 @@ abstract class BaseWalletScreen<C: ScreenContext>(
 
     val remoteConfig: RemoteConfig?
         get() = context?.remoteConfig
+
+    val analytics: AnalyticsHelper?
+        get() = context?.analytics
 
     override val uiContext: Context
         get() = requireContext()

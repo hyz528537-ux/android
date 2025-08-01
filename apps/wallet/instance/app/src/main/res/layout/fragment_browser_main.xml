@@ -35,7 +35,8 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_gravity="center"
-            android:padding="6dp"/>
+            android:padding="6dp"
+            android:visibility="gone"/>
     </uikit.widget.RowLayout>
 
     <uikit.widget.SlideBetweenView

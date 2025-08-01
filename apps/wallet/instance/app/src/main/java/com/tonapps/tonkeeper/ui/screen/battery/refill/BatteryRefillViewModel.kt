@@ -61,6 +61,7 @@ class BatteryRefillViewModel(
     private val settingsRepository: SettingsRepository,
     private val billingManager: BillingManager,
     private val environment: Environment,
+    private val analytics: AnalyticsHelper,
 ) : BaseWalletVM(app) {
 
     private val _promoFlow = MutableStateFlow<String?>(null)
@@ -350,7 +351,7 @@ class BatteryRefillViewModel(
                 )
                 val promoCode = (_promoStateFlow.value as? PromoState.Applied)?.appliedPromo ?: "null"
                 withContext(Dispatchers.Main) {
-                    AnalyticsHelper.batterySuccess(settingsRepository.installId, "fiat", promoCode, "")
+                    analytics.batterySuccess("fiat", promoCode, "")
                 }
                 billingManager.consumeProduct(purchase.purchaseToken)
             }
@@ -365,7 +366,7 @@ class BatteryRefillViewModel(
     fun makePurchase(productId: String, activity: Activity) {
         promoStateFlow.take(1).collectFlow { promoState ->
             val promoCode = (promoState as? PromoState.Applied)?.appliedPromo ?: "null"
-            AnalyticsHelper.simpleTrackEvent("battery_select", settingsRepository.installId, hashMapOf(
+            analytics.simpleTrackEvent("battery_select", hashMapOf(
                 "size" to productId,
                 "promo" to promoCode,
                 "type" to "fiat"

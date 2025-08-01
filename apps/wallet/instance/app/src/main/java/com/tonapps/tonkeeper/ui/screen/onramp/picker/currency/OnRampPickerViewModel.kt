@@ -7,6 +7,7 @@ import com.facebook.common.util.UriUtil
 import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.extensions.mapList
 import com.tonapps.icu.CurrencyFormatter
+import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.extensions.onRampDataFlow
 import com.tonapps.tonkeeper.manager.assets.AssetsManager
 import com.tonapps.tonkeeper.os.AndroidCurrency
@@ -42,11 +43,12 @@ class OnRampPickerViewModel(
     private val purchaseRepository: PurchaseRepository,
     private val tokenRepository: TokenRepository,
     private val assetsManager: AssetsManager,
-    private val api: API
+    private val api: API,
+    private val environment: Environment,
 ): BaseWalletVM(app) {
 
     private val onRampResultFlow = purchaseRepository
-        .onRampDataFlow(settingsRepository, api)
+        .onRampDataFlow(environment)
 
     private val onRampFlow = onRampResultFlow.map { it.data }
 

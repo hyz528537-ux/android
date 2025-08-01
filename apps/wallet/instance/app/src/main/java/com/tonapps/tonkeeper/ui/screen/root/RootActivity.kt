@@ -76,6 +76,7 @@ import uikit.extensions.runAnimation
 import uikit.extensions.withAlpha
 import androidx.core.net.toUri
 import com.tonapps.blockchain.ton.extensions.equalsAddress
+import com.tonapps.tonkeeper.koin.analytics
 
 class RootActivity : BaseWalletActivity() {
 
@@ -507,7 +508,7 @@ class RootActivity : BaseWalletActivity() {
         if (0 >= DevSettings.firstLaunchDate) {
             DevSettings.firstLaunchDeeplink = uri?.toString() ?: ""
         } else if (uri?.hasRefer() == true || uri?.hasUtmSource() == true) {
-            AnalyticsHelper.openRefDeeplink(settingsRepository.installId, uri.toString())
+            analytics?.openRefDeeplink(uri.toString())
         }
         val extras = intent.extras
         val dappDeepLink = extras?.getStringValue("dapp_deeplink")?.toUriOrNull()

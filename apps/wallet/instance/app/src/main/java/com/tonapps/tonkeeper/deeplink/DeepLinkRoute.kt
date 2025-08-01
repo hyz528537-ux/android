@@ -276,7 +276,7 @@ sealed class DeepLinkRoute {
             val uri = normalize(input)
             val from = input.query("from") ?: "deep-link"
             val domain = uri.hostOrNull ?: return Unknown(uri)
-            if (domain == "dns" && uri.pathOrNull == "expiring") {
+            if (domain == "dns" && uri.pathOrNull?.startsWith("expiring") == true) {
                 return DnsRenew
             }
             try {

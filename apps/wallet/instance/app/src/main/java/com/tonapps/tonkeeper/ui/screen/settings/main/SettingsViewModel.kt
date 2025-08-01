@@ -62,6 +62,7 @@ class SettingsViewModel(
     private val environment: Environment,
     private val remoteConfig: RemoteConfig,
     private val tokenRepository: TokenRepository,
+    private val analytics: AnalyticsHelper
 ) : BaseWalletVM(application) {
 
     private val safeMode: Boolean = settingsRepository.isSafeModeEnabled(api)
@@ -113,7 +114,7 @@ class SettingsViewModel(
     }
 
     fun signOut(callback: () -> Unit) {
-        AnalyticsHelper.simpleTrackEvent("delete_wallet", settingsRepository.installId)
+        analytics.simpleTrackEvent("delete_wallet")
         viewModelScope.launch(Dispatchers.IO) {
             tonConnectManager.clear(wallet)
             PushToggleWorker.run(context, wallet, PushManager.State.Delete)

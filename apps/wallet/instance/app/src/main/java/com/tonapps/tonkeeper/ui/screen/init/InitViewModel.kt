@@ -87,6 +87,7 @@ class InitViewModel(
     private val settingsRepository: SettingsRepository,
     private val remoteConfig: RemoteConfig,
     private val environment: Environment,
+    private val analytics: AnalyticsHelper,
     savedStateHandle: SavedStateHandle
 ) : BaseWalletVM(app) {
 
@@ -591,9 +592,8 @@ class InitViewModel(
 
         val wallet = accountRepository.addNewWallet(walletId, label, mnemonic)
 
-        AnalyticsHelper.simpleTrackEvent(
+        analytics.simpleTrackEvent(
             "wallet_generate",
-            installId,
             hashMapOf("wallet_type" to wallet.version.title)
         )
         return wallet
@@ -622,9 +622,8 @@ class InitViewModel(
             })
 
             accounts.map {
-                AnalyticsHelper.simpleTrackEvent(
+                analytics.simpleTrackEvent(
                     "wallet_import",
-                    installId,
                     hashMapOf("wallet_type" to it.walletVersion.title)
                 )
             }

@@ -55,7 +55,7 @@ class PurchaseScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         collectFlow(viewModel.uiItemsFlow, adapter::submitList)
-        AnalyticsHelper.onRampOpen(settingsRepository.installId, source)
+        analytics?.onRampOpen(source)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -126,8 +126,7 @@ class PurchaseScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         } else {
             category
         }
-        AnalyticsHelper.onRampClick(
-            installId = settingsRepository.installId,
+        analytics?.onRampClick(
             type = viewModel.tabName,
             placement = fixedCategory,
             location = viewModel.country,

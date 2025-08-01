@@ -33,14 +33,16 @@
             android:textColor="?attr/textPrimaryColor"
             android:gravity="center_horizontal"/>
 
-        <uikit.widget.RowLayout
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/info"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="@dimen/offsetExtraSmall"
             android:layout_marginHorizontal="@dimen/offsetMedium"
-            android:orientation="horizontal"/>
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Body1"
+            android:textColor="?attr/textTertiaryColor"/>
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/subtitle"

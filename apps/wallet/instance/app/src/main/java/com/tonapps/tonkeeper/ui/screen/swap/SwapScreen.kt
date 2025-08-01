@@ -17,6 +17,7 @@ import com.tonapps.extensions.appVersionName
 import com.tonapps.extensions.locale
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.helper.BrowserHelper
+import com.tonapps.tonkeeper.koin.analytics
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.base.WalletContextScreen
 import com.tonapps.tonkeeper.ui.screen.send.transaction.SendTransactionScreen
@@ -77,7 +78,7 @@ class SwapScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_sw
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.simpleTrackEvent("swap_open", settingsRepository.installId)
+        analytics?.swapOpen(args.uri, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -130,11 +131,11 @@ class SwapScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_sw
     private suspend fun sing(
         request: SignRequestEntity
     ): String {
-        AnalyticsHelper.simpleTrackEvent("swap_click", settingsRepository.installId)
+        analytics?.simpleTrackEvent("swap_click")
         return try {
             val boc = SendTransactionScreen.run(requireContext(), wallet, request, BatteryTransaction.SWAP)
             if (boc.isNotBlank()) {
-                AnalyticsHelper.simpleTrackEvent("swap_success", settingsRepository.installId)
+                analytics?.simpleTrackEvent("swap_success")
             }
             boc
         } catch (e: Throwable) {
@@ -146,5 +147,32 @@ class SwapScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_sw
         webView.removeCallback(webViewCallback)
         webView.destroy()
         super.onDestroyView()
+    }
+
+    companion object {
+
+        fun newInstance(
+            wallet: WalletEntity,
+            fromToken: String = "TON",
+            toToken: String = TokenEntity.TON_USDT,
+            nativeSwap: Boolean,
+            uri: Uri,
+        ): BaseFragment {
+            if (nativeSwap) {
+                return OmnistonScreen.newInstance(
+                    wallet = wallet,
+                    fromToken = fromToken,
+                    toToken = toToken
+                )
+            }
+            val screen = SwapScreen(wallet)
+            screen.setArgs(SwapArgs(
+                uri = uri,
+                address = wallet.address,
+                fromToken = fromToken,
+                toToken = toToken
+            ))
+            return screen
+        }
     }
 }

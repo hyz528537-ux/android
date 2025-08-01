@@ -5,6 +5,8 @@ import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.extensions.bestMessage
+import com.tonapps.tonkeeper.Environment
+import com.tonapps.tonkeeper.core.DevSettings
 import com.tonapps.tonkeeper.extensions.requestVault
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.card.CardScreen
@@ -12,6 +14,7 @@ import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.dapps.DAppsRepository
 import com.tonapps.wallet.data.rn.RNLegacy
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
@@ -20,13 +23,26 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.ton.mnemonic.Mnemonic
 import uikit.extensions.activity
+import java.util.Locale
 
 class DevViewModel(
     app: Application,
     private val rnLegacy: RNLegacy,
     private val accountRepository: AccountRepository,
     private val dAppsRepository: DAppsRepository,
+    private val environment: Environment,
 ): BaseWalletVM(app) {
+
+    val debugCountryFlow = environment.countryDataFlow.map {
+        val lines = mutableListOf<String>()
+        lines.add("Store: ${it.fromStore ?: "unknown"}")
+        lines.add("SIM: ${it.bySimCard ?: "unknown"}")
+        lines.add("Network: ${it.byNetwork ?: "unknown"}")
+        lines.add("IP: ${it.byIPAddress ?: "unknown"}")
+        lines.add("Locale: ${Locale.getDefault().country}")
+        lines.add("Debug: ${it.debug ?: "unknown"}")
+        lines.joinToString("\n")
+    }
 
     fun getLegacyStorage(callback: (result: String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -45,6 +61,11 @@ class DevViewModel(
                 callback(newJSON.toString())
             }
         }
+    }
+
+    fun setCountry(country: String?) {
+        DevSettings.country = country?.uppercase()
+        environment.setDebugCountry(DevSettings.country)
     }
 
     private fun maskValues(input: JSONObject): JSONObject {

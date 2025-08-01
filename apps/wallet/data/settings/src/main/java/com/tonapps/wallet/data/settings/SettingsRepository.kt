@@ -78,6 +78,8 @@ class SettingsRepository(
         _hiddenBalancesFlow.stateIn(scope, SharingStarted.Eagerly, null).filterNotNull()
 
     private val _countryFlow = MutableEffectFlow<String>()
+
+    @Deprecated("Use Environment.countryFlow instead")
     val countryFlow = _countryFlow.stateIn(scope, SharingStarted.Eagerly, null).filterNotNull()
         .map { fixCountryCode(it) }
 
@@ -228,6 +230,7 @@ class SettingsRepository(
             }
         }
 
+    @Deprecated("Use Environment.countryFlow instead")
     var country: String = fixCountryCode(prefs.getString(COUNTRY_KEY, null))
         set(value) {
             if (value != field) {

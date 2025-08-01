@@ -1,7 +1,6 @@
 package com.tonapps.tonkeeper.ui.screen.main
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
@@ -23,13 +22,11 @@ import com.tonapps.tonkeeper.ui.screen.events.main.EventsScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.picker.PickerScreen
 import com.tonapps.tonkeeper.ui.screen.root.RootEvent
 import com.tonapps.tonkeeper.ui.screen.swap.SwapScreen
-import com.tonapps.tonkeeper.ui.screen.swap.omniston.OmnistonScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.main.WalletScreen
 import com.tonapps.uikit.color.backgroundPageColor
 import com.tonapps.uikit.color.backgroundTransparentColor
 import com.tonapps.uikit.color.constantBlackColor
 import com.tonapps.uikit.color.drawable
-import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import kotlinx.coroutines.flow.filterIsInstance
@@ -151,7 +148,11 @@ class MainScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_main, S
         }.launchIn(lifecycleScope)
 
         collectFlow(rootViewModel.eventFlow.filterIsInstance<RootEvent.Swap>()) {
-            navigation?.add(OmnistonScreen.newInstance(wallet = it.wallet))
+            navigation?.add(SwapScreen.newInstance(
+                wallet = it.wallet,
+                nativeSwap = remoteConfig?.newSwapEnabled == true,
+                uri = it.uri
+            ))
         }
         collectFlow(viewModel.selectedWalletFlow) { wallet ->
             applyWallet(wallet)
@@ -187,7 +188,7 @@ class MainScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_main, S
         bottomTabsView.doOnClick = { itemId ->
             setFragment(itemId, wallet, "wallet",null, false)
             if (itemId == R.id.browser) {
-                AnalyticsHelper.simpleTrackEvent("browser_click", rootViewModel.installId)
+                analytics?.simpleTrackEvent("browser_click")
             }
         }
     }
@@ -253,16 +254,16 @@ class MainScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_main, S
         transaction.runOnCommit {
             checkBottomDivider(fragment)
             if (fragment is BrowserBaseScreen) {
-                AnalyticsHelper.simpleTrackScreenEvent("browser_open", rootViewModel.installId, from)
+                analytics?.simpleTrackScreenEvent("browser_open", from)
                 if (!extra.isNullOrBlank()) {
                     fragment.openCategory(extra)
                 }
             } else if (fragment is EventsScreen) {
-                AnalyticsHelper.simpleTrackScreenEvent("history_open", rootViewModel.installId, from)
+                analytics?.simpleTrackScreenEvent("history_open", from)
             } else if (fragment is CollectiblesScreen) {
-                AnalyticsHelper.simpleTrackScreenEvent("collectibles_open", rootViewModel.installId, from)
+                analytics?.simpleTrackScreenEvent("collectibles_open", from)
             } else if (fragment is WalletScreen) {
-                AnalyticsHelper.simpleTrackEvent("wallet_open", rootViewModel.installId, hashMapOf(
+                analytics?.simpleTrackEvent("wallet_open", hashMapOf(
                     "from" to from,
                     "wallet_type" to fragment.wallet.version.title
                 ))

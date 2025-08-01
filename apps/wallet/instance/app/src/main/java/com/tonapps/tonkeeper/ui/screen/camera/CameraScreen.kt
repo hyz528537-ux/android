@@ -19,6 +19,7 @@ import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.deeplink.DeepLink
 import com.tonapps.tonkeeper.deeplink.DeepLinkRoute
 import com.tonapps.tonkeeper.extensions.toast
+import com.tonapps.tonkeeper.koin.analytics
 import com.tonapps.tonkeeper.ui.base.QRCameraScreen
 import com.tonapps.tonkeeper.ui.component.CameraFlashIconView
 import com.tonapps.tonkeeper.ui.screen.root.RootViewModel
@@ -61,7 +62,7 @@ class CameraScreen : QRCameraScreen(R.layout.fragment_camera), BaseFragment.Bott
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.simpleTrackEvent("scan_open", rootViewModel.installId)
+        context?.analytics?.simpleTrackEvent("scan_open")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

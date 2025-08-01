@@ -98,7 +98,7 @@ class NftScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_nft
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.simpleTrackEvent("collectibles_select", rootViewModel.installId)
+        analytics?.simpleTrackEvent("collectibles_select")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

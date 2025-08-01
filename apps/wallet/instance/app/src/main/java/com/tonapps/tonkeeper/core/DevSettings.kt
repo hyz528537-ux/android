@@ -11,11 +11,27 @@ object DevSettings {
 
     private val prefs = App.instance.getSharedPreferences("dev_settings", 0)
 
+    var country: String? = prefs.getString("country", null)
+        set(value) {
+            if (field != value) {
+                field = value
+                prefs.putString("country", value)
+            }
+        }
+
     var blurEnabled: Boolean = prefs.getBoolean("blur_enabled", true)
         set(value) {
             if (field != value) {
                 field = value
                 prefs.putBoolean("blur_enabled", value)
+            }
+        }
+
+    var dnsAll: Boolean = prefs.getBoolean("dns_all", false)
+        set(value) {
+            if (field != value) {
+                field = value
+                prefs.putBoolean("dns_all", value)
             }
         }
 

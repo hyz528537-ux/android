@@ -22,10 +22,10 @@ android {
     defaultConfig {
         applicationId = "com.ton_keeper"
         minSdk = Build.minSdkVersion
-        targetSdk = 35
+        targetSdk = Build.compileSdkVersion
         versionCode = 600
 
-        versionName = "5.1.6" // Format is "major.minor.patch" (e.g. "1.0.0") and only numbers are allowed
+        versionName = "5.2.0" // Format is "major.minor.patch" (e.g. "1.0.0") and only numbers are allowed
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

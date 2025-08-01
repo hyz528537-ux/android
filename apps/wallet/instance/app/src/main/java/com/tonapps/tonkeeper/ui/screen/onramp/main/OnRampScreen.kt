@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.view.allViews
 import com.tonapps.tonkeeper.ui.component.PaymentTypeView
@@ -24,6 +25,7 @@ import com.tonapps.uikit.list.ListCell
 import uikit.extensions.bottomBarsOffset
 import uikit.extensions.dp
 import uikit.extensions.drawable
+import uikit.extensions.reject
 import uikit.extensions.rotate180Animation
 import uikit.widget.ColumnLayout
 
@@ -42,7 +44,7 @@ class OnRampScreen(wallet: WalletEntity): BaseOnRampScreen(wallet) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.onRampOpen(viewModel.installId, source)
+        analytics?.onRampOpen(source)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -88,6 +90,36 @@ class OnRampScreen(wallet: WalletEntity): BaseOnRampScreen(wallet) {
         view.findViewById<View>(R.id.switch_button).setOnClickListener(::switch)
 
         paymentView = view.findViewById(R.id.payment)
+
+        sellInput.doOnEditorAction = { actionId ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                if (sellInput.isEmpty) {
+                    buyInput.focusWithKeyboard()
+                } else if (button.isEnabled) {
+                    requestAvailableProviders()
+                } else {
+                    minMaxView.reject()
+                }
+                true
+            } else {
+                false
+            }
+        }
+
+        buyInput.doOnEditorAction = { actionId ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                if (buyInput.isEmpty) {
+                    sellInput.focusWithKeyboard()
+                } else if (button.isEnabled) {
+                    requestAvailableProviders()
+                } else {
+                    minMaxView.reject()
+                }
+                true
+            } else {
+                false
+            }
+        }
 
         collectFlow(viewModel.sendOutputCurrencyFlow, sellInput::setCurrency)
         collectFlow(viewModel.sendOutputValueFlow, sellInput::setValue)

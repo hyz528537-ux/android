@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.view.setPadding
 import com.facebook.common.util.UriUtil
@@ -26,6 +27,7 @@ import uikit.extensions.useAttributes
 import uikit.widget.ColumnLayout
 import java.math.BigDecimal
 import androidx.core.view.isVisible
+import com.tonapps.uikit.color.fieldBackgroundColor
 import uikit.extensions.reject
 import uikit.extensions.startSnakeAnimation
 import uikit.extensions.viewMoveTo
@@ -66,6 +68,13 @@ class CurrencyInputView @JvmOverloads constructor(
 
     var doOnCurrencyClick: (() -> Unit)? = null
 
+    var doOnEditorAction: ((actionId: Int) -> Boolean)? = null
+        set(value) {
+            valueView.setOnEditorActionListener { _, actionId, _ ->
+                value?.invoke(actionId) == true
+            }
+        }
+
     val isFocusActive: Boolean
         get() = valueView.isFocused
 
@@ -74,6 +83,7 @@ class CurrencyInputView @JvmOverloads constructor(
 
     init {
         inflate(context, R.layout.view_currency_input, this)
+        setBackgroundColor(context.fieldBackgroundColor)
         setPadding(offsetMedium)
         setDefault()
         setOnClickListener { focusWithKeyboard() }
@@ -195,6 +205,8 @@ class CurrencyInputView @JvmOverloads constructor(
         setValue(coins.value, notifyByUser)
     }
 
+    fun getTextValue() = valueView.text
+
     fun getValue(): Double {
         return valueView.getValue()
     }
@@ -228,11 +240,11 @@ class CurrencyInputView @JvmOverloads constructor(
 
     private fun setActive() {
         prefixView.visibility = View.GONE
-        setBackgroundResource(uikit.R.drawable.bg_content_focused)
+        setBackgroundResource(uikit.R.drawable.bg_field_focused)
     }
 
     private fun setDefault() {
-        setBackgroundResource(uikit.R.drawable.bg_content)
+        setBackgroundResource(uikit.R.drawable.bg_field)
     }
 
     fun focusWithKeyboard() {

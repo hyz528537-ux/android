@@ -3,13 +3,16 @@ package com.tonapps.tonkeeper.ui.screen.dev
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.tonapps.extensions.deviceCountry
 import com.tonapps.extensions.locale
 import com.tonapps.security.Security
+import com.tonapps.tonkeeper.App
 import com.tonapps.tonkeeper.core.DevSettings
 import com.tonapps.tonkeeper.extensions.copyToClipboard
 import com.tonapps.tonkeeper.extensions.showToast
@@ -19,6 +22,7 @@ import com.tonapps.tonkeeper.ui.base.BaseWalletScreen
 import com.tonapps.tonkeeper.ui.base.ScreenContext
 import com.tonapps.tonkeeper.ui.screen.dev.list.launcher.LauncherAdapter
 import com.tonapps.tonkeeper.view.TransactionDetailView
+import com.tonapps.tonkeeperx.BuildConfig
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.color.accentRedColor
 import com.tonapps.uikit.list.LinearLayoutManager
@@ -27,6 +31,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import uikit.base.BaseFragment
 import uikit.dialog.alert.AlertDialog
+import uikit.extensions.collectFlow
 import uikit.widget.HeaderView
 import uikit.widget.item.ItemSwitchView
 
@@ -46,6 +51,9 @@ class DevScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_dev, Scr
     private lateinit var importPasscodeView: View
     private lateinit var importDAppsView: View
     private lateinit var systemFontSizeView: ItemSwitchView
+    private lateinit var debugCountryInput: EditText
+    private lateinit var debugCountryTextView: AppCompatTextView
+    private lateinit var dnsAllView: ItemSwitchView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -58,6 +66,15 @@ class DevScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_dev, Scr
         iconsView = view.findViewById(R.id.icons)
         iconsView.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL)
         iconsView.adapter = LauncherAdapter()
+
+        dnsAllView = view.findViewById(R.id.dns_all)
+        dnsAllView.setChecked(DevSettings.dnsAll, false)
+        dnsAllView.doOnCheckedChanged = { isChecked, byUser ->
+            if (byUser) {
+                DevSettings.dnsAll = isChecked
+                toastAfterChange()
+            }
+        }
 
         blurView = view.findViewById(R.id.blur)
         blurView.setChecked(DevSettings.blurEnabled, false)
@@ -98,6 +115,23 @@ class DevScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_dev, Scr
 
         logView = view.findViewById(R.id.log)
         logDataView = view.findViewById(R.id.log_data)
+
+        debugCountryTextView = view.findViewById(R.id.debug_country_list)
+
+        collectFlow(viewModel.debugCountryFlow, debugCountryTextView::setText)
+
+        debugCountryInput = view.findViewById(R.id.debug_country_input)
+        debugCountryInput.setText(DevSettings.country)
+        debugCountryInput.doOnTextChanged { text, start, before, count ->
+            val country = text.toString().trim().ifEmpty { null }
+            viewModel.setCountry(country)
+            if (country == null || country.length == 2) {
+                toastAfterChange()
+            }
+        }
+        if (!BuildConfig.DEBUG) {
+            debugCountryInput.visibility = View.GONE
+        }
 
         view.findViewById<Button>(R.id.log_close).setOnClickListener {
             logView.visibility = View.GONE

@@ -36,6 +36,35 @@
                     android:textColor="?attr/textPrimaryColor"
                     android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 
+                <uikit.widget.ColumnLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_content"
+                    android:layout_marginHorizontal="@dimen/offsetMedium"
+                    android:layout_marginBottom="@dimen/offsetMedium"
+                    android:padding="@dimen/offsetMedium">
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        android:id="@+id/debug_country_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="?attr/textPrimaryColor"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/debug_country_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:maxLength="2"
+                        android:textAllCaps="true"
+                        android:hint="Country code"
+                        android:textColor="?attr/textPrimaryColor"
+                        android:textColorHint="?attr/textSecondaryColor"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
+
+                </uikit.widget.ColumnLayout>
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/icons"
                     android:layout_width="match_parent"
@@ -52,6 +81,15 @@
                     android:layout_marginHorizontal="@dimen/offsetMedium"
                     app:position="first"
                     android:text="Blur"/>
+
+                <uikit.widget.item.ItemSwitchView
+                    android:id="@+id/dns_all"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/offsetMedium"
+                    android:text="Enable DNS 366 days"
+                    app:position="middle"/>
+
 
                 <uikit.widget.item.ItemTextView
                     android:id="@+id/copy_firebase_push"

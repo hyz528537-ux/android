@@ -1,5 +1,6 @@
 package com.tonapps.tonkeeper.extensions
 
+import com.tonapps.tonkeeper.Environment
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.purchase.PurchaseRepository
@@ -18,28 +19,16 @@ data class OnRampResult(
     val country: String
 )
 
-fun PurchaseRepository.providersFlow(
-    testnet: Boolean,
-    settingsRepository: SettingsRepository,
-    api: API
-): Flow<List<PurchaseMethodEntity>> {
-    return settingsRepository.getNormalizeCountryFlow(api).mapNotNull { country ->
-        get(testnet, country, settingsRepository.getLocale())
-    }.map { (it.first + it.first) }.map { entities ->
-        entities.flatMap { it.items }.distinctBy { it.title }
-    }.flowOn(Dispatchers.IO)
-}
 
 fun PurchaseRepository.onRampDataFlow(
-    settingsRepository: SettingsRepository,
-    api: API
-) = settingsRepository
-    .getNormalizeCountryFlow(api)
+    environment: Environment
+) = environment.countryFlow
     .mapNotNull { country ->
         getOnRamp(country)?.let { data ->
             OnRampResult(data, country)
         }
     }
+
 
 suspend fun PurchaseRepository.getProvidersByCountry(
     wallet: WalletEntity,

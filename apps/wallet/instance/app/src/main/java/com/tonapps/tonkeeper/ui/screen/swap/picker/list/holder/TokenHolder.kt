@@ -10,7 +10,9 @@ import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.color.UIKitColor
 import com.tonapps.uikit.color.resolveColor
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
+import com.tonapps.wallet.localization.Localization
 import uikit.extensions.drawable
+import uikit.extensions.withBlueBadge
 import uikit.widget.FrescoView
 
 class TokenHolder(
@@ -36,7 +38,11 @@ class TokenHolder(
         imageView.setPlaceholder(null)
         imageView.setImageURIWithResize(item.iconUri, ResizeOptions.forSquareSize(72)!!)
 
-        symbolView.text = item.code
+        if (item.code.equals("USDT", true)) {
+            symbolView.text = item.code.withBlueBadge(context, Localization.ton)
+        } else {
+            symbolView.text = item.code
+        }
         nameView.text = item.name
         checkView.visibility = if (item.selected) View.VISIBLE else View.GONE
     }

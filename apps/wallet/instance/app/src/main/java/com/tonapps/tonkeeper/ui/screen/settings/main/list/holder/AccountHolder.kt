@@ -10,6 +10,8 @@ import com.tonapps.emoji.ui.EmojiView
 import com.tonapps.tonkeeper.extensions.getWalletBadges
 import com.tonapps.tonkeeper.ui.screen.settings.main.list.Item
 import com.tonapps.tonkeeperx.R
+import com.tonapps.uikit.color.iconTertiaryColor
+import com.tonapps.uikit.color.stateList
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.uikit.list.ListCell
 import com.tonapps.wallet.data.account.Wallet
@@ -27,6 +29,10 @@ class AccountHolder(
     private val balanceView = findViewById<AppCompatTextView>(R.id.wallet_balance)
     private val checkView = findViewById<AppCompatImageView>(R.id.check)
     private val typesView = findViewById<AppCompatTextView>(R.id.wallet_types)
+
+    init {
+        checkView.imageTintList = context.iconTertiaryColor.stateList
+    }
 
     override fun onBind(item: Item.Account) {
         itemView.setOnClickListener { onClick(item) }
