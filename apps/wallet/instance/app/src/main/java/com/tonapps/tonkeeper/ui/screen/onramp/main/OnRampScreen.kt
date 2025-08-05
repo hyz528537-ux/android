@@ -53,7 +53,6 @@ class OnRampScreen(wallet: WalletEntity): BaseOnRampScreen(wallet) {
 
         sellInput = view.findViewById(R.id.sell_input)
         sellInput.focusWithKeyboard()
-        sellInput.setValueScale(3)
         sellInput.doOnTextChange = viewModel::updateSendInput
         sellInput.doOnCurrencyClick = { viewModel.pickCurrency(TwinInput.Type.Send) }
         sellInput.doOnFocusChange = { hasFocus ->

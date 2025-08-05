@@ -2,8 +2,23 @@ package com.tonapps.tonkeeper.os
 
 import android.content.Context
 import android.telephony.TelephonyManager
+import java.util.Locale
 
 object DeviceCountry {
+
+    fun fromLocale(): String? {
+        val country = Locale.getDefault().country
+        if (country.equals("UK", true) || country.equals("GB", true)) {
+            return null
+        }
+        if (country.equals("US", true)) {
+            return null
+        }
+        if (country.equals("ZZ", true)) {
+            return null
+        }
+        return country.uppercase()
+    }
 
     fun fromNetwork(context: Context) = try {
         val manager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager

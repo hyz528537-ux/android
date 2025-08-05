@@ -83,10 +83,6 @@ class API(
     private val internalApi = InternalApi(context, defaultHttpClient, appVersionName)
     private val configRepository = ConfigRepository(context, scope, internalApi)
 
-    private val serverTimeProvider: ServerTimeProvider by lazy {
-        ServerTimeProvider(context)
-    }
-
     val config: ConfigEntity
         get() = configRepository.configEntity
 
@@ -923,7 +919,7 @@ class API(
     }
 
     fun getServerTime(testnet: Boolean): Int {
-        val time = serverTimeProvider.getServerTime(testnet)
+        /*val time = serverTimeProvider.getServerTime(testnet)
         if (time == null) {
             val serverTimeSeconds = withRetry { liteServer(testnet).getRawTime().time }
             if (serverTimeSeconds == null) {
@@ -932,7 +928,12 @@ class API(
             serverTimeProvider.setServerTime(testnet, serverTimeSeconds)
             return serverTimeSeconds
         }
-        return time
+        return time*/
+        val serverTimeSeconds = withRetry { liteServer(testnet).getRawTime().time }
+        if (serverTimeSeconds == null) {
+            return (System.currentTimeMillis() / 1000).toInt()
+        }
+        return serverTimeSeconds
     }
 
     suspend fun resolveCountry(): String? = internalApi.resolveCountry()

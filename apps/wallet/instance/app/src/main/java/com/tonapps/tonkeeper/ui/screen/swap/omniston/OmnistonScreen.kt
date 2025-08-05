@@ -12,6 +12,7 @@ import android.widget.Button
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.lifecycle.lifecycleScope
 import com.tonapps.tonkeeper.core.AnalyticsHelper
+import com.tonapps.tonkeeper.core.InsufficientFundsException
 import com.tonapps.tonkeeper.extensions.addFeeItem
 import com.tonapps.tonkeeper.extensions.finishDelay
 import com.tonapps.tonkeeper.extensions.hideKeyboard
@@ -24,6 +25,7 @@ import com.tonapps.tonkeeper.ui.base.WalletContextScreen
 import com.tonapps.tonkeeper.ui.screen.onramp.main.view.CurrencyInputView
 import com.tonapps.tonkeeper.ui.screen.onramp.main.view.ReviewInputView
 import com.tonapps.tonkeeper.ui.screen.root.RootViewModel
+import com.tonapps.tonkeeper.ui.screen.send.InsufficientFundsDialog
 import com.tonapps.tonkeeper.ui.screen.swap.omniston.state.OmnistonStep
 import com.tonapps.tonkeeper.ui.screen.swap.omniston.state.SwapInputsState
 import com.tonapps.tonkeeper.ui.screen.swap.omniston.state.SwapQuoteState
@@ -55,11 +57,16 @@ import uikit.widget.ProcessTaskView
 import uikit.widget.SlideActionView
 import uikit.widget.SlideBetweenView
 import uikit.widget.item.ItemLineView
+import kotlin.getValue
 
 class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_omniston, wallet), BaseFragment.BottomSheet {
 
     override val viewModel: OmnistonViewModel by walletViewModel {
         parametersOf(OmnistonArgs(requireArguments()))
+    }
+
+    private val insufficientFundsDialog: InsufficientFundsDialog by lazy {
+        InsufficientFundsDialog(this)
     }
 
     private val feeMethodSelector: ActionSheet by lazy {
@@ -207,6 +214,7 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
                 slidesView.next()
                 loaderView.visibility = View.GONE
                 continueButton.visibility = View.VISIBLE
+                hideKeyboard()
             }
         }
 
@@ -346,10 +354,13 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         lifecycleScope.launch {
             try {
                 viewModel.next()
-            } catch (ignored: Throwable) {
+            } catch (e: Throwable) {
                 inputErrorState()
                 loaderView.visibility = View.GONE
                 continueButton.visibility = View.VISIBLE
+                if (e is InsufficientFundsException) {
+                    insufficientFundsDialog.show(wallet, e)
+                }
             }
         }
         analytics?.swapClick(
@@ -365,6 +376,13 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         receiveInputView.setValue(state.toUnits)
         reviewReceiveView.setValue(state.toUnitsFormat)
         applyDetailsContainer(state)
+
+        if (state.insufficientFunds != null) {
+            postDelayed(1000) {
+                insufficientFundsDialog.show(wallet, state.insufficientFunds)
+                viewModel.reset()
+            }
+        }
     }
 
     private fun applyDetailsContainer(state: SwapQuoteState) {
@@ -375,7 +393,7 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
 
     private fun applyFee(state: SwapQuoteState) {
         setLineValue(R.id.details_fee, state.getFeeFormat(requireContext()))
-        if (state.canUseBattery) {
+        if (state.canUseBattery && state.canEditFeeMethod) {
             feeView.name = getString(Localization.fee).withInterpunct().withClickable(requireContext(), Localization.edit)
             feeView.setOnClickListener { selectFeeMethod(state) }
         } else {

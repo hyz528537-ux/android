@@ -168,6 +168,8 @@ class NftScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_nft
             ))
             domainRenewButton.setOnClickListener { viewModel.renewDomain() }
             domainRenewButton.isEnabled = !nftEntity.inSale
+        } else {
+            domainRenewButton.visibility = View.GONE
         }
 
         val buttonsContainer = view.findViewById<ColumnLayout>(R.id.buttons_container)

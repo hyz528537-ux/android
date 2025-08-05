@@ -4,9 +4,11 @@ import android.text.SpannableStringBuilder
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.widget.AppCompatImageView
+import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.core.Amount
+import com.tonapps.tonkeeper.core.InsufficientFundsException
 import com.tonapps.tonkeeper.extensions.getTitle
 import com.tonapps.tonkeeper.ui.screen.battery.BatteryScreen
 import com.tonapps.tonkeeper.ui.screen.browser.more.BrowserMoreScreen
@@ -17,6 +19,7 @@ import com.tonapps.tonkeeper.view.BatteryView
 import com.tonapps.tonkeeperx.R
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.account.entities.WalletEntity
+import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.localization.Localization
 import uikit.base.BaseFragment
 import uikit.dialog.modal.ModalDialog
@@ -36,6 +39,40 @@ class InsufficientFundsDialog(private val fragment: BaseFragment) : ModalDialog(
 
     init {
         findViewById<View>(R.id.close)!!.setOnClickListener { dismiss() }
+    }
+
+    fun show(
+        wallet: WalletEntity,
+        e: InsufficientFundsException
+    ) {
+        super.show()
+        applyWalletTitle(wallet.label, e.singleWallet, e.type)
+        applyDescription(e.available, e.required, e.currency, e.withRechargeBattery, e.type)
+        batteryButton.visibility = if (e.withRechargeBattery) View.VISIBLE else View.GONE
+
+        val isBattery = e.type == InsufficientBalanceType.InsufficientBatteryChargesForFee
+
+        tonButton.visibility =
+            if (isBattery) View.GONE else View.VISIBLE
+        iconView.visibility = if (isBattery) View.GONE else View.VISIBLE
+        batteryView.setBatteryLevel(BatteryView.MIN_LEVEL)
+        batteryView.visibility = if (isBattery) View.VISIBLE else View.GONE
+
+        tonButton.text = context.getString(Localization.buy_ton).replace("TON", e.currency.code)
+        tonButton.setOnClickListener {
+            if (e.currency == WalletCurrency.TON) {
+                navigation?.add(OnRampScreen.newInstance(context, wallet, "insufficientFunds"))
+            } else {
+                fragment.finish()
+                navigation?.add(BrowserMoreScreen.newInstance(wallet, "defi"))
+            }
+            dismiss()
+        }
+
+        batteryButton.setOnClickListener {
+            navigation?.add(BatteryScreen.newInstance(wallet, from = "insufficient_funds"))
+            dismiss()
+        }
     }
 
     fun show(
@@ -116,6 +153,35 @@ class InsufficientFundsDialog(private val fragment: BaseFragment) : ModalDialog(
                     .withCustomSymbol(context)
             val requiredFormat =
                 CurrencyFormatter.format(required.symbol, required.value, required.decimals)
+                    .withCustomSymbol(context)
+
+            val resId =
+                if (withRechargeBattery || type == InsufficientBalanceType.InsufficientBalanceForFee) Localization.insufficient_balance_fees else Localization.insufficient_balance_default
+            textView.descriptionView.text = context.getString(resId, requiredFormat, balanceFormat)
+        }
+    }
+
+    private fun applyDescription(
+        balance: Coins,
+        required: Coins,
+        currency: WalletCurrency,
+        withRechargeBattery: Boolean,
+        type: InsufficientBalanceType
+    ) {
+        if (type == InsufficientBalanceType.InsufficientBatteryChargesForFee) {
+            textView.descriptionView.text =
+                context.getString(
+                    Localization.insufficient_balance_charges,
+                    CurrencyFormatter.format(value = required.value),
+                    CurrencyFormatter.format(value = balance.value)
+                )
+            return
+        } else {
+            val balanceFormat =
+                CurrencyFormatter.format(currency.code, balance.value, balance.decimals)
+                    .withCustomSymbol(context)
+            val requiredFormat =
+                CurrencyFormatter.format(currency.code, required.value, required.decimals)
                     .withCustomSymbol(context)
 
             val resId =

@@ -64,7 +64,12 @@ class TwinInput(
             get() = receive.currency
 
         val isEmpty: Boolean
-            get() = send.value.isEmpty() || receive.value.isEmpty()
+            get() {
+                if (send.value.isEmpty()) {
+                    return true
+                }
+                return receive.currency.isTONChain && receive.value.isEmpty()
+            }
 
         val hasTonChain: Boolean
             get() = send.currency.isTONChain || receive.currency.isTONChain
@@ -195,9 +200,9 @@ class TwinInput(
     fun updateValue(type: Type, value: String) {
         _stateFlow.update {
             if (type == Type.Send) {
-                it.copy(send = it.send.copy(value = value))
+                it.copy(send = it.send.copy(value = value.trim()))
             } else {
-                it.copy(receive = it.receive.copy(value = value))
+                it.copy(receive = it.receive.copy(value = value.trim()))
             }
         }
     }

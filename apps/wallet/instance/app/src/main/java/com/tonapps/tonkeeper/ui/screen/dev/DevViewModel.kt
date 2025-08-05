@@ -39,7 +39,7 @@ class DevViewModel(
         lines.add("SIM: ${it.bySimCard ?: "unknown"}")
         lines.add("Network: ${it.byNetwork ?: "unknown"}")
         lines.add("IP: ${it.byIPAddress ?: "unknown"}")
-        lines.add("Locale: ${Locale.getDefault().country}")
+        lines.add("Smart Locale: ${it.byLocale ?: "unknown"}")
         lines.add("Debug: ${it.debug ?: "unknown"}")
         lines.joinToString("\n")
     }

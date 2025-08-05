@@ -123,7 +123,8 @@ class OnRampViewModel(
 
     val ratesFlow = twinInput.currenciesStateFlow.map { inputCurrencies ->
         val fiatCurrency = inputCurrencies.fiat ?: settingsRepository.currency
-        ratesRepository.getRates(fiatCurrency, inputCurrencies.cryptoTokens.map { it.address })
+        val tokens = inputCurrencies.cryptoTokens.filter { it.isTONChain }.map { it.address }
+        ratesRepository.getRates(fiatCurrency, tokens)
     }.distinctUntilChanged()
 
     val minAmountFlow = combine(
@@ -147,6 +148,9 @@ class OnRampViewModel(
         twinInput.currenciesStateFlow,
         ratesFlow
     ) { inputCurrencies, rates ->
+        if (rates.isEmpty) {
+            return@combine UiState.RateFormatted(null, null)
+        }
         val value = Coins.ONE
         val firstLinePrefix = CurrencyFormatter.format(inputCurrencies.send.symbol, value, replaceSymbol = false)
         val firstRate = rates.convert(inputCurrencies.send, value, inputCurrencies.receive)
@@ -258,12 +262,13 @@ class OnRampViewModel(
             _selectedPaymentMethodFlow.filter { it == null },
             paymentMethodsFlow.filter { it.isNotEmpty() }
         ) { _, methods ->
-            setSelectedPaymentMethod(methods.first().type)
+            val hasCard = methods.any { it.type.equals(OnRampPaymentMethodState.CARD_TYPE, true) }
+            if (hasCard) {
+                setSelectedPaymentMethod(OnRampPaymentMethodState.CARD_TYPE)
+            } else {
+                setSelectedPaymentMethod(methods.first().type)
+            }
         }.launch()
-
-        collectFlow(environment.countryFlow) {
-            Log.d("EnvironmentLog", "Country changed: $it")
-        }
     }
 
     fun updateFocusInput(type: TwinInput.Type) {
@@ -292,8 +297,8 @@ class OnRampViewModel(
 
     fun switch() {
         twinInput.switch()
-        settings.setToCurrency(twinInput.state.sendCurrency)
-        settings.setFromCurrency(twinInput.state.receiveCurrency)
+        settings.setToCurrency(twinInput.state.receiveCurrency)
+        settings.setFromCurrency(twinInput.state.sendCurrency)
     }
 
     fun reset() {
@@ -388,7 +393,7 @@ class OnRampViewModel(
             from = from,
             to = to,
             network = network,
-            wallet = walletAddress,
+            wallet = walletAddress.trim(),
             purchaseType = purchaseType,
             amount = twinInput.state.send.coins,
             country = environment.country,

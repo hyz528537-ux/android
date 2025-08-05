@@ -151,6 +151,7 @@ open class BaseOnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.
         providerContainerView.visibility = View.VISIBLE
         minMaxView.visibility = View.GONE
         headerConfirm()
+        hideKeyboard()
     }
 
     private fun headerInputs() {

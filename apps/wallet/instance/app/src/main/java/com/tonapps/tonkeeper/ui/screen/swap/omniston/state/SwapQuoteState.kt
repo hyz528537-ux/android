@@ -3,6 +3,7 @@ package com.tonapps.tonkeeper.ui.screen.swap.omniston.state
 import android.content.Context
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
+import com.tonapps.tonkeeper.core.InsufficientFundsException
 import com.tonapps.tonkeeper.extensions.formattedAmount
 import com.tonapps.tonkeeper.extensions.formattedCharges
 import com.tonapps.tonkeeper.extensions.method
@@ -28,6 +29,8 @@ data class SwapQuoteState(
     val tx: Tx? = null,
     val timestamp: Long = System.currentTimeMillis(),
     val selectedFee: SendFee? = null,
+    val insufficientFunds: InsufficientFundsException? = null,
+    val canEditFeeMethod: Boolean = true,
 ) {
 
     data class Tx(

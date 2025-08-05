@@ -35,6 +35,7 @@ import uikit.extensions.applyNavBottomPadding
 import uikit.extensions.getDimensionPixelSize
 import uikit.widget.webview.WebViewFixed
 import uikit.widget.webview.bridge.BridgeWebView
+import androidx.core.view.isGone
 
 class SwapScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_swap, wallet), BaseFragment.BottomSheet {
 
@@ -107,7 +108,7 @@ class SwapScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_sw
     }
 
     private fun hideCloseView() {
-        if (closeView.visibility == View.GONE) {
+        if (closeView.isGone) {
             return
         }
         closeView.postDelayed({
