@@ -75,8 +75,11 @@ import uikit.extensions.findFragment
 import uikit.extensions.runAnimation
 import uikit.extensions.withAlpha
 import androidx.core.net.toUri
+import com.tonapps.blockchain.ton.TonSendMode
 import com.tonapps.blockchain.ton.extensions.equalsAddress
 import com.tonapps.tonkeeper.koin.analytics
+import uikit.extensions.gestureNavigationEnabled
+import uikit.extensions.navigationMode
 
 class RootActivity : BaseWalletActivity() {
 
@@ -246,10 +249,16 @@ class RootActivity : BaseWalletActivity() {
         }
     }
 
-    private fun setAppearanceLight(light: Boolean) {
+    fun setAppearanceLight(light: Boolean) {
+        val isLightTheme = settingsRepository.isLightTheme
+        var lightNavigationBars = light
+        if (isLightTheme && !gestureNavigationEnabled) {
+            lightNavigationBars = true
+        }
+
         with(windowInsetsController) {
             isAppearanceLightStatusBars = light
-            isAppearanceLightNavigationBars = light
+            isAppearanceLightNavigationBars = lightNavigationBars
         }
     }
 
@@ -319,7 +328,7 @@ class RootActivity : BaseWalletActivity() {
         message: RawMessageEntity
     ): com.tonapps.icu.Coins {
         try {
-            val transfer = message.getDefaultWalletTransfer()
+            val transfer = message.getDefaultWalletTransfer(TonSendMode.PAY_GAS_SEPARATELY.value + TonSendMode.IGNORE_ERRORS.value)
 
             val emulated = emulationUseCase(
                 message = accountRepository.messageBody(wallet, currentTimeSeconds() + 10 * 60, listOf(transfer)),

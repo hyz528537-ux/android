@@ -18,13 +18,18 @@ package io.tonapi.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * 
  *
- * Values: nonexist,uninit,active,frozen
+ * Values: nonexist,uninit,active,frozen.unknown
  */
-@Serializable
+@Serializable(with = AccountStatusSerializer::class)
 enum class AccountStatus(val value: kotlin.String) {
 
     @SerialName(value = "nonexist")
@@ -37,7 +42,10 @@ enum class AccountStatus(val value: kotlin.String) {
     active("active"),
 
     @SerialName(value = "frozen")
-    frozen("frozen");
+    frozen("frozen"),
+
+    @SerialName(value = "unknown")
+    unknown("unknown");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -59,10 +67,24 @@ enum class AccountStatus(val value: kotlin.String) {
          */
         fun decode(data: kotlin.Any?): AccountStatus? = data?.let {
           val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
+          entries.firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()
           }
         }
+    }
+}
+
+internal object AccountStatusSerializer : KSerializer<AccountStatus> {
+    override val descriptor = kotlin.String.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): AccountStatus {
+        val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+        return AccountStatus.entries.firstOrNull { it.value == value }
+            ?: AccountStatus.unknown
+    }
+
+    override fun serialize(encoder: Encoder, value: AccountStatus) {
+        encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
     }
 }
 

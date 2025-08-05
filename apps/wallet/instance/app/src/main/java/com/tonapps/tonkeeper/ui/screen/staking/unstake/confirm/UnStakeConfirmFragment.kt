@@ -33,7 +33,6 @@ class UnStakeConfirmFragment: BaseHolderWalletScreen.ChildFragment<UnStakeScreen
     private lateinit var recipientView: TransactionDetailView
     private lateinit var amountView: TransactionDetailView
     private lateinit var feeView: TransactionDetailView
-    private lateinit var apyView: TransactionDetailView
     private lateinit var button: Button
     private lateinit var taskView: ProcessTaskView
 
@@ -52,8 +51,6 @@ class UnStakeConfirmFragment: BaseHolderWalletScreen.ChildFragment<UnStakeScreen
 
         feeView = view.findViewById(R.id.review_fee)
         feeView.setLoading()
-
-        apyView = view.findViewById(R.id.review_apy)
 
         button = view.findViewById(R.id.button)
         taskView = view.findViewById(R.id.task)

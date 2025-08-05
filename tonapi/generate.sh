@@ -17,7 +17,7 @@ openapi-generator generate \
   --library jvm-okhttp4 \
   --global-property apiTests=false,modelTests=false \
   --type-mappings "number=kotlin.String" \
-  --additional-properties "serializationLibrary=kotlinx_serialization,packageName=$PACKAGE_NAME,platform=android,hideGenerationTimestamp=true"
+  --additional-properties "serializationLibrary=kotlinx_serialization,packageName=$PACKAGE_NAME,platform=android,hideGenerationTimestamp=true,enumUnknownDefaultCase=true,enumUnknownDefaultCaseName=UNKNOWN"
 
 if [ $? -ne 0 ]; then
     echo "Failed to generate API client."
@@ -26,6 +26,10 @@ if [ $? -ne 0 ]; then
 fi
 
 find "$TEMP_DIR" -type f -name "*.kt" -print0 | xargs -0 sed -i '' 's/kotlin.collections.Map<kotlin.String, kotlin.Any>/kotlin.collections.Map<kotlin.String, io.JsonAny>/g'
+find "$TEMP_DIR" -type f -name "*.kt" -print0 | xargs -0 sed -i '' 's/@SerialName(value = "unknown_default_open_api")/@SerialName(value = "unknown")/g'
+find "$TEMP_DIR" -type f -name "*.kt" -print0 | xargs -0 sed -i '' 's/unknown_default_open_api("unknown_default_open_api")/unknown("unknown")/g'
+find "$TEMP_DIR" -type f -name "*.kt" -print0 | xargs -0 sed -i '' 's/.unknown_default_open_api/.unknown/g'
+find "$TEMP_DIR" -type f -name "*.kt" -print0 | xargs -0 sed -i '' 's/values()/entries/g'
 
 GENERATED_SRC_PATH="$TEMP_DIR/src/main/kotlin/"
 if [ ! -d "$GENERATED_SRC_PATH" ]; then

@@ -17,6 +17,7 @@ object Serializer {
             encodeDefaults = false
             ignoreUnknownKeys = true
             isLenient = true
+            coerceInputValues = true
             serializersModule = contextualModule
         }
     }

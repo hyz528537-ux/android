@@ -24,6 +24,11 @@ import io.tonapi.models.TrustType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -74,12 +79,27 @@ data class NftItem (
     /**
      * Please use trust field
      *
-     * Values: getgems,tonkeeper
+     * Values: getgems,tonkeeper.unknown
      */
-    @Serializable
+    @Serializable(with = ApprovedBySerializer::class)
     enum class ApprovedBy(val value: kotlin.String) {
         @SerialName(value = "getgems") getgems("getgems"),
-        @SerialName(value = "tonkeeper") tonkeeper("tonkeeper");
+        @SerialName(value = "tonkeeper") tonkeeper("tonkeeper"),
+        @SerialName(value = "unknown") unknown("unknown");
+    }
+
+    internal object ApprovedBySerializer : KSerializer<ApprovedBy> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): ApprovedBy {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return ApprovedBy.entries.firstOrNull { it.value == value }
+                ?: ApprovedBy.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: ApprovedBy) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
     }
 
 }

@@ -7,6 +7,10 @@ import android.widget.FrameLayout
 import androidx.annotation.DrawableRes
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.marginBottom
+import androidx.core.view.marginLeft
+import androidx.core.view.marginRight
+import androidx.core.view.marginTop
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -145,6 +149,17 @@ abstract class BaseListWalletScreen<C: ScreenContext>(
 
     fun scrollToTop() {
         listView.scrollToPosition(0)
+    }
+
+    fun applyListMargin(
+        left: Int = listView.marginLeft,
+        top: Int = listView.marginTop,
+        right: Int = listView.marginRight,
+        bottom: Int = listView.marginBottom
+    ) {
+        listView.updateLayoutParams<FrameLayout.LayoutParams> {
+            setMargins(left, top, right, bottom)
+        }
     }
 
 }

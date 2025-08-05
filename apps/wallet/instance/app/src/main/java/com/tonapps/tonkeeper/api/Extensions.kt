@@ -72,6 +72,7 @@ val PoolImplementationType.icon: Int
             PoolImplementationType.tf -> R.drawable.ic_staking_tf
             PoolImplementationType.whales -> R.drawable.ic_staking_whales
             PoolImplementationType.liquidTF -> R.drawable.ic_staking_tonstakers
+            else -> throw IllegalArgumentException("Unknown PoolImplementationType: $this")
         }
     }
 

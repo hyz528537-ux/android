@@ -281,7 +281,7 @@ class OmnistonViewModel(
         val inputState = twinInput.state
         var fromAmount = inputState.send.coins
         if (token.isTon) {
-            val requiredForFee = api.config.meanFeeSwap * api.config.meanFeeSwap
+            val requiredForFee = api.config.meanFeeSwap + Coins.of("0.25")
             if (requiredForFee > token.balance.value) {
                 throw InsufficientFundsException(
                     currency = WalletCurrency.TON,
@@ -457,6 +457,8 @@ class OmnistonViewModel(
         api = api
     )
 
+    private suspend fun getTonBalance() = tokenRepository.getTonBalance(settingsRepository.currency, wallet.accountId, wallet.testnet)
+
     private suspend fun transfers(
         request: SignRequestEntity,
         forEmulation: Boolean,
@@ -465,12 +467,14 @@ class OmnistonViewModel(
         val excessesAddress = if (!forEmulation) {
             batteryRepository.getConfig(wallet.testnet).excessesAddress
         } else null
+
         return request.getTransfers(
             wallet = wallet,
             api = api,
             batteryEnabled = batteryEnabled,
             compressedTokens = emptyList(),
-            excessesAddress = excessesAddress
+            excessesAddress = excessesAddress,
+            tonBalance = getTonBalance()
         )
     }
 
@@ -576,7 +580,8 @@ class OmnistonViewModel(
                 tx = tx,
                 selectedFee = tx.getFeeByMethod(preferredFeeMethod),
                 insufficientFunds = insufficientFunds,
-                canEditFeeMethod = canEditFeeMethod
+                canEditFeeMethod = canEditFeeMethod,
+                meanFeeSwap = api.config.meanFeeSwap
             )
 
             return@withContext true

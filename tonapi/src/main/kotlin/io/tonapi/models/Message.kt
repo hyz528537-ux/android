@@ -22,6 +22,11 @@ import io.tonapi.models.StateInit
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -91,13 +96,28 @@ data class Message (
     /**
      * 
      *
-     * Values: int_msg,ext_in_msg,ext_out_msg
+     * Values: int_msg,ext_in_msg,ext_out_msg.unknown
      */
-    @Serializable
+    @Serializable(with = MsgTypeSerializer::class)
     enum class MsgType(val value: kotlin.String) {
         @SerialName(value = "int_msg") int_msg("int_msg"),
         @SerialName(value = "ext_in_msg") ext_in_msg("ext_in_msg"),
-        @SerialName(value = "ext_out_msg") ext_out_msg("ext_out_msg");
+        @SerialName(value = "ext_out_msg") ext_out_msg("ext_out_msg"),
+        @SerialName(value = "unknown") unknown("unknown");
+    }
+
+    internal object MsgTypeSerializer : KSerializer<MsgType> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): MsgType {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return MsgType.entries.firstOrNull { it.value == value }
+                ?: MsgType.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: MsgType) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
     }
 
 }

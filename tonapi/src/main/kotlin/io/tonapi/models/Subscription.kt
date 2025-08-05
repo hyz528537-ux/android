@@ -22,6 +22,11 @@ import io.tonapi.models.Price
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -66,14 +71,29 @@ data class Subscription (
     /**
      * 
      *
-     * Values: not_ready,active,suspended,cancelled
+     * Values: not_ready,active,suspended,cancelled.unknown
      */
-    @Serializable
+    @Serializable(with = StatusSerializer::class)
     enum class Status(val value: kotlin.String) {
         @SerialName(value = "not_ready") not_ready("not_ready"),
         @SerialName(value = "active") active("active"),
         @SerialName(value = "suspended") suspended("suspended"),
-        @SerialName(value = "cancelled") cancelled("cancelled");
+        @SerialName(value = "cancelled") cancelled("cancelled"),
+        @SerialName(value = "unknown") unknown("unknown");
+    }
+
+    internal object StatusSerializer : KSerializer<Status> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): Status {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return Status.entries.firstOrNull { it.value == value }
+                ?: Status.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: Status) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
     }
 
 }

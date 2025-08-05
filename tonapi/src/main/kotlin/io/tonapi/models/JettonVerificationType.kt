@@ -18,13 +18,18 @@ package io.tonapi.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * 
  *
- * Values: whitelist,blacklist,none
+ * Values: whitelist,blacklist,none.unknown
  */
-@Serializable
+@Serializable(with = JettonVerificationTypeSerializer::class)
 enum class JettonVerificationType(val value: kotlin.String) {
 
     @SerialName(value = "whitelist")
@@ -34,7 +39,13 @@ enum class JettonVerificationType(val value: kotlin.String) {
     blacklist("blacklist"),
 
     @SerialName(value = "none")
-    none("none");
+    none("none"),
+
+    @SerialName(value = "graylist")
+    graylist("graylist"),
+
+    @SerialName(value = "unknown")
+    unknown("unknown");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -56,10 +67,24 @@ enum class JettonVerificationType(val value: kotlin.String) {
          */
         fun decode(data: kotlin.Any?): JettonVerificationType? = data?.let {
           val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
+          entries.firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()
           }
         }
+    }
+}
+
+internal object JettonVerificationTypeSerializer : KSerializer<JettonVerificationType> {
+    override val descriptor = kotlin.String.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): JettonVerificationType {
+        val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+        return JettonVerificationType.entries.firstOrNull { it.value == value }
+            ?: JettonVerificationType.unknown
+    }
+
+    override fun serialize(encoder: Encoder, value: JettonVerificationType) {
+        encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
     }
 }
 

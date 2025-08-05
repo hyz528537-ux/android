@@ -21,6 +21,11 @@ import io.tonapi.models.Risk
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -31,7 +36,7 @@ data class MultisigOrder (
     val address: kotlin.String,
 
     @SerialName(value = "order_seqno")
-    val orderSeqno: kotlin.Long,
+    val orderSeqno: kotlin.String,
 
     @SerialName(value = "threshold")
     val threshold: kotlin.Int,

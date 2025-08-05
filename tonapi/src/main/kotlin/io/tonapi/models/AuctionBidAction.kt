@@ -22,6 +22,11 @@ import io.tonapi.models.Price
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -48,14 +53,29 @@ data class AuctionBidAction (
     /**
      * 
      *
-     * Values: DNSPeriodTon,DNSPeriodTg,NUMBERPeriodTg,getgems
+     * Values: DNSPeriodTon,DNSPeriodTg,NUMBERPeriodTg,getgems.unknown
      */
-    @Serializable
+    @Serializable(with = AuctionTypeSerializer::class)
     enum class AuctionType(val value: kotlin.String) {
         @SerialName(value = "DNS.ton") DNSPeriodTon("DNS.ton"),
         @SerialName(value = "DNS.tg") DNSPeriodTg("DNS.tg"),
         @SerialName(value = "NUMBER.tg") NUMBERPeriodTg("NUMBER.tg"),
-        @SerialName(value = "getgems") getgems("getgems");
+        @SerialName(value = "getgems") getgems("getgems"),
+        @SerialName(value = "unknown") unknown("unknown");
+    }
+
+    internal object AuctionTypeSerializer : KSerializer<AuctionType> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): AuctionType {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return AuctionType.entries.firstOrNull { it.value == value }
+                ?: AuctionType.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: AuctionType) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
     }
 
 }

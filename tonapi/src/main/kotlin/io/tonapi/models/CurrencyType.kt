@@ -18,13 +18,18 @@ package io.tonapi.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * 
  *
- * Values: native,extra_currency,jetton,fiat
+ * Values: native,extra_currency,jetton,fiat.unknown
  */
-@Serializable
+@Serializable(with = CurrencyTypeSerializer::class)
 enum class CurrencyType(val value: kotlin.String) {
 
     @SerialName(value = "native")
@@ -37,7 +42,10 @@ enum class CurrencyType(val value: kotlin.String) {
     jetton("jetton"),
 
     @SerialName(value = "fiat")
-    fiat("fiat");
+    fiat("fiat"),
+
+    @SerialName(value = "unknown")
+    unknown("unknown");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -59,10 +67,24 @@ enum class CurrencyType(val value: kotlin.String) {
          */
         fun decode(data: kotlin.Any?): CurrencyType? = data?.let {
           val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
+          entries.firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()
           }
         }
+    }
+}
+
+internal object CurrencyTypeSerializer : KSerializer<CurrencyType> {
+    override val descriptor = kotlin.String.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): CurrencyType {
+        val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+        return CurrencyType.entries.firstOrNull { it.value == value }
+            ?: CurrencyType.unknown
+    }
+
+    override fun serialize(encoder: Encoder, value: CurrencyType) {
+        encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
     }
 }
 

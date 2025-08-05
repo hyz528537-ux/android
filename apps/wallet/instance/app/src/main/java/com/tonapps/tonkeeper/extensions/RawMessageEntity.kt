@@ -142,6 +142,7 @@ fun RawMessageEntity.getWalletTransfer(
     excessesAddress: AddrStd? = null,
     newStateInit: CellRef<StateInit>? = null,
     newCustomPayload: Cell? = null,
+    sendMode: Int,
 ): WalletTransfer {
     val payload = getPayload()
     val body = if (excessesAddress != null) {
@@ -174,14 +175,16 @@ fun RawMessageEntity.getWalletTransfer(
     } else {
         builder.coins = coins
     }
+    builder.sendMode = sendMode
     return builder.build()
 }
 
-fun RawMessageEntity.getDefaultWalletTransfer(): WalletTransfer {
+fun RawMessageEntity.getDefaultWalletTransfer(sendMode: Int): WalletTransfer {
     val builder = WalletTransferBuilder()
     builder.destination = address
     builder.messageData = MessageData.Raw(getPayload(), getStateInitRef())
     builder.bounceable = addressTags.isBounceable
     builder.coins = coins
+    builder.sendMode = sendMode
     return builder.build()
 }

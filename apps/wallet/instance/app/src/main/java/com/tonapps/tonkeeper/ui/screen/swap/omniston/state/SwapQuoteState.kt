@@ -31,6 +31,7 @@ data class SwapQuoteState(
     val selectedFee: SendFee? = null,
     val insufficientFunds: InsufficientFundsException? = null,
     val canEditFeeMethod: Boolean = true,
+    val meanFeeSwap: Coins = Coins.ZERO,
 ) {
 
     data class Tx(
@@ -61,6 +62,11 @@ data class SwapQuoteState(
             tx?.sendTonFee,
         )
 
+    val totalFee: Coins by lazy {
+        val emulatedFee = tx?.tonEmulated?.totalFees ?: meanFeeSwap
+        listOf(gasBudget, estimatedGasConsumption, emulatedFee).max()
+    }
+
     val isPreferredFeeMethodBattery: Boolean
         get() = selectedFee?.method == PreferredFeeMethod.BATTERY
 
@@ -88,8 +94,7 @@ data class SwapQuoteState(
     fun getFeeFormat(context: Context): CharSequence {
         val format = when (selectedFee) {
             is SendFee.Battery -> return selectedFee.formattedCharges(context)
-            is SendFee.TokenFee -> selectedFee.formattedAmount
-            else -> CurrencyFormatter.format("TON", gasBudget)
+            else -> CurrencyFormatter.format("TON", totalFee)
         }
         return CurrencyInputView.EQUALS_SIGN_PREFIX + format
     }

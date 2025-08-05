@@ -21,6 +21,11 @@ import io.tonapi.models.JettonPreview
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -59,13 +64,28 @@ data class JettonSwapAction (
     /**
      * 
      *
-     * Values: stonfi,dedust,megatonfi
+     * Values: stonfi,dedust,megatonfi.unknown
      */
-    @Serializable
+    @Serializable(with = DexSerializer::class)
     enum class Dex(val value: kotlin.String) {
         @SerialName(value = "stonfi") stonfi("stonfi"),
         @SerialName(value = "dedust") dedust("dedust"),
-        @SerialName(value = "megatonfi") megatonfi("megatonfi");
+        @SerialName(value = "megatonfi") megatonfi("megatonfi"),
+        @SerialName(value = "unknown") unknown("unknown");
+    }
+
+    internal object DexSerializer : KSerializer<Dex> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): Dex {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return Dex.entries.firstOrNull { it.value == value }
+                ?: Dex.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: Dex) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
     }
 
 }

@@ -361,6 +361,8 @@ class SendTransactionViewModel(
         return emulationReadyDate.get() - System.currentTimeMillis()
     }
 
+    // private suspend fun getTonBalance() = tokenRepository.getTonBalance(settingsRepository.currency, wallet.accountId, wallet.testnet)
+
     private suspend fun transfers(
         compressedTokens: List<AccountTokenEntity>,
         forEmulation: Boolean,
@@ -375,7 +377,8 @@ class SendTransactionViewModel(
             compressedTokens = compressedTokens,
             excessesAddress = excessesAddress,
             api = api,
-            batteryEnabled = batteryEnabled
+            batteryEnabled = batteryEnabled,
+            tonBalance = null
         )
     }
 

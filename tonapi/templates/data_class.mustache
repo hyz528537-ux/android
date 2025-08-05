@@ -114,7 +114,7 @@ import io.infrastructure.ITransformForStorage
 
         override fun deserialize(decoder: Decoder): {{nameInPascalCase}} {
             val value = decoder.decodeSerializableValue({{^isContainer}}{{dataType}}{{/isContainer}}{{#isContainer}}kotlin.String{{/isContainer}}.serializer())
-            return {{nameInPascalCase}}.values().firstOrNull { it.value == value }
+            return {{nameInPascalCase}}.entries.firstOrNull { it.value == value }
                 ?: {{nameInPascalCase}}.{{#allowableValues}}{{#enumVars}}{{#-last}}{{&name}}{{/-last}}{{/enumVars}}{{/allowableValues}}
         }
 

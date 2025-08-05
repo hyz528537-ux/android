@@ -24,12 +24,15 @@ fun <R> withRetry(
         } catch (e: CancellationException) {
             throw e
         } catch (e: SocketTimeoutException) {
+            Log.e("RetryLogNew", "SocketTimeoutException occurred: ${e.message}", e)
             SystemClock.sleep(delay + 100)
             return null
         } catch (e: IOException) {
+            Log.e("RetryLogNew", "IOException occurred: ${e.message}", e)
             SystemClock.sleep(delay + 100)
             return null
         } catch (e: Throwable) {
+            Log.e("RetryLogNew", "Error occurred: ${e.message}", e)
             val statusCode = e.getHttpStatusCode()
             if (statusCode == 429 || statusCode == 401 || statusCode == 502 || statusCode == 520) {
                 SystemClock.sleep(delay + 100)

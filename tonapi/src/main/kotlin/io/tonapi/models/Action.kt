@@ -41,6 +41,11 @@ import io.tonapi.models.WithdrawStakeRequestAction
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -127,9 +132,9 @@ data class Action (
     /**
      * 
      *
-     * Values: TonTransfer,ExtraCurrencyTransfer,ContractDeploy,JettonTransfer,JettonBurn,JettonMint,NftItemTransfer,Subscribe,UnSubscribe,AuctionBid,NftPurchase,DepositStake,WithdrawStake,WithdrawStakeRequest,ElectionsDepositStake,ElectionsRecoverStake,JettonSwap,SmartContractExec,DomainRenew,Purchase,Unknown
+     * Values: TonTransfer,ExtraCurrencyTransfer,ContractDeploy,JettonTransfer,JettonBurn,JettonMint,NftItemTransfer,Subscribe,UnSubscribe,AuctionBid,NftPurchase,DepositStake,WithdrawStake,WithdrawStakeRequest,ElectionsDepositStake,ElectionsRecoverStake,JettonSwap,SmartContractExec,DomainRenew,Purchase,Unknown.unknown
      */
-    @Serializable
+    @Serializable(with = TypeSerializer::class)
     enum class Type(val value: kotlin.String) {
         @SerialName(value = "TonTransfer") TonTransfer("TonTransfer"),
         @SerialName(value = "ExtraCurrencyTransfer") ExtraCurrencyTransfer("ExtraCurrencyTransfer"),
@@ -151,17 +156,47 @@ data class Action (
         @SerialName(value = "SmartContractExec") SmartContractExec("SmartContractExec"),
         @SerialName(value = "DomainRenew") DomainRenew("DomainRenew"),
         @SerialName(value = "Purchase") Purchase("Purchase"),
-        @SerialName(value = "Unknown") Unknown("Unknown");
+        @SerialName(value = "Unknown") Unknown("Unknown"),
+        @SerialName(value = "unknown") unknown("unknown");
+    }
+
+    internal object TypeSerializer : KSerializer<Type> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): Type {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return Type.entries.firstOrNull { it.value == value }
+                ?: Type.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: Type) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
     }
     /**
      * 
      *
-     * Values: ok,failed
+     * Values: ok,failed.unknown
      */
-    @Serializable
+    @Serializable(with = StatusSerializer::class)
     enum class Status(val value: kotlin.String) {
         @SerialName(value = "ok") ok("ok"),
-        @SerialName(value = "failed") failed("failed");
+        @SerialName(value = "failed") failed("failed"),
+        @SerialName(value = "unknown") unknown("unknown");
+    }
+
+    internal object StatusSerializer : KSerializer<Status> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): Status {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return Status.entries.firstOrNull { it.value == value }
+                ?: Status.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: Status) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
     }
 
 }

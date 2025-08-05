@@ -74,6 +74,14 @@ class TokenRepository(
         return tokens.firstOrNull { it.isTon }
     }
 
+    suspend fun getTonBalance(
+        currency: WalletCurrency,
+        accountId: String,
+        testnet: Boolean
+    ): Coins? {
+        val token = getTON(currency, accountId, testnet, false) ?: return null
+        return token.balance.value
+    }
 
     suspend fun refreshTron(
         accountId: String,

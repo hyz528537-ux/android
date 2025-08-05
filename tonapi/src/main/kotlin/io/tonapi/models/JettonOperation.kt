@@ -21,6 +21,11 @@ import io.tonapi.models.JettonPreview
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -65,13 +70,28 @@ data class JettonOperation (
     /**
      * 
      *
-     * Values: transfer,mint,burn
+     * Values: transfer,mint,burn.unknown
      */
-    @Serializable
+    @Serializable(with = OperationSerializer::class)
     enum class Operation(val value: kotlin.String) {
         @SerialName(value = "transfer") transfer("transfer"),
         @SerialName(value = "mint") mint("mint"),
-        @SerialName(value = "burn") burn("burn");
+        @SerialName(value = "burn") burn("burn"),
+        @SerialName(value = "unknown") unknown("unknown");
+    }
+
+    internal object OperationSerializer : KSerializer<Operation> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): Operation {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return Operation.entries.firstOrNull { it.value == value }
+                ?: Operation.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: Operation) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
     }
 
 }

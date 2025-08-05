@@ -18,13 +18,18 @@ package io.tonapi.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * Data type of the argument value: - `nan`: Not-a-Number value - `null`: Null value - `tinyint`: Decimal integer (e.g., `100500`) - `int257`: 257-bit integer in hex format with 0x prefix (e.g., `0xfa01d78381ae32`) - `slice`: TON blockchain address (e.g., `0:6e731f2e...`) - `cell_boc_base64`: Base64-encoded cell BOC (Binary Object Code) (e.g., `te6ccgEBAQEAAgAAAA==`) - `slice_boc_hex`: Hex-encoded slice BOC (e.g., `b5ee9c72...`) 
  *
- * Values: nan,`null`,tinyint,int257,slice,cell_boc_base64,slice_boc_hex
+ * Values: nan,`null`,tinyint,int257,slice,cell_boc_base64,slice_boc_hex.unknown
  */
-@Serializable
+@Serializable(with = ExecGetMethodArgTypeSerializer::class)
 enum class ExecGetMethodArgType(val value: kotlin.String) {
 
     @SerialName(value = "nan")
@@ -46,7 +51,10 @@ enum class ExecGetMethodArgType(val value: kotlin.String) {
     cell_boc_base64("cell_boc_base64"),
 
     @SerialName(value = "slice_boc_hex")
-    slice_boc_hex("slice_boc_hex");
+    slice_boc_hex("slice_boc_hex"),
+
+    @SerialName(value = "unknown")
+    unknown("unknown");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -68,10 +76,24 @@ enum class ExecGetMethodArgType(val value: kotlin.String) {
          */
         fun decode(data: kotlin.Any?): ExecGetMethodArgType? = data?.let {
           val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
+          entries.firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()
           }
         }
+    }
+}
+
+internal object ExecGetMethodArgTypeSerializer : KSerializer<ExecGetMethodArgType> {
+    override val descriptor = kotlin.String.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): ExecGetMethodArgType {
+        val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+        return ExecGetMethodArgType.entries.firstOrNull { it.value == value }
+            ?: ExecGetMethodArgType.unknown
+    }
+
+    override fun serialize(encoder: Encoder, value: ExecGetMethodArgType) {
+        encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
     }
 }
 

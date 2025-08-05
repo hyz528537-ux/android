@@ -18,13 +18,18 @@ package io.tonapi.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * 
  *
- * Values: whales,tf,liquidTF
+ * Values: whales,tf,liquidTF.unknown
  */
-@Serializable
+@Serializable(with = PoolImplementationTypeSerializer::class)
 enum class PoolImplementationType(val value: kotlin.String) {
 
     @SerialName(value = "whales")
@@ -34,7 +39,10 @@ enum class PoolImplementationType(val value: kotlin.String) {
     tf("tf"),
 
     @SerialName(value = "liquidTF")
-    liquidTF("liquidTF");
+    liquidTF("liquidTF"),
+
+    @SerialName(value = "unknown")
+    unknown("unknown");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -56,10 +64,24 @@ enum class PoolImplementationType(val value: kotlin.String) {
          */
         fun decode(data: kotlin.Any?): PoolImplementationType? = data?.let {
           val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
+          entries.firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()
           }
         }
+    }
+}
+
+internal object PoolImplementationTypeSerializer : KSerializer<PoolImplementationType> {
+    override val descriptor = kotlin.String.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): PoolImplementationType {
+        val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+        return PoolImplementationType.entries.firstOrNull { it.value == value }
+            ?: PoolImplementationType.unknown
+    }
+
+    override fun serialize(encoder: Encoder, value: PoolImplementationType) {
+        encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
     }
 }
 

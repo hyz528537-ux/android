@@ -12,8 +12,10 @@ import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.koin.analytics
 import com.tonapps.tonkeeper.koin.remoteConfig
 import com.tonapps.tonkeeper.koin.serverConfig
+import com.tonapps.tonkeeper.ui.screen.root.RootActivity
 import com.tonapps.wallet.api.entity.ConfigEntity
 import uikit.base.BaseFragment
+import uikit.extensions.gestureNavigationEnabled
 import uikit.navigation.Navigation
 
 abstract class BaseWalletScreen<C: ScreenContext>(
@@ -37,15 +39,16 @@ abstract class BaseWalletScreen<C: ScreenContext>(
     override val uiContext: Context
         get() = requireContext()
 
+    val rootActivity: RootActivity?
+        get() = activity as? RootActivity
+
     abstract val viewModel: BaseWalletVM
 
     private val isBottomSheet: Boolean
         get() = this is BottomSheet
 
-    val windowInsetsController: WindowInsetsControllerCompat? by lazy {
-        val window = window ?: return@lazy null
-        WindowInsetsControllerCompat(window, window.decorView)
-    }
+    val windowInsetsController: WindowInsetsControllerCompat?
+        get() = rootActivity?.windowInsetsController
 
     private val isAppearanceLightStatusBars: Boolean by lazy {
         windowInsetsController?.isAppearanceLightStatusBars ?: false
@@ -70,7 +73,7 @@ abstract class BaseWalletScreen<C: ScreenContext>(
         savedInstanceState: Bundle?
     ): View? {
         if (isBottomSheet && isAppearanceLightStatusBars) {
-            setAppearanceLight(false)
+            rootActivity?.setAppearanceLight(false)
         }
         viewModel.attachHolder(this)
         return super.onCreateView(inflater, container, savedInstanceState)
@@ -79,15 +82,8 @@ abstract class BaseWalletScreen<C: ScreenContext>(
     override fun onDestroyView() {
         super.onDestroyView()
         if (isBottomSheet && isAppearanceLightStatusBars) {
-            setAppearanceLight(true)
+            rootActivity?.setAppearanceLight(true)
         }
         viewModel.detachHolder()
-    }
-
-    fun setAppearanceLight(light: Boolean) {
-        windowInsetsController?.apply {
-            isAppearanceLightStatusBars = light
-            isAppearanceLightNavigationBars = light
-        }
     }
 }

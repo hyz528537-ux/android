@@ -18,13 +18,18 @@ package io.tonapi.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * 
  *
- * Values: TransOrd,TransTickTock,TransSplitPrepare,TransSplitInstall,TransMergePrepare,TransMergeInstall,TransStorage
+ * Values: TransOrd,TransTickTock,TransSplitPrepare,TransSplitInstall,TransMergePrepare,TransMergeInstall,TransStorage.unknown
  */
-@Serializable
+@Serializable(with = TransactionTypeSerializer::class)
 enum class TransactionType(val value: kotlin.String) {
 
     @SerialName(value = "TransOrd")
@@ -46,7 +51,10 @@ enum class TransactionType(val value: kotlin.String) {
     TransMergeInstall("TransMergeInstall"),
 
     @SerialName(value = "TransStorage")
-    TransStorage("TransStorage");
+    TransStorage("TransStorage"),
+
+    @SerialName(value = "unknown")
+    unknown("unknown");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -68,10 +76,24 @@ enum class TransactionType(val value: kotlin.String) {
          */
         fun decode(data: kotlin.Any?): TransactionType? = data?.let {
           val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
+          entries.firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()
           }
         }
+    }
+}
+
+internal object TransactionTypeSerializer : KSerializer<TransactionType> {
+    override val descriptor = kotlin.String.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): TransactionType {
+        val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+        return TransactionType.entries.firstOrNull { it.value == value }
+            ?: TransactionType.unknown
+    }
+
+    override fun serialize(encoder: Encoder, value: TransactionType) {
+        encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
     }
 }
 

@@ -18,13 +18,18 @@ package io.tonapi.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * 
  *
- * Values: cskip_no_state,cskip_bad_state,cskip_no_gas,cskip_suspended
+ * Values: cskip_no_state,cskip_bad_state,cskip_no_gas,cskip_suspended.unknown
  */
-@Serializable
+@Serializable(with = ComputeSkipReasonSerializer::class)
 enum class ComputeSkipReason(val value: kotlin.String) {
 
     @SerialName(value = "cskip_no_state")
@@ -37,7 +42,10 @@ enum class ComputeSkipReason(val value: kotlin.String) {
     cskip_no_gas("cskip_no_gas"),
 
     @SerialName(value = "cskip_suspended")
-    cskip_suspended("cskip_suspended");
+    cskip_suspended("cskip_suspended"),
+
+    @SerialName(value = "unknown")
+    unknown("unknown");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -59,10 +67,24 @@ enum class ComputeSkipReason(val value: kotlin.String) {
          */
         fun decode(data: kotlin.Any?): ComputeSkipReason? = data?.let {
           val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
+          entries.firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()
           }
         }
+    }
+}
+
+internal object ComputeSkipReasonSerializer : KSerializer<ComputeSkipReason> {
+    override val descriptor = kotlin.String.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): ComputeSkipReason {
+        val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+        return ComputeSkipReason.entries.firstOrNull { it.value == value }
+            ?: ComputeSkipReason.unknown
+    }
+
+    override fun serialize(encoder: Encoder, value: ComputeSkipReason) {
+        encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
     }
 }
 

@@ -19,6 +19,11 @@ package io.tonapi.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -45,15 +50,30 @@ data class TvmStackRecord (
     /**
      * 
      *
-     * Values: cell,num,nan,`null`,tuple
+     * Values: cell,num,nan,`null`,tuple.unknown
      */
-    @Serializable
+    @Serializable(with = TypeSerializer::class)
     enum class Type(val value: kotlin.String) {
         @SerialName(value = "cell") cell("cell"),
         @SerialName(value = "num") num("num"),
         @SerialName(value = "nan") nan("nan"),
         @SerialName(value = "null") `null`("null"),
-        @SerialName(value = "tuple") tuple("tuple");
+        @SerialName(value = "tuple") tuple("tuple"),
+        @SerialName(value = "unknown") unknown("unknown");
+    }
+
+    internal object TypeSerializer : KSerializer<Type> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): Type {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return Type.entries.firstOrNull { it.value == value }
+                ?: Type.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: Type) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
     }
 
 }

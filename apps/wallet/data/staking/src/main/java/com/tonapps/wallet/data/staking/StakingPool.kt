@@ -16,6 +16,7 @@ object StakingPool {
             PoolImplementationType.whales -> Implementation.Whales
             PoolImplementationType.tf -> Implementation.TF
             PoolImplementationType.liquidTF -> Implementation.LiquidTF
+            else -> throw IllegalArgumentException("Unknown PoolImplementationType: $type")
         }
     }
 

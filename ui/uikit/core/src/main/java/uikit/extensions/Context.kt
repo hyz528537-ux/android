@@ -10,6 +10,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.RippleDrawable
+import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
@@ -37,6 +38,12 @@ import com.tonapps.uikit.color.stateList
 import com.tonapps.uikit.color.textTertiaryColor
 import uikit.navigation.Navigation.Companion.navigation
 import uikit.navigation.NavigationActivity
+
+val Context.navigationMode: Int
+    get() = Settings.Secure.getInt(contentResolver,"navigation_mode", 0)
+
+val Context.gestureNavigationEnabled: Boolean
+    get() = navigationMode == 2
 
 fun Context.inflate(
     @LayoutRes layoutId: Int,

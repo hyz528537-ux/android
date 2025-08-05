@@ -10,7 +10,7 @@ android {
     defaultConfig {
         applicationId = Build.namespacePrefix("signer")
         minSdk = Build.minSdkVersion
-        targetSdk = 34
+        targetSdk = Build.compileSdkVersion
         versionCode = 22
         versionName = "0.2.2"
     }

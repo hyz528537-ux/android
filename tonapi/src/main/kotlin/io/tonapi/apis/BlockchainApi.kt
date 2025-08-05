@@ -256,7 +256,8 @@ class BlockchainApi(basePath: kotlin.String = defaultBasePath, client: Call.Fact
      */
      enum class SortOrderGetBlockchainAccountTransactions(val value: kotlin.String) {
          @SerialName(value = "desc") desc("desc"),
-         @SerialName(value = "asc") asc("asc");
+         @SerialName(value = "asc") asc("asc"),
+         @SerialName(value = "unknown") unknown("unknown");
 
         /**
          * Override [toString()] to avoid using the enum variable name as the value, and instead use
