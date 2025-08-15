@@ -10,7 +10,6 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -23,19 +22,18 @@ import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.crashlytics.setCustomKeys
 import com.google.firebase.ktx.Firebase
 import com.tonapps.blockchain.ton.extensions.equalsAddress
-import com.tonapps.blockchain.ton.extensions.isValidTonDomain
 import com.tonapps.blockchain.ton.extensions.toAccountId
 import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.extensions.bestMessage
 import com.tonapps.extensions.currentTimeSeconds
 import com.tonapps.extensions.getStringValue
-import com.tonapps.extensions.locale
 import com.tonapps.extensions.setLocales
 import com.tonapps.extensions.toUriOrNull
 import com.tonapps.ledger.ton.LedgerConnectData
 import com.tonapps.tonkeeper.App
 import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.api.getCurrencyCodeByCountry
+import com.tonapps.tonkeeper.billing.BillingManager
 import com.tonapps.tonkeeper.client.safemode.SafeModeClient
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.DevSettings
@@ -72,7 +70,6 @@ import com.tonapps.tonkeeper.ui.screen.dns.renew.DNSRenewScreen
 import com.tonapps.tonkeeper.ui.screen.init.list.AccountItem
 import com.tonapps.tonkeeper.ui.screen.name.edit.EditNameScreen
 import com.tonapps.tonkeeper.ui.screen.onramp.main.OnRampScreen
-import com.tonapps.tonkeeper.ui.screen.purchase.PurchaseScreen
 import com.tonapps.tonkeeper.ui.screen.qr.QRScreen
 import com.tonapps.tonkeeper.ui.screen.send.main.SendScreen
 import com.tonapps.tonkeeper.ui.screen.send.transaction.SendTransactionScreen
@@ -88,17 +85,14 @@ import com.tonapps.tonkeeper.ui.screen.token.viewer.TokenScreen
 import com.tonapps.tonkeeper.ui.screen.transaction.TransactionScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.manage.TokensManageScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.picker.PickerScreen
-import com.tonapps.tonkeeperx.BuildConfig
 import com.tonapps.tonkeeperx.R
 import com.tonapps.wallet.api.API
-import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.browser.BrowserRepository
 import com.tonapps.wallet.data.core.entity.SignRequestEntity
 import com.tonapps.wallet.data.dapps.DAppsRepository
 import com.tonapps.wallet.data.dapps.entities.AppConnectEntity
-import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.passcode.LockScreen
 import com.tonapps.wallet.data.passcode.PasscodeManager
 import com.tonapps.wallet.data.purchase.PurchaseRepository
@@ -122,9 +116,7 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import uikit.extensions.activity
-import uikit.extensions.collectFlow
 import java.util.concurrent.CancellationException
 import kotlin.math.abs
 
@@ -147,6 +139,7 @@ class RootViewModel(
     private val safeModeClient: SafeModeClient,
     private val ratesRepository: RatesRepository,
     private val analyticsHelper: AnalyticsHelper,
+    private val billingManager: BillingManager,
     savedStateHandle: SavedStateHandle,
 ): BaseWalletVM(app) {
 
@@ -222,6 +215,16 @@ class RootViewModel(
     }
 
     init {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                environment.setCountryFromStore(billingManager.getCountry())
+            } catch (_: Throwable) {
+                Log.d("RootViewModel", "Failed to get country from billing manager")
+            }
+            api.setCountry(deviceCountry = environment.country, storeCountry = environment.storeCountry)
+            api.initConfig()
+        }
+
         pushManager.clearNotifications()
 
         settingsRepository.languageFlow.collectFlow {
@@ -615,9 +618,9 @@ class RootViewModel(
         } else if (route is DeepLinkRoute.Send && !wallet.isWatchOnly) {
             openScreen(SendScreen.newInstance(wallet, type = SendScreen.Companion.Type.Default))
         } else if (route is DeepLinkRoute.Staking && !wallet.isWatchOnly) {
-            openScreen(StakingScreen.newInstance(wallet))
+            openScreen(StakingScreen.newInstance(wallet, from = "deeplink"))
         } else if (route is DeepLinkRoute.StakingPool) {
-            openScreen(StakeViewerScreen.newInstance(wallet, route.poolAddress, ""))
+            openScreen(StakeViewerScreen.newInstance(wallet, address = route.poolAddress, name = ""))
         } else if (route is DeepLinkRoute.AccountEvent) {
             if (route.address == null) {
                 showTransaction(route.eventId)

@@ -7,10 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.net.toUri
 import com.google.android.flexbox.FlexboxLayout
 import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.helper.BrowserHelper
+import com.tonapps.tonkeeper.koin.api
 import com.tonapps.tonkeeper.ui.base.BaseHolderWalletScreen
 import com.tonapps.tonkeeper.ui.screen.staking.stake.StakingScreen
 import com.tonapps.tonkeeper.ui.screen.staking.stake.StakingViewModel
@@ -21,6 +23,7 @@ import com.tonapps.tonkeeper.ui.screen.swap.SwapArgs
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.wallet.api.entity.TokenEntity
+import com.tonapps.wallet.data.staking.StakingPool
 import com.tonapps.wallet.data.staking.entities.PoolDetailsEntity
 import com.tonapps.wallet.data.staking.entities.PoolEntity
 import com.tonapps.wallet.data.staking.entities.PoolInfoEntity
@@ -28,6 +31,7 @@ import com.tonapps.wallet.localization.Localization
 import uikit.extensions.applyBottomInsets
 import uikit.extensions.dp
 import uikit.extensions.drawable
+import uikit.extensions.getSpannable
 import uikit.extensions.inflate
 import uikit.extensions.pinToBottomInsets
 import uikit.extensions.setLeftDrawable
@@ -35,11 +39,14 @@ import uikit.extensions.withGreenBadge
 import uikit.navigation.Navigation.Companion.navigation
 import uikit.widget.HeaderView
 
-class StakeDetailsFragment: BaseHolderWalletScreen.ChildFragment<StakingScreen, StakingViewModel>(R.layout.fragment_stake_details) {
+class StakeDetailsFragment :
+    BaseHolderWalletScreen.ChildFragment<StakingScreen, StakingViewModel>(R.layout.fragment_stake_details) {
 
     private val args: StakeDetailsArgs by lazy { StakeDetailsArgs(requireArguments()) }
 
+    private lateinit var detailsContentView: View
     private lateinit var poolApyTitleView: AppCompatTextView
+    private lateinit var descriptionView: AppCompatTextView
     private lateinit var linkDrawable: Drawable
     private lateinit var linksView: FlexboxLayout
     private lateinit var button: Button
@@ -51,14 +58,23 @@ class StakeDetailsFragment: BaseHolderWalletScreen.ChildFragment<StakingScreen, 
         headerView.doOnActionClick = { finish() }
         headerView.title = args.name
 
+        detailsContentView = view.findViewById(R.id.details_content)
+
         poolApyTitleView = view.findViewById(R.id.pool_apy_title)
+
+        descriptionView = view.findViewById(R.id.staking_description)
+
+        linkDrawable = requireContext().drawable(UIKitIcon.ic_globe_16)
+
+        detailsContentView.visibility = View.VISIBLE
         if (args.maxApy) {
-            poolApyTitleView.text = getString(Localization.staking_apy).withGreenBadge(requireContext(), Localization.staking_max_apy)
+            poolApyTitleView.text = getString(Localization.staking_apy).withGreenBadge(
+                requireContext(),
+                Localization.staking_max_apy
+            )
         } else {
             poolApyTitleView.text = getString(Localization.staking_apy)
         }
-
-        linkDrawable = requireContext().drawable(UIKitIcon.ic_globe_16)
         val apyView = view.findViewById<AppCompatTextView>(R.id.pool_apy)
         apyView.text = "≈ ${CurrencyFormatter.formatPercent(args.apy)}"
 
@@ -80,7 +96,8 @@ class StakeDetailsFragment: BaseHolderWalletScreen.ChildFragment<StakingScreen, 
         linksView.removeAllViews()
         for (link in links) {
             val host = Uri.parse(link).host!!
-            val linkView = requireContext().inflate(R.layout.view_link, linksView) as AppCompatTextView
+            val linkView =
+                requireContext().inflate(R.layout.view_link, linksView) as AppCompatTextView
             linkView.text = host
             linkView.setLeftDrawable(linkDrawable)
             linkView.setOnClickListener { BrowserHelper.open(requireContext(), link) }

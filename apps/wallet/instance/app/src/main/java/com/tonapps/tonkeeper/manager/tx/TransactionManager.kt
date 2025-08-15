@@ -3,7 +3,6 @@ package com.tonapps.tonkeeper.manager.tx
 import com.tonapps.blockchain.ton.extensions.base64
 import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.tonkeeper.App
-import com.tonapps.tonkeeper.RemoteConfig
 import com.tonapps.tonkeeper.worker.WidgetUpdaterWorker
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.SendBlockchainState
@@ -43,7 +42,6 @@ class TransactionManager(
     private val batteryRepository: BatteryRepository,
     private val tokenRepository: TokenRepository,
     private val settingsRepository: SettingsRepository,
-    private val remoteConfig: RemoteConfig,
 ) {
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -93,7 +91,7 @@ class TransactionManager(
         ) { wallet, _, _ ->
             val tronEnabled = settingsRepository.getTronUsdtEnabled(wallet.id)
             val tronAddress = accountRepository.getTronAddress(wallet.id)
-            if (tronEnabled && tronAddress != null && wallet.hasPrivateKey && !wallet.testnet && !remoteConfig.isTronDisabled) {
+            if (tronEnabled && tronAddress != null && wallet.hasPrivateKey && !wallet.testnet && !api.config.flags.disableBattery) {
                 Pair(wallet, tronAddress)
             } else {
                 null

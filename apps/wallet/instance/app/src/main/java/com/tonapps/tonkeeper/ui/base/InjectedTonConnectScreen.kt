@@ -114,7 +114,8 @@ abstract class InjectedTonConnectScreen(@LayoutRes layoutId: Int, wallet: Wallet
 
     suspend fun tonconnect(
         version: Int,
-        request: ConnectRequest
+        request: ConnectRequest,
+        forceConnect: Boolean = false
     ): JSONObject {
         if (version != 2) {
             return JsonBuilder.connectEventError(BridgeError.badRequest("Version $version is not supported"))
@@ -127,7 +128,8 @@ abstract class InjectedTonConnectScreen(@LayoutRes layoutId: Int, wallet: Wallet
         return tonConnectManager.launchConnectFlow(
             activity = activity,
             tonConnect = TonConnect.fromJsInject(request, webView.url?.toUri()),
-            wallet = wallet
+            wallet = wallet,
+            forceConnect = forceConnect,
         )
     }
 
@@ -145,7 +147,7 @@ abstract class InjectedTonConnectScreen(@LayoutRes layoutId: Int, wallet: Wallet
         }
     }
 
-    suspend fun tonconnectSend(array: JSONArray): JSONObject {
+    suspend fun tonconnectSend(array: JSONArray, showLogout: Boolean = true): JSONObject {
         var id = 0L
         try {
             val messages = BridgeEvent.Message.parse(array)
@@ -166,7 +168,9 @@ abstract class InjectedTonConnectScreen(@LayoutRes layoutId: Int, wallet: Wallet
                     val boc = SendTransactionScreen.run(requireContext(), wallet, signRequest)
                     JsonBuilder.responseSendTransaction(id, boc)
                 } catch (e: CancellationException) {
-                    context?.let { tonConnectManager.showLogoutAppBar(wallet, it, uri) }
+                    if (showLogout) {
+                        context?.let { tonConnectManager.showLogoutAppBar(wallet, it, uri) }
+                    }
                     JsonBuilder.responseError(id, BridgeError.userDeclinedTransaction())
                 } catch (e: BridgeException) {
                     JsonBuilder.responseError(id, BridgeError.badRequest(e.bestMessage))

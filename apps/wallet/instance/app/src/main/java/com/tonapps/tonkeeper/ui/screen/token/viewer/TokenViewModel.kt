@@ -4,35 +4,38 @@ import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.tonapps.blockchain.ton.contract.BaseWalletContract
 import com.tonapps.blockchain.ton.contract.WalletVersion
-import com.tonapps.blockchain.ton.extensions.equalsAddress
 import com.tonapps.blockchain.ton.extensions.toAccountId
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.icu.Formatter
-import com.tonapps.tonkeeper.RemoteConfig
 import com.tonapps.tonkeeper.api.getCurrencyCodeByCountry
 import com.tonapps.tonkeeper.core.entities.WalletPurchaseMethodEntity
 import com.tonapps.tonkeeper.core.history.ActionOptions
 import com.tonapps.tonkeeper.core.history.HistoryHelper
 import com.tonapps.tonkeeper.core.history.list.item.HistoryItem
 import com.tonapps.tonkeeper.extensions.isSafeModeEnabled
+import com.tonapps.tonkeeper.manager.tx.TransactionManager
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.token.viewer.list.Item
+import com.tonapps.uikit.list.ListCell
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.entity.Blockchain
 import com.tonapps.wallet.api.entity.ChartEntity
+import com.tonapps.wallet.api.entity.EthenaEntity
+import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.battery.BatteryRepository
 import com.tonapps.wallet.data.core.currency.WalletCurrency
-import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.events.EventsRepository
 import com.tonapps.wallet.data.purchase.PurchaseRepository
+import com.tonapps.wallet.data.rates.RatesRepository
 import com.tonapps.wallet.data.settings.ChartPeriod
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.data.token.TokenRepository
 import com.tonapps.wallet.data.token.entities.AccountTokenEntity
+import com.tonapps.wallet.localization.Localization
 import io.tonapi.models.AccountEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,6 +43,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
@@ -50,6 +54,7 @@ class TokenViewModel(
     app: Application,
     private val wallet: WalletEntity,
     private val tokenAddress: String,
+    private val rawUsde: Boolean,
     private val tokenRepository: TokenRepository,
     private val settingsRepository: SettingsRepository,
     private val accountRepository: AccountRepository,
@@ -58,7 +63,8 @@ class TokenViewModel(
     private val historyHelper: HistoryHelper,
     private val batteryRepository: BatteryRepository,
     private val purchaseRepository: PurchaseRepository,
-    private val remoteConfig: RemoteConfig
+    private val ratesRepository: RatesRepository,
+    private val transactionManager: TransactionManager,
 ) : BaseWalletVM(app) {
 
     val burnAddress: String by lazy {
@@ -74,8 +80,14 @@ class TokenViewModel(
     var tronAddress: String? = null
         private set
 
-    private val _tokenFlow = MutableStateFlow<AccountTokenEntity?>(null)
-    val tokenFlow = _tokenFlow.asStateFlow().filterNotNull()
+    val usdeDisabled: Boolean
+        get() = api.config.flags.disableUsde
+
+    private val _tokensFlow = MutableStateFlow<List<AccountTokenEntity>?>(null)
+    val tokensFlow = _tokensFlow.asStateFlow().filterNotNull()
+
+    val tokenFlow =
+        tokensFlow.map { it.firstOrNull { token -> token.address == tokenAddress } }.filterNotNull()
 
     private val _uiItemsFlow = MutableStateFlow<List<Item>?>(null)
     val uiItemsFlow = _uiItemsFlow.asStateFlow().filterNotNull()
@@ -89,29 +101,46 @@ class TokenViewModel(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            tronAddress = accountRepository.getTronAddress(wallet.id)
-
-            val list =
-                tokenRepository.get(settingsRepository.currency, wallet.accountId, wallet.testnet)
-                    ?: return@launch
-            val token = list.firstOrNull { it.address == tokenAddress } ?: return@launch
-            _tokenFlow.value = token
-            buildItems(token, emptyList())
-            load(token)
+            getData()
+        }
+        transactionManager.eventsFlow(wallet).collectFlow {
+            getData(true)
         }
 
         combine(
             tokenFlow,
+            tokensFlow,
             chartFlow,
             settingsRepository.walletPrefsChangedFlow
-        ) { token, chart, _ ->
-            buildItems(token, chart)
+        ) { token, list, chart, _ ->
+            buildItems(token, list, chart, tokenRepository.getEthena(wallet.accountId))
         }.launchIn(viewModelScope)
+    }
+
+    private suspend fun getData(refresh: Boolean = false) {
+        tronAddress = accountRepository.getTronAddress(wallet.id)
+
+        val list =
+            tokenRepository.get(settingsRepository.currency, wallet.accountId, wallet.testnet, refresh = refresh)
+                ?: return
+        val token = list.firstOrNull { it.address == tokenAddress } ?: return
+
+        val ethena = if (!rawUsde && token.isUSDe && !usdeDisabled) {
+            tokenRepository.getEthena(wallet.accountId, true)
+        } else if (token.isTsUSDe && !usdeDisabled) {
+            tokenRepository.getEthena(wallet.accountId)
+        } else {
+            null
+        }
+
+        _tokensFlow.value = list
+        buildItems(token, list, emptyList(), ethena)
+        load(token)
     }
 
     fun setChartPeriod(period: ChartPeriod) {
         settingsRepository.chartPeriod = period
-        _tokenFlow.filterNotNull().take(1).onEach {
+        tokenFlow.take(1).onEach {
             loadChartPeriod(it, period)
         }.launchIn(viewModelScope)
     }
@@ -146,12 +175,11 @@ class TokenViewModel(
             return
         }
 
-        viewModelScope.launch {
-            val lastLt = lastLt() ?: return@launch
-            val data = _tokenFlow.value ?: return@launch
+        tokenFlow.take(1).collectFlow { token ->
+            val lastLt = lastLt() ?: return@collectFlow
             val oldValues = _uiHistoryFlow.value
             _uiHistoryFlow.value = historyHelper.withLoadingItem(oldValues).toMutableList()
-            loadHistory(data, lastLt)
+            loadHistory(token, lastLt)
         }
     }
 
@@ -168,23 +196,91 @@ class TokenViewModel(
 
     private suspend fun buildItems(
         token: AccountTokenEntity,
-        charts: List<ChartEntity>
+        tokens: List<AccountTokenEntity>,
+        charts: List<ChartEntity>,
+        ethena: EthenaEntity?,
     ) {
         val currency = settingsRepository.currency.code
         val items = mutableListOf<Item>()
 
-        val stakeApp = if (remoteConfig.isEthenaEnabled && token.address.equalsAddress(WalletCurrency.USDE_TON_ETHENA_ADDRESS)) {
-            AppEntity.ethena
-        } else null
+        var headerBalance = token.balance.value
+
+        val balanceItems = mutableListOf<Item.EthenaBalance>()
+
+        val tokenTsUsde = tokens.firstOrNull { it.isTsUSDe }
+
+        val rates = ratesRepository.getRates(
+            settingsRepository.currency,
+            listOfNotNull(token.address, tokenTsUsde?.address)
+        )
+
+        if (token.isUSDe && !rawUsde) {
+            val stonfiBalance = tokenTsUsde?.let {
+                rates.convert(
+                    from = WalletCurrency.TS_USDE_TON_ETHENA,
+                    value = it.balance.value,
+                    to = WalletCurrency.USDE_TON_ETHENA
+                )
+            } ?: Coins.ZERO
+            val stonfiFiat = rates.convert(token.address, stonfiBalance)
+
+            headerBalance += stonfiBalance
+
+            balanceItems.add(
+                Item.EthenaBalance(
+                    position = ListCell.Position.SINGLE,
+                    wallet = wallet,
+                    staked = false,
+                    balance = token.balance.value,
+                    balanceFormat = CurrencyFormatter.format(
+                        value = token.balance.value,
+                    ),
+                    fiatFormat = CurrencyFormatter.format(currency, token.fiat),
+                    fiatRate = CurrencyFormatter.format(currency, token.rateNow),
+                    rateDiff24h = rates.getDiff7d(token.address),
+                    verified = token.token.verification == TokenEntity.Verification.whitelist,
+                    hiddenBalance = settingsRepository.hiddenBalances
+                )
+            )
+
+            val stonfiMethod =
+                ethena?.methods?.firstOrNull { it.type == EthenaEntity.Method.Type.STONFI }
+
+            if (stonfiMethod != null) {
+                balanceItems.add(
+                    Item.EthenaBalance(
+                        position = ListCell.Position.SINGLE,
+                        wallet = wallet,
+                        staked = true,
+                        methodType = stonfiMethod.type,
+                        showApy = !usdeDisabled,
+                        apy = CurrencyFormatter.formatPercent(stonfiMethod.apy),
+                        balance = stonfiBalance,
+                        balanceFormat = CurrencyFormatter.format(
+                            value = stonfiBalance,
+                        ),
+                        fiatFormat = CurrencyFormatter.format(currency, stonfiFiat),
+                        hiddenBalance = settingsRepository.hiddenBalances,
+                    )
+                )
+            }
+        }
+
+        val sortedBalanceItems = balanceItems
+            .mapIndexed { index, item ->
+                item.copy(position = ListCell.getPosition(balanceItems.size, index))
+            }
+
+        val headerFiat = rates.convert(token.address, headerBalance)
 
         items.add(
             Item.Balance(
-                balance = CurrencyFormatter.format(
+                balance = CurrencyFormatter.formatFull(
                     token.symbol,
-                    token.balance.value,
+                    headerBalance,
                     token.decimals
                 ),
-                fiat = CurrencyFormatter.format(currency, token.fiat),
+                fiat = CurrencyFormatter.format(currency, headerFiat),
                 iconUri = token.imageUri,
                 hiddenBalance = settingsRepository.hiddenBalances,
                 showNetwork = tronUsdtEnabled && (token.isUsdt || token.isTrc20),
@@ -195,11 +291,42 @@ class TokenViewModel(
             Item.Actions(
                 swapUri = api.config.swapUri,
                 swapMethod = if (token.isTrc20) getSwapMethod() else null,
+                swapEnabled = !api.config.flags.disableSwap,
                 token = token.balance.token,
                 wallet = wallet,
-                stakeApp = stakeApp
             )
         )
+
+        if (balanceItems.isNotEmpty()) {
+            items.addAll(sortedBalanceItems)
+            if (!rawUsde && token.isUSDe && usdeDisabled) {
+                items.add(Item.Space)
+            }
+        }
+
+        if (token.isUSDe && !usdeDisabled && !rawUsde) {
+            ethena?.methods?.let { methods ->
+                items.add(Item.Space)
+                for ((index, method) in methods.withIndex()) {
+                    val position = ListCell.getPosition(methods.size, index)
+                    items.add(
+                        Item.EthenaMethod(
+                            position = position,
+                            wallet = wallet,
+                            methodType = method.type,
+                            url = method.depositUrl,
+                            name = method.name,
+                            apy = CurrencyFormatter.formatPercent(method.apy)
+                        )
+                    )
+                }
+            }
+
+            ethena?.about?.let {
+                items.add(Item.AboutEthena(description = it.description, url = it.aboutUrl))
+            }
+        }
+
         if (token.isUsdt && !wallet.isW5 && wallet.hasPrivateKey && settingsRepository.isUSDTW5(
                 wallet.id
             )
@@ -212,7 +339,7 @@ class TokenViewModel(
             )
         }
 
-        if (wallet.hasPrivateKey && token.isTrc20) {
+        if (wallet.hasPrivateKey && token.isTrc20 && !api.config.flags.disableBattery) {
             val batteryCharges = getBatteryCharges()
             if (batteryCharges < 300) {
                 items.add(
@@ -224,7 +351,7 @@ class TokenViewModel(
             }
         }
 
-        if (!token.isUsdt && !token.isTrc20) {
+        if (!token.isUsdt && !token.isTrc20 && !token.isUSDe) {
             if ((charts.size == 1 && charts.first().isEmpty) || !token.hasRate) {
                 _uiItemsFlow.value = items
                 return
@@ -235,7 +362,7 @@ class TokenViewModel(
             val rateDiff24h: String
             val delta: CharSequence
             if (2 >= charts.size) {
-                fiatPrice = CurrencyFormatter.format(currency, token.rateNow, 4)
+                fiatPrice = CurrencyFormatter.format(currency, token.rateNow)
                 rateDiff24h = token.rateDiff24h
                 delta = ""
             } else {
@@ -262,7 +389,7 @@ class TokenViewModel(
                 val growPercentFormat = Formatter.percent(growPercent)
 
                 fiatPrice =
-                    CurrencyFormatter.format(settingsRepository.currency.code, token.rateNow, 4)
+                    CurrencyFormatter.format(settingsRepository.currency.code, token.rateNow)
                 rateDiff24h = growPercentFormat
                 delta = priceDeltaFormat
             }
@@ -304,11 +431,19 @@ class TokenViewModel(
                 ?: return@withContext
         val walletEventItems = mapping(wallet, accountEvents.events)
         if (beforeLt == null) {
-            setEvents(walletEventItems)
+            if (walletEventItems.isNotEmpty()) {
+                setEvents(walletEventItems)
+            } else {
+                setEmptyEvents()
+            }
         } else {
-            val oldValue =
-                (_uiHistoryFlow.value).filter { it !is HistoryItem.Loader }
-            setEvents(oldValue + walletEventItems)
+            val events =
+                _uiHistoryFlow.value.filter { it !is HistoryItem.Loader && it !is HistoryItem.Empty } + walletEventItems
+            if (events.isNotEmpty()) {
+                setEvents(events.distinctBy { it.uniqueId })
+            } else {
+                setEmptyEvents()
+            }
         }
     }
 
@@ -321,7 +456,8 @@ class TokenViewModel(
 
         val tonProofToken =
             accountRepository.requestTonProofToken(wallet) ?: return@withContext
-        val tronEvents = eventsRepository.loadTronEvents(tronAddress!!, tonProofToken, beforeLt) ?: return@withContext
+        val tronEvents = eventsRepository.loadTronEvents(tronAddress!!, tonProofToken, beforeLt)
+            ?: return@withContext
         val walletEventItems = historyHelper.tronMapping(
             wallet = wallet,
             tronAddress = tronAddress!!,
@@ -333,11 +469,19 @@ class TokenViewModel(
         )
 
         if (beforeLt == null) {
-            setEvents(walletEventItems)
+            if (walletEventItems.isNotEmpty()) {
+                setEvents(walletEventItems)
+            } else {
+                setEmptyEvents()
+            }
         } else {
-            val oldValue =
-                (_uiHistoryFlow.value).filter { it !is HistoryItem.Loader }
-            setEvents((oldValue + walletEventItems).distinctBy { it.uniqueId })
+            val events =
+                _uiHistoryFlow.value.filter { it !is HistoryItem.Loader && it !is HistoryItem.Empty } + walletEventItems
+            if (events.isNotEmpty()) {
+                setEvents(events.distinctBy { it.uniqueId })
+            } else {
+                setEmptyEvents()
+            }
         }
     }
 
@@ -362,6 +506,10 @@ class TokenViewModel(
         _uiHistoryFlow.value = historyHelper.groupByDate(items).toMutableList()
     }
 
+    private fun setEmptyEvents() {
+        _uiHistoryFlow.value = mutableListOf(HistoryItem.Empty(context, Localization.empty_history))
+    }
+
     private fun foundLastItem(): HistoryItem.Event? {
         return _uiHistoryFlow.value.lastOrNull { it is HistoryItem.Event } as? HistoryItem.Event
     }
@@ -383,7 +531,7 @@ class TokenViewModel(
         startDateSeconds: Long,
         endDateSeconds: Long
     ) = withContext(Dispatchers.IO) {
-        val chart = if (!token.isUsdt && !token.isTrc20) {
+        val chart = if (!token.isStable) {
             api.loadChart(
                 token.address,
                 settingsRepository.currency.code,

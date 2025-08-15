@@ -598,4 +598,15 @@
     <string name="dns_onsale_error_title">El dominio está a la venta en el mercado ahora</string>
     <string name="dns_onsale_error_desc">Para renovar el dominio, primero debes eliminarlo de la venta.</string>
     <string name="choose_token">Elija token</string>
+    <string name="about_usde">Acerca de USDe</string>
+    <string name="empty_history">Sin transacciones</string>
+    <string name="staked_usde">USDe en staking</string>
+    <string name="learn_more">Más información</string>
+    <string name="charging_unavailable">La carga de la batería no está disponible</string>
+    <string name="ethena_operated_by">Operado por %1$s</string>
+    <string name="deposit_and_stake">Depositar y hacer staking</string>
+    <string name="ethena_apy">APY (prom. 7 días) ≈ %1$s</string>
+    <string name="ethena_check_eligibility">Comprobar estado</string>
+    <string name="about_ethena">Acerca de Ethena</string>
+
 </resources>

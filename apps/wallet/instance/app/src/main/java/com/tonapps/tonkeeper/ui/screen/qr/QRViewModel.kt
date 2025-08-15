@@ -41,6 +41,9 @@ class QRViewModel(
     val tronUsdtEnabled: Boolean
         get() = settingsRepository.getTronUsdtEnabled(wallet.id)
 
+    val isTronDisabled: Boolean
+        get() = api.config.flags.disableTron
+
     var token: TokenEntity by mutableStateOf(initialToken)
         private set
 
@@ -65,6 +68,10 @@ class QRViewModel(
                     accountId = wallet.accountId,
                 )
             }.filter { !it.isTon }.sortedBy { it.index }
+    }
+
+    val hasTronBalanceFlow = tokensFlow.map { tokens ->
+        tokens.any { it.address == TokenEntity.TRON_USDT.address && it.balance.value.isPositive }
     }
 
     init {

@@ -124,6 +124,12 @@ class SendViewModel(
     val installId: String
         get() = settingsRepository.installId
 
+    val isTronDisabled: Boolean
+        get() = api.config.flags.disableTron
+
+    val isBatteryDisabled: Boolean
+        get() = api.config.flags.disableBattery
+
     data class UserInput(
         val address: String = "",
         val amount: Coins = Coins.ZERO,
@@ -296,7 +302,6 @@ class SendViewModel(
         val remainingFormat = CurrencyFormatter.format(
             currency = token.symbol,
             value = remainingToken,
-            customScale = 2,
             roundingMode = RoundingMode.DOWN,
             replaceSymbol = false
         )
@@ -307,7 +312,6 @@ class SendViewModel(
             convertedFormat = CurrencyFormatter.format(
                 currency = convertedCode,
                 value = converted,
-                customScale = 2,
                 roundingMode = RoundingMode.DOWN,
                 replaceSymbol = false
             ),
@@ -362,12 +366,11 @@ class SendViewModel(
             value = amount,
             converted = rates.convert(token.address, amount),
             format = CurrencyFormatter.format(
-                token.symbol, amount, token.decimals, RoundingMode.UP, false
+                token.symbol, amount, RoundingMode.UP, false
             ),
             convertedFormat = CurrencyFormatter.format(
                 currency.code,
                 rates.convert(token.address, amount),
-                token.decimals,
                 RoundingMode.UP,
             ),
         )
@@ -464,13 +467,10 @@ class SendViewModel(
         SendTransaction.Amount(
             value = value,
             converted = rates.convert(token.address, value),
-            format = CurrencyFormatter.format(
-                token.symbol, value, token.decimals, RoundingMode.UP, false
-            ),
+            format = CurrencyFormatter.formatFull(token.symbol, value, token.decimals),
             convertedFormat = CurrencyFormatter.format(
                 currency.code,
                 rates.convert(token.address, value),
-                token.decimals,
                 RoundingMode.UP,
             ),
         )
@@ -675,7 +675,7 @@ class SendViewModel(
             else -> BatteryTransaction.UNKNOWN
         }
         val batteryBalance = getBatteryBalance()
-        val batteryEnabled = !api.config.batteryDisabled && settingsRepository.batteryIsEnabledTx(
+        val batteryEnabled = !isBatteryDisabled && settingsRepository.batteryIsEnabledTx(
             wallet.accountId, txType
         )
         val required = when (type) {
@@ -904,7 +904,7 @@ class SendViewModel(
         excessesAddress: AddrStd,
         tonProofToken: String,
     ): SendFee.Battery? {
-        if (api.config.isBatteryDisabled) {
+        if (api.config.batterySendDisabled) {
             return null
         }
 
@@ -957,6 +957,11 @@ class SendViewModel(
         tokenAddress: String,
     ): SendFee.Gasless? {
         try {
+            if (api.config.flags.disableGasless) {
+                Log.d("SendViewModel", "Gasless fee calculation disabled by config")
+                return null
+            }
+
             val message = transfer.signForEstimation(
                 internalMessage = true,
                 jettonAmount = if (transfer.max) {
@@ -1069,15 +1074,14 @@ class SendViewModel(
                 format = if (fee is SendFee.TokenFee) {
                     CurrencyFormatter.format(
                         fee.amount.token.symbol,
-                        fee.amount.value,
-                        fee.amount.token.decimals
+                        fee.amount.value
                     )
                 } else "",
                 convertedFormat = if (fee is SendFee.TokenFee) {
                     val rates = ratesRepository.getRates(currency, fee.amount.token.address)
                     val converted = rates.convert(fee.amount.token.address, fee.amount.value)
                     CurrencyFormatter.format(
-                        currency.code, converted, currency.decimals
+                        currency.code, converted
                     )
                 } else "",
                 showToggle = showToggle,

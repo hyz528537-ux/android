@@ -292,6 +292,8 @@ sealed class HistoryItem(
         val comment: Comment? = null,
         val value: CharSequence,
         val value2: CharSequence = "",
+        val valueFullFormatted: CharSequence = "",
+        val valueFullFormatted2: CharSequence? = null,
         val currency: CharSequence? = null,
         val nft: NftEntity? = null,
         val tokenAddress: String? = null,
@@ -386,6 +388,8 @@ sealed class HistoryItem(
             comment = parcel.readParcelableCompat(),
             value = parcel.readCharSequenceCompat()!!,
             value2 = parcel.readCharSequenceCompat()!!,
+            valueFullFormatted = parcel.readCharSequenceCompat()!!,
+            valueFullFormatted2 = parcel.readCharSequenceCompat(),
             currency = parcel.readCharSequenceCompat(),
             nft = parcel.readParcelableCompat(),
             tokenCode = parcel.readString(),
@@ -423,6 +427,8 @@ sealed class HistoryItem(
             dest.writeParcelable(comment, flags)
             dest.writeCharSequenceCompat(value)
             dest.writeCharSequenceCompat(value2)
+            dest.writeCharSequenceCompat(valueFullFormatted)
+            dest.writeCharSequenceCompat(valueFullFormatted2)
             dest.writeCharSequenceCompat(currency)
             dest.writeParcelable(nft, flags)
             dest.writeString(tokenCode)

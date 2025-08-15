@@ -14,7 +14,12 @@ data class FlagsEntity(
     val disableLegacyBlur: Boolean,
     val disableSigner: Boolean,
     val safeModeEnabled: Boolean,
-): Parcelable {
+    val disableStaking: Boolean,
+    val disableTron: Boolean,
+    val disableBattery: Boolean,
+    val disableGasless: Boolean,
+    val disableUsde: Boolean,
+) : Parcelable {
 
     constructor(json: JSONObject) : this(
         disableSwap = json.optBoolean("disable_swap", false),
@@ -23,7 +28,12 @@ data class FlagsEntity(
         disableBlur = json.optBoolean("disable_blur", false),
         disableLegacyBlur = json.optBoolean("disable_legacy_blur", false),
         disableSigner = json.optBoolean("disable_signer", false),
-        safeModeEnabled = json.optBoolean("safe_mode_enabled", false)
+        safeModeEnabled = json.optBoolean("safe_mode_enabled", false),
+        disableStaking = json.optBoolean("disable_staking", false),
+        disableTron = json.optBoolean("disable_tron", false),
+        disableBattery = json.optBoolean("disable_battery", false),
+        disableGasless = json.optBoolean("disable_gaseless", false),
+        disableUsde = json.optBoolean("disable_usde", false),
     )
 
     constructor() : this(
@@ -33,6 +43,11 @@ data class FlagsEntity(
         disableBlur = false,
         disableLegacyBlur = false,
         disableSigner = false,
-        safeModeEnabled = false
+        safeModeEnabled = false,
+        disableStaking = false,
+        disableTron = false,
+        disableBattery = false,
+        disableGasless = false,
+        disableUsde = false,
     )
 }

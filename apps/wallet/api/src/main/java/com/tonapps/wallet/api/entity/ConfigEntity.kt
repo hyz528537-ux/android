@@ -36,7 +36,6 @@ data class ConfigEntity(
     val batteryHost: String,
     val batteryTestnetHost: String,
     val batteryBeta: Boolean,
-    val batteryDisabled: Boolean,
     val batterySendDisabled: Boolean,
     val batteryMeanFees: String,
     val batteryMeanPriceNft: String,
@@ -59,16 +58,13 @@ data class ConfigEntity(
     val stories: List<String>,
     val apkDownloadUrl: String?,
     val apkName: AppVersion?,
-    val tronApiUrl: String
+    val tronApiUrl: String,
+    val enabledStaking: List<String>,
 ): Parcelable {
 
     @IgnoredOnParcel
     val swapUri: Uri
         get() = stonfiUrl.toUri()
-
-    @IgnoredOnParcel
-    val isBatteryDisabled: Boolean
-        get() = batteryDisabled || batterySendDisabled
 
     @IgnoredOnParcel
     val domains: List<String> by lazy {
@@ -131,7 +127,6 @@ data class ConfigEntity(
         batteryHost = json.optString("batteryHost", "https://battery.tonkeeper.com"),
         batteryTestnetHost = json.optString("batteryTestnetHost", "https://testnet-battery.tonkeeper.com"),
         batteryBeta = json.optBoolean("battery_beta", true),
-        batteryDisabled = json.optBoolean("disable_battery", false),
         batterySendDisabled = json.optBoolean("disable_battery_send", false),
         batteryMeanFees = json.optString("batteryMeanFees", "0.0055"),
         disableBatteryIapModule = json.optBoolean("disable_battery_iap_module", false),
@@ -157,6 +152,9 @@ data class ConfigEntity(
         apkDownloadUrl = json.optString("apk_download_url"),
         apkName = json.optString("apk_name")?.let { AppVersion(it.removePrefix("v")) },
         tronApiUrl = json.optString("tron_api_url", "https://api.trongrid.io"),
+        enabledStaking = json.optJSONArray("enabled_staking")?.let { array ->
+            (0 until array.length()).map { array.getString(it) }
+        } ?: emptyList(),
     )
 
     constructor() : this(
@@ -184,7 +182,6 @@ data class ConfigEntity(
         batteryHost = "https://battery.tonkeeper.com",
         batteryTestnetHost = "https://testnet-battery.tonkeeper.com",
         batteryBeta = true,
-        batteryDisabled = false,
         batterySendDisabled = false,
         batteryMeanFees = "0.0055",
         disableBatteryIapModule = false,
@@ -207,7 +204,8 @@ data class ConfigEntity(
         stories = emptyList(),
         apkDownloadUrl = null,
         apkName = null,
-        tronApiUrl = "https://api.trongrid.io"
+        tronApiUrl = "https://api.trongrid.io",
+        enabledStaking = emptyList(),
     )
 
     companion object {

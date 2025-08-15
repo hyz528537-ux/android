@@ -77,7 +77,11 @@ internal class CurrencyFormat(val locale: Locale) {
             return fiatSymbols.containsKey(currency)
         }
 
-        private fun createFormat(decimals: Int, pattern: String, locale: Locale): DecimalFormat {
+        private fun createFormat(
+            decimals: Int,
+            pattern: String,
+            locale: Locale
+        ): DecimalFormat {
             val symbols = DecimalFormatSymbols.getInstance(locale)
             val decimalFormat = DecimalFormat(pattern, symbols)
             decimalFormat.maximumFractionDigits = decimals
@@ -87,17 +91,16 @@ internal class CurrencyFormat(val locale: Locale) {
             return decimalFormat
         }
 
-        fun getScale(value: BigDecimal): Int {
+        fun getScaleFull(value: BigDecimal): Int {
             if (value == BigDecimal.ZERO) {
                 return 0
             }
-            val absValue = value.abs()
             return when {
-                absValue >= BigDecimal.ONE -> 2
-                absValue >= BigDecimal("0.1") -> 2
-                absValue >= BigDecimal("0.01") -> 3
+                value >= BigDecimal.ONE -> 2
+                value >= BigDecimal("0.1") -> 2
+                value >= BigDecimal("0.01") -> 3
                 else -> {
-                    val plainString = absValue.stripTrailingZeros().toPlainString()
+                    val plainString = value.stripTrailingZeros().toPlainString()
                     val dotIndex = plainString.indexOf('.')
                     if (dotIndex == -1) {
                         return 2
@@ -114,6 +117,32 @@ internal class CurrencyFormat(val locale: Locale) {
                 }
             }
         }
+
+        fun getScale(value: BigDecimal): Int {
+            if (value == BigDecimal.ZERO) {
+                return 0
+            }
+            return when {
+                value >= BigDecimal("1000") -> 0
+                value >= BigDecimal.ONE -> 2
+                else -> {
+                    val plainString = value.stripTrailingZeros().toPlainString()
+                    val dotIndex = plainString.indexOf('.')
+                    if (dotIndex == -1) {
+                        return 0
+                    }
+                    var leadingZeros = 0
+                    for (i in (dotIndex + 1) until plainString.length) {
+                        if (plainString[i] == '0') {
+                            leadingZeros++
+                        } else {
+                            break
+                        }
+                    }
+                    leadingZeros + 3
+                }
+            }
+        }
     }
 
     private var format = NumberFormat.getCurrencyInstance(locale) as DecimalFormat
@@ -123,18 +152,29 @@ internal class CurrencyFormat(val locale: Locale) {
 
     internal val monetaryDecimalSeparator = format.decimalFormatSymbols.monetaryDecimalSeparator.toString()
 
+    fun formatFull(
+        currency: String,
+        value: BigDecimal,
+        customScale: Int,
+    ): CharSequence {
+        val targetScale = getScaleFull(value.abs())
+        val scale = if (targetScale > customScale) targetScale else customScale
+        val bigDecimal = value.stripTrailingZeros().setScale(scale, RoundingMode.HALF_EVEN).stripTrailingZeros()
+        val decimals = bigDecimal.scale()
+        val amount = getFormat(decimals).format(bigDecimal)
+        return format(currency, amount, true)
+    }
+
     fun format(
         currency: String = "",
         value: BigDecimal,
-        customScale: Int = 0,
         roundingMode: RoundingMode = RoundingMode.DOWN,
         replaceSymbol: Boolean = true,
         stripTrailingZeros: Boolean,
     ): CharSequence {
-        val targetScale = getScale(value.abs())
-        val scale = if (targetScale > customScale) targetScale else customScale
+        val scale = getScale(value.abs())
         val bigDecimal = if (stripTrailingZeros) {
-            value.stripTrailingZeros().setScale(scale, roundingMode).stripTrailingZeros()
+            value.setScale(scale, roundingMode).stripTrailingZeros()
         } else {
             value.setScale(scale, roundingMode)
         }

@@ -197,6 +197,7 @@ data class WalletCurrency(
 
         const val USDT_KEY = "USDT"
         const val USDE_KEY = "USDE"
+        const val TS_USDE_KEY = "TS_USDE"
         const val TON_KEY = "TON"
         const val BTC_KEY = "BTC"
         const val ETH_KEY = "ETH"
@@ -206,6 +207,7 @@ data class WalletCurrency(
         private val USDT_ETH_ADDRESS = "0xdac17f958d2ee523a2206206994597c13d831ec7"
 
         val USDE_TON_ETHENA_ADDRESS = "0:086fa2a675f74347b08dd4606a549b8fdb98829cb282bc1949d3b12fbaed9dcc"
+        val TS_USDE_TON_ETHENA_ADDRESS = "0:d0e545323c7acb7102653c073377f7e3c67f122eb94d430a250739f109d4a57d"
 
         val USD = WalletCurrency(
             code = "USD",
@@ -261,6 +263,13 @@ data class WalletCurrency(
             alias = createAlias(TON_KEY, USDE_KEY),
             title = "Ethena USDe",
             chain = Chain.TON(USDE_TON_ETHENA_ADDRESS, 6)
+        )
+
+        val TS_USDE_TON_ETHENA = WalletCurrency(
+            code = TS_USDE_KEY,
+            alias = createAlias(TON_KEY, TS_USDE_KEY),
+            title = "Staked USDe",
+            chain = Chain.TON(TS_USDE_TON_ETHENA_ADDRESS, 6)
         )
 
         val USDT_TRON = WalletCurrency(

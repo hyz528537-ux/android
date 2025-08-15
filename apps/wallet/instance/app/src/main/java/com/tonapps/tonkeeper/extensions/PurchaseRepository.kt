@@ -24,7 +24,7 @@ fun PurchaseRepository.onRampDataFlow(
     environment: Environment
 ) = environment.countryFlow
     .mapNotNull { country ->
-        getOnRamp(country)?.let { data ->
+        getOnRamp()?.let { data ->
             OnRampResult(data, country)
         }
     }

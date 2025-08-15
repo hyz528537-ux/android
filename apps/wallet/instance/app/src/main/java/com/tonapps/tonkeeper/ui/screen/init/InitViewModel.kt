@@ -3,10 +3,8 @@ package com.tonapps.tonkeeper.ui.screen.init
 import android.app.Application
 import android.content.Context
 import android.graphics.Color
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.blockchain.MnemonicHelper
 import com.tonapps.blockchain.ton.AndroidSecureRandom
 import com.tonapps.blockchain.ton.EntropyHelper
@@ -24,10 +22,8 @@ import com.tonapps.extensions.logError
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.Environment
-import com.tonapps.tonkeeper.RemoteConfig
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.extensions.fixW5Title
-import com.tonapps.tonkeeper.extensions.toast
 import com.tonapps.tonkeeper.manager.push.PushManager
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.init.list.AccountItem
@@ -42,9 +38,7 @@ import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.account.WalletColor
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.backup.BackupRepository
-import com.tonapps.wallet.data.backup.entities.BackupEntity
 import com.tonapps.wallet.data.passcode.PasscodeManager
-import com.tonapps.wallet.data.passcode.dialog.PasscodeDialog
 import com.tonapps.wallet.data.rn.RNLegacy
 import com.tonapps.wallet.data.settings.SafeModeState
 import com.tonapps.wallet.data.settings.SettingsRepository
@@ -63,17 +57,13 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.ton.api.pk.PrivateKeyEd25519
 import org.ton.block.AddrStd
 import org.ton.mnemonic.Mnemonic
-import uikit.navigation.Navigation
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.properties.Delegates
 
 @OptIn(FlowPreview::class)
 class InitViewModel(
@@ -85,7 +75,6 @@ class InitViewModel(
     private val backupRepository: BackupRepository,
     private val rnLegacy: RNLegacy,
     private val settingsRepository: SettingsRepository,
-    private val remoteConfig: RemoteConfig,
     private val environment: Environment,
     private val analytics: AnalyticsHelper,
     savedStateHandle: SavedStateHandle
@@ -636,7 +625,7 @@ class InitViewModel(
                 testnet,
                 accounts.map { it.initialized })
 
-            if (!testnet && !remoteConfig.isTronDisabled) {
+            if (!testnet) {
                 checkTronBalance(wallets)
             }
 
@@ -654,7 +643,7 @@ class InitViewModel(
                 settingsRepository.setTokenPinned(it.id, TokenEntity.TRON_USDT.address, true)
                 settingsRepository.setTokensSort(
                     wallet.id,
-                    listOf(TokenEntity.USDT.address, TokenEntity.TRON_USDT.address)
+                    listOf(TokenEntity.USDT.address, TokenEntity.TRON_USDT.address, TokenEntity.USDE.address)
                 )
             }
         }

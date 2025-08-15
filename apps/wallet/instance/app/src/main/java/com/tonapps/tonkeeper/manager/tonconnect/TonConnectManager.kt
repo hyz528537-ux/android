@@ -31,6 +31,7 @@ import com.tonapps.tonkeeper.manager.tonconnect.bridge.model.BridgeMethod
 import com.tonapps.tonkeeper.manager.tonconnect.bridge.model.SignDataRequestPayload
 import com.tonapps.tonkeeper.manager.tonconnect.exceptions.ManifestException
 import com.tonapps.tonkeeper.ui.component.SnackBarView
+import com.tonapps.tonkeeper.ui.screen.tonconnect.TonConnectResponse
 import com.tonapps.tonkeeper.ui.screen.tonconnect.TonConnectSafeModeDialog
 import com.tonapps.tonkeeper.ui.screen.tonconnect.TonConnectScreen
 import com.tonapps.tonkeeper.worker.DAppPushToggleWorker
@@ -317,7 +318,8 @@ class TonConnectManager(
         activity: NavigationActivity,
         tonConnect: TonConnect,
         keyPair: CryptoBox.KeyPair = CryptoBox.keyPair(),
-        wallet: WalletEntity?
+        wallet: WalletEntity?,
+        forceConnect: Boolean = false
     ): JSONObject = withContext(Dispatchers.IO) {
         if (tonConnect.request.items.isEmpty()) {
             return@withContext JsonBuilder.connectEventError(BridgeError.badRequest("Empty value provided in required field \"items\""))
@@ -332,15 +334,24 @@ class TonConnectManager(
                 return@withContext JsonBuilder.connectEventError(BridgeError.badRequest("client error"))
             }
 
-            val screen = TonConnectScreen.newInstance(
-                app = app,
-                proofPayload = tonConnect.proofPayload,
-                returnUri = tonConnect.returnUri,
-                wallet = wallet,
-                fromPackageName = tonConnect.fromPackageName
-            )
-            val bundle = activity.addForResult(screen)
-            val response = screen.contract.parseResult(bundle)
+            val response = if (forceConnect && wallet != null) {
+                TonConnectResponse(
+                    notifications = true,
+                    proof = null,
+                    wallet = wallet,
+                    proofError = null
+                )
+            } else {
+                val screen = TonConnectScreen.newInstance(
+                    app = app,
+                    proofPayload = tonConnect.proofPayload,
+                    returnUri = tonConnect.returnUri,
+                    wallet = wallet,
+                    fromPackageName = tonConnect.fromPackageName
+                )
+                val bundle = activity.addForResult(screen)
+                screen.contract.parseResult(bundle)
+            }
 
             if (wallet != null && !wallet.isTonConnectSupported) {
                 return@withContext JsonBuilder.connectEventError(BridgeError.methodNotSupported("Wallet not supported TonConnect"))

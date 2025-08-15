@@ -17,7 +17,7 @@ val SendFee.TokenFee.symbol: String
     get() = amount.token.symbol
 
 val SendFee.TokenFee.formattedAmount: CharSequence
-    get() = CurrencyFormatter.format(amount.token.symbol, amount.value,2)
+    get() = CurrencyFormatter.format(amount.token.symbol, amount.value)
 
 val SendFee.TokenFee.formattedFiat: CharSequence
     get() = CurrencyFormatter.formatFiat(fiatCurrency.code, fiatAmount)

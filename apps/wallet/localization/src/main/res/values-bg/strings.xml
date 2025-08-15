@@ -644,5 +644,15 @@
     <string name="dns_onsale_error_title">Домейнът е в продажба на пазара сега</string>
     <string name="dns_onsale_error_desc">За подновяване на домейн, първо трябва да го премахнете от продажба.</string>
     <string name="choose_token">Изберете токен</string>
+    <string name="about_usde">Относно USDe</string>
+    <string name="empty_history">Няма транзакции</string>
+    <string name="staked_usde">Заложен USDe</string>
+    <string name="learn_more">Научете повече</string>
+    <string name="charging_unavailable">Зареждането на батерията не е налично</string>
+    <string name="ethena_operated_by">Управлява се от %1$s</string>
+    <string name="deposit_and_stake">Депозирайте и заложете</string>
+    <string name="ethena_apy">APY (ср. за 7 дни) ≈ %1$s</string>
+    <string name="ethena_check_eligibility">Проверете статуса</string>
+    <string name="about_ethena">Относно Ethena</string>
 
 </resources>

@@ -2,7 +2,6 @@ package com.tonapps.tonkeeper.ui.screen.events.spam
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
-import com.tonapps.tonkeeper.RemoteConfig
 import com.tonapps.tonkeeper.core.history.ActionOptions
 import com.tonapps.tonkeeper.core.history.HistoryHelper
 import com.tonapps.tonkeeper.core.history.list.item.HistoryItem
@@ -33,7 +32,6 @@ class SpamEventsViewModel(
     private val historyHelper: HistoryHelper,
     private val settingsRepository: SettingsRepository,
     private val accountRepository: AccountRepository,
-    private val remoteConfig: RemoteConfig,
 ) : BaseWalletVM(app) {
 
     private val _eventsFlow = MutableStateFlow<List<AccountEvent>?>(null)
@@ -90,6 +88,9 @@ class SpamEventsViewModel(
     }.flowOn(Dispatchers.Main)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SpamUiState())
 
+    private val tronEnabled: Boolean
+        get() = settingsRepository.getTronUsdtEnabled(wallet.id)
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             init()
@@ -103,7 +104,7 @@ class SpamEventsViewModel(
     private suspend fun init() {
         _eventsFlow.value = getLocalSpam()
 
-        val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && !remoteConfig.isTronDisabled) {
+        val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && tronEnabled) {
             accountRepository.getTronAddress(wallet.id)
         } else null
         _tronEventsFlow.value =
@@ -141,7 +142,7 @@ class SpamEventsViewModel(
     }
 
     private suspend fun loadMoreTron() {
-        val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && !remoteConfig.isTronDisabled) {
+        val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && tronEnabled) {
             accountRepository.getTronAddress(wallet.id)
         } else null
 

@@ -57,6 +57,7 @@ import uikit.navigation.Navigation.Companion.navigation
 import uikit.widget.ColumnLayout
 import uikit.widget.FrescoView
 import androidx.core.view.isVisible
+import androidx.core.net.toUri
 
 
 class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragment.Modal {
@@ -217,11 +218,11 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
                     Blockchain.TRON -> Localization.trc20
                     else -> Localization.ton
                 }
-                actionArgs.value.withCustomSymbol(requireContext())
+                actionArgs.valueFullFormatted.withCustomSymbol(requireContext())
                     .plus(" ")
                     .plus(getString(networkRes))
             } else {
-                actionArgs.value.withCustomSymbol(requireContext())
+                actionArgs.valueFullFormatted.withCustomSymbol(requireContext())
             }
             if (actionArgs.refund != null) {
                 feeView.setData(
@@ -273,10 +274,10 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
             iconSwapView.visibility = View.GONE
         } else if (actionArgs.isSwap) {
             iconView.visibility = View.GONE
-            iconSwap1View.setImageURI(Uri.parse(actionArgs.coinIconUrl), this)
-            iconSwap2View.setImageURI(Uri.parse(actionArgs.coinIconUrl2), this)
+            iconSwap1View.setImageURI(actionArgs.coinIconUrl.toUri(), this)
+            iconSwap2View.setImageURI(actionArgs.coinIconUrl2.toUri(), this)
             amount2View.visibility = View.VISIBLE
-            amount2View.text = actionArgs.value2.withCustomSymbol(requireContext())
+            amount2View.text = actionArgs.valueFullFormatted2?.withCustomSymbol(requireContext())
             accountAddressTitle().text = getString(Localization.recipient_address)
         } else if (actionArgs.hasNft) {
             iconSwapView.visibility = View.GONE
@@ -294,7 +295,7 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
             amount2View.setTextColor(requireContext().textPrimaryColor)
         } else if (actionArgs.coinIconUrl.isNotBlank()) {
             iconSwapView.visibility = View.GONE
-            iconView.setImageURI(Uri.parse(actionArgs.coinIconUrl), null)
+            iconView.setImageURI(actionArgs.coinIconUrl.toUri(), null)
 
             if (actionArgs.showNetwork) {
                 val networkIconRes = when (actionArgs.blockchain) {

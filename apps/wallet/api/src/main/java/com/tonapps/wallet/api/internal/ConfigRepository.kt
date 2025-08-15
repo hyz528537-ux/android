@@ -36,9 +36,6 @@ internal class ConfigRepository(
             readCache()?.let {
                 setConfig(it)
             }
-            remote(false)?.let {
-                setConfig(it)
-            }
         }
     }
 
@@ -57,6 +54,12 @@ internal class ConfigRepository(
         val config = internalApi.downloadConfig(testnet) ?: return@withContext null
         configFile.writeBytes(config.toByteArray())
         config
+    }
+
+    suspend fun initConfig() {
+        remote(false)?.let {
+            setConfig(it)
+        }
     }
 
 }

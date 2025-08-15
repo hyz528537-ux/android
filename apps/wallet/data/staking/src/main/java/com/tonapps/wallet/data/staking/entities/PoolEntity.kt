@@ -14,6 +14,7 @@ data class PoolEntity(
     val implementation: StakingPool.Implementation,
     val minStake: Coins,
     val apy: BigDecimal,
+    val bonusApy: BigDecimal? = null,
     val verified: Boolean,
     val cycleStart: Long,
     val cycleEnd: Long,
@@ -23,9 +24,6 @@ data class PoolEntity(
 
     val isTonstakers: Boolean
         get() = implementation == StakingPool.Implementation.LiquidTF
-
-    val isEthena: Boolean
-        get() = implementation == StakingPool.Implementation.Ethena
 
     constructor(
         info: PoolInfo,
@@ -43,21 +41,4 @@ data class PoolEntity(
         maxApy = maxApy
     )
 
-    companion object {
-
-        val ethenaTokenAddress = "0:d0e545323c7acb7102653c073377f7e3c67f122eb94d430a250739f109d4a57d"
-
-        val ethena = PoolEntity(
-            address = "0:d0e545323c7acb7102653c073377f7e3c67f122eb94d430a250739f109d4a57d",
-            name = "Ethena",
-            implementation = StakingPool.Implementation.Ethena,
-            minStake = Coins.ZERO,
-            apy = BigDecimal.ZERO,
-            verified = true,
-            cycleStart = 0,
-            cycleEnd = 0,
-            liquidJettonMaster = ethenaTokenAddress,
-            maxApy = false
-        )
-    }
 }

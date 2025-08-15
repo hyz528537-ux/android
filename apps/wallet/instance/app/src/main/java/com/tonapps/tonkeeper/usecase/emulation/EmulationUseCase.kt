@@ -75,7 +75,7 @@ class EmulationUseCase(
         message: MessageBodyEntity,
         forceRelayer: Boolean,
     ): Emulated {
-        if (api.config.isBatteryDisabled) {
+        if (api.config.batterySendDisabled) {
             throw IllegalStateException("Battery is disabled")
         }
 

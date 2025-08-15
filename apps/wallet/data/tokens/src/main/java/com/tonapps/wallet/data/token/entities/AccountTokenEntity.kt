@@ -71,11 +71,17 @@ data class AccountTokenEntity(
     val isTsUSDe: Boolean
         get() = balance.token.isTsUSDe
 
+    val isUSDe: Boolean
+        get() = address == TokenEntity.TON_USDE
+
     val isUsdt: Boolean
         get() = address == TokenEntity.TON_USDT
 
     val isTrc20: Boolean
         get() = address == TokenEntity.TRC20_USDT
+
+    val isStable: Boolean
+        get() = isUsdt || isTrc20 || isUSDe
 
     val fiat: Coins
         get() = fiatRate?.fiat ?: Coins.ZERO

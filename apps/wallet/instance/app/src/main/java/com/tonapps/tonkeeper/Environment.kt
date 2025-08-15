@@ -34,7 +34,10 @@ class Environment(
             get() = if (BuildConfig.DEBUG) debug else null
 
         val value: String?
-            get() = (debugValue ?: fromStore ?: bySimCard ?: byNetwork ?: byIPAddress ?: byLocale)?.let(::fixCountryCode)
+            get() = (debugValue ?: bySimCard ?: byNetwork ?: byIPAddress ?: byLocale)?.let(::fixCountryCode)
+
+        val storeCountry: String?
+            get() = (debugValue ?: fromStore)?.let(::fixCountryCode)
     }
 
     private val _countryDataFlow = MutableStateFlow<CountryData>(CountryData())
@@ -43,6 +46,9 @@ class Environment(
 
     val country: String
         get() = _countryDataFlow.value.value ?: Locale.getDefault().country
+
+    val storeCountry: String?
+        get() = _countryDataFlow.value.storeCountry
 
     init {
         setDebugCountry(DevSettings.country)

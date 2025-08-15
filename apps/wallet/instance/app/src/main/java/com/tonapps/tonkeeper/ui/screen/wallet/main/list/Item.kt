@@ -197,7 +197,9 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
         val wallet: WalletEntity,
         val token: TokenEntity,
         val swapUri: Uri,
-        val tronEnabled: Boolean
+        val tronEnabled: Boolean,
+        val isSwapDisabled: Boolean,
+        val isStakingDisabled: Boolean
     ): Item(TYPE_ACTIONS) {
 
         val address: String
@@ -210,6 +212,8 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
             parcel.readParcelableCompat()!!,
             parcel.readParcelableCompat()!!,
             parcel.readParcelableCompat()!!,
+            parcel.readBooleanCompat(),
+            parcel.readBooleanCompat(),
             parcel.readBooleanCompat()
         )
 
@@ -218,6 +222,8 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
             dest.writeParcelable(token, flags)
             dest.writeParcelable(swapUri, flags)
             dest.writeBooleanCompat(tronEnabled)
+            dest.writeBooleanCompat(isSwapDisabled)
+            dest.writeBooleanCompat(isStakingDisabled)
         }
 
         companion object CREATOR : Parcelable.Creator<Actions> {
@@ -256,11 +262,7 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
 
         @IgnoredOnParcel
         val currencyIcon: Int by lazy {
-            if (poolImplementation == StakingPool.Implementation.Ethena) {
-                com.tonapps.wallet.api.R.drawable.ic_udse_ethena_with_bg
-            } else {
-                com.tonapps.wallet.api.R.drawable.ic_ton_with_bg
-            }
+            com.tonapps.wallet.api.R.drawable.ic_ton_with_bg
         }
 
         constructor(parcel: Parcel) : this(
@@ -339,6 +341,9 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
 
         val isUSDT = address == TokenEntity.USDT.address
         val isTRC20 = address == TokenEntity.TRON_USDT.address
+        val isUSDe = address == TokenEntity.USDE.address
+
+        val isStable = isUSDT || isTRC20 || isUSDe
 
         constructor(
             position: ListCell.Position,
@@ -362,7 +367,6 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
                 CurrencyFormatter.formatFiat(
                     currency = currencyCode,
                     value = token.rateNow,
-                    customScale = 2,
                     roundingMode = RoundingMode.UP
                 )
             } else {

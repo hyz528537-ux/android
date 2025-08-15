@@ -593,5 +593,15 @@
     <string name="dns_onsale_error_title">域名现在在市场上出售</string>
     <string name="dns_onsale_error_desc">要续订域名，您应该先将其从销售中移除。</string>
     <string name="choose_token">选择代币</string>
+    <string name="about_usde">关于 USDe</string>
+    <string name="empty_history">暂无交易</string>
+    <string name="staked_usde">已质押 USDe</string>
+    <string name="learn_more">了解更多</string>
+    <string name="charging_unavailable">电池充电不可用</string>
+    <string name="ethena_operated_by">由 %1$s 运营</string>
+    <string name="deposit_and_stake">存入并质押</string>
+    <string name="ethena_apy">APY（7日均值）≈ %1$s</string>
+    <string name="ethena_check_eligibility">检查状态</string>
+    <string name="about_ethena">关于 Ethena</string>
 
 </resources>

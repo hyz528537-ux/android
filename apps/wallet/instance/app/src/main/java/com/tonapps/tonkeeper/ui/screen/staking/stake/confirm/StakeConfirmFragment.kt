@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.extensions.getTitle
+import com.tonapps.tonkeeper.koin.analytics
 import com.tonapps.tonkeeper.ui.base.BaseHolderWalletScreen
 import com.tonapps.tonkeeper.ui.screen.send.main.SendException
 import com.tonapps.tonkeeper.ui.screen.staking.stake.StakingScreen
@@ -18,8 +19,10 @@ import com.tonapps.wallet.data.staking.StakingPool
 import com.tonapps.wallet.data.staking.entities.PoolEntity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import uikit.extensions.collectFlow
 import uikit.widget.FrescoView
@@ -79,6 +82,12 @@ class StakeConfirmFragment: BaseHolderWalletScreen.ChildFragment<StakingScreen, 
             feeView.description = "≈ " + feeFiatFormat.withCustomSymbol(requireContext())
             button.isEnabled = true
         }
+
+        collectFlow(primaryViewModel.analyticsFlow) { props ->
+            context?.analytics?.simpleTrackEvent(
+                "staking_plus_confirm", props
+            )
+        }
     }
 
     private fun stake() {
@@ -87,6 +96,9 @@ class StakeConfirmFragment: BaseHolderWalletScreen.ChildFragment<StakingScreen, 
             val state = if (e is SendException.Cancelled) ProcessTaskView.State.DEFAULT else ProcessTaskView.State.FAILED
             setTaskState(state)
         }.onEach {
+            primaryViewModel.analyticsFlow.take(1).onEach { props ->
+                context?.analytics?.simpleTrackEvent("staking_plus_success", props)
+            }.collect()
             setTaskState(ProcessTaskView.State.SUCCESS)
             navigation?.openURL("tonkeeper://activity?from=stake")
             close()

@@ -61,54 +61,57 @@ object CurrencyFormatter {
 
     fun formatPercent(
         value: BigDecimal,
-        customScale: Int = 2,
         roundingMode: RoundingMode = RoundingMode.DOWN,
         stripTrailingZeros: Boolean = true,
     ): CharSequence {
-        val format = format(value = value, customScale = customScale, roundingMode = roundingMode, stripTrailingZeros = stripTrailingZeros)
+        val format = format(value = value, roundingMode = roundingMode, stripTrailingZeros = stripTrailingZeros)
         return "$format%"
     }
 
     fun format(
         currency: String = "",
         value: BigDecimal,
-        customScale: Int = 0,
         roundingMode: RoundingMode = RoundingMode.DOWN,
         replaceSymbol: Boolean = true,
         stripTrailingZeros: Boolean = true,
     ): CharSequence {
-       return format.format(currency, value, customScale, roundingMode, replaceSymbol, stripTrailingZeros)
+       return format.format(currency, value, roundingMode, replaceSymbol, stripTrailingZeros)
+    }
+
+    fun formatFull(
+        currency: String,
+        value: Coins,
+        customScale: Int
+    ): CharSequence {
+        return format.formatFull(currency, value.value, customScale)
     }
 
     fun format(
         currency: String = "",
         value: Coins,
-        customScale: Int = 0,
         roundingMode: RoundingMode = RoundingMode.DOWN,
         replaceSymbol: Boolean = true,
         stripTrailingZeros: Boolean = true,
     ): CharSequence {
-        return format(currency, value.value, customScale, roundingMode, replaceSymbol, stripTrailingZeros)
+        return format(currency, value.value, roundingMode, replaceSymbol, stripTrailingZeros)
     }
 
     fun formatFiat(
         currency: String,
         value: BigDecimal,
-        customScale: Int = 2,
         roundingMode: RoundingMode = RoundingMode.DOWN,
         replaceSymbol: Boolean = true,
         stripTrailingZeros: Boolean = false,
     ): CharSequence {
-        return format(currency, value, customScale, roundingMode, replaceSymbol, stripTrailingZeros)
+        return format(currency, value, roundingMode, replaceSymbol, stripTrailingZeros)
     }
 
     fun formatFiat(
         currency: String,
         value: Coins,
-        customScale: Int = 2,
         roundingMode: RoundingMode = RoundingMode.DOWN,
         replaceSymbol: Boolean = true,
-    ) = formatFiat(currency, value.value, customScale, roundingMode, replaceSymbol)
+    ) = formatFiat(currency, value.value, roundingMode, replaceSymbol)
 
     fun CharSequence.withCustomSymbol(context: Context): CharSequence {
         if (true) { // Not now... maybe in future

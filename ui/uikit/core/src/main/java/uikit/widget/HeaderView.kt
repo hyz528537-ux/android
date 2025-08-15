@@ -240,6 +240,10 @@ open class HeaderView @JvmOverloads constructor(
         closeView.visibility = View.GONE
     }
 
+    fun showCloseIcon() {
+        closeView.visibility = View.VISIBLE
+    }
+
     fun setTitleGravity(newGravity: Int) {
         titleView.updateLayoutParams<LayoutParams> {
             this.gravity = newGravity

@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.tonapps.blockchain.ton.extensions.toRawAddress
 import com.tonapps.extensions.filterList
-import com.tonapps.tonkeeper.RemoteConfig
 import com.tonapps.tonkeeper.core.entities.WalletExtendedEntity
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.send.contacts.main.list.Item
@@ -34,7 +33,6 @@ class SendContactsViewModel(
     private val settingsRepository: SettingsRepository,
     private val contactsRepository: ContactsRepository,
     private val eventsRepository: EventsRepository,
-    private val remoteConfig: RemoteConfig,
 ) : BaseWalletVM(app) {
 
     private val _myWalletsFlow = MutableStateFlow<List<Item.MyWallet>>(emptyList())
@@ -77,6 +75,9 @@ class SendContactsViewModel(
         uiItems.toList()
     }
 
+    private val tronEnabled: Boolean
+        get() = settingsRepository.getTronUsdtEnabled(wallet.id)
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             _myWalletsFlow.value = getMyWallets()
@@ -107,13 +108,12 @@ class SendContactsViewModel(
     }
 
     private val tronLatestTransactionsFlow = flow {
-        val tronEnabled = settingsRepository.getTronUsdtEnabled(wallet.id)
         if (!tronEnabled) {
             emit(emptyList())
             return@flow
         }
 
-        val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && !remoteConfig.isTronDisabled) {
+        val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && tronEnabled) {
             accountRepository.getTronAddress(wallet.id)
         } else null
         val tonProofToken = accountRepository.requestTonProofToken(wallet)

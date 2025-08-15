@@ -18,14 +18,11 @@ import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.browser.BrowserRepository
 import com.tonapps.wallet.data.browser.entities.BrowserAppEntity
 import com.tonapps.wallet.data.browser.entities.BrowserDataEntity
-import com.tonapps.wallet.data.dapps.entities.AppConnectEntity
 import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.settings.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class BrowserMainViewModel(
@@ -38,8 +35,6 @@ class BrowserMainViewModel(
     private val settingsRepository: SettingsRepository,
     private val environment: Environment
 ): BaseWalletVM(app) {
-
-    val countryFlow = environment.countryFlow
 
     val installId: String
         get() = settings.installId
@@ -88,7 +83,7 @@ class BrowserMainViewModel(
     private fun setData(data: BrowserDataEntity) {
         val items = mutableListOf<ExploreItem>()
         if (data.apps.isNotEmpty()) {
-            items.add(ExploreItem.Banners(data.apps, api.config.featuredPlayInterval, wallet, settingsRepository.country))
+            items.add(ExploreItem.Banners(data.apps, api.config.featuredPlayInterval, wallet, environment.country))
         }
 
         var adsItem: ExploreItem.Ads? = null
@@ -109,10 +104,14 @@ class BrowserMainViewModel(
             }
 
             val apps = mutableListOf<BrowserAppEntity>()
-            for (chunk in category.apps.chunked(4)) {
-                if (chunk.size >= 3) {
-                    apps.addAll(chunk)
+            if (category.apps.size > 4) {
+                for (chunk in category.apps.chunked(4)) {
+                    if (chunk.size >= 3) {
+                        apps.addAll(chunk)
+                    }
                 }
+            } else {
+                apps.addAll(category.apps)
             }
 
             for (app in apps.take(8)) {
@@ -120,7 +119,7 @@ class BrowserMainViewModel(
                     app = app,
                     wallet = wallet,
                     singleLine = !isDigitalNomads,
-                    country = settingsRepository.country
+                    country = environment.country
                 ))
             }
         }
@@ -137,7 +136,7 @@ class BrowserMainViewModel(
                     app = app,
                     wallet = wallet,
                     singleLine = false,
-                    country = settingsRepository.country
+                    country = environment.country
                 ))
             }
             items.addAll(5, debugItems)

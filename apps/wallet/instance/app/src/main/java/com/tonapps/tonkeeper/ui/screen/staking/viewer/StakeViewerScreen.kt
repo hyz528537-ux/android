@@ -8,6 +8,7 @@ import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.ui.base.BaseListWalletScreen
 import com.tonapps.tonkeeper.ui.base.ScreenContext
 import com.tonapps.tonkeeper.ui.screen.staking.viewer.list.Adapter
+import com.tonapps.wallet.api.entity.EthenaEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.localization.Localization
 import kotlinx.coroutines.flow.catch
@@ -21,7 +22,7 @@ class StakeViewerScreen(wallet: WalletEntity): BaseListWalletScreen<ScreenContex
 
     override val fragmentName: String = "StakeViewerScreen"
 
-    override val viewModel: StakeViewerViewModel by walletViewModel { parametersOf(args.address) }
+    override val viewModel: StakeViewerViewModel by walletViewModel { parametersOf(args.address, args.ethenaType) }
 
     private val args: StakeViewerArgs by lazy { StakeViewerArgs(requireArguments()) }
 
@@ -37,7 +38,11 @@ class StakeViewerScreen(wallet: WalletEntity): BaseListWalletScreen<ScreenContex
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setTitle(args.name)
+        val title = when {
+            args.ethenaType.isNotEmpty() -> getString(Localization.staked_usde)
+            else -> args.name
+        }
+        setTitle(title)
         setAdapter(adapter)
         collectFlow(viewModel.poolNameFlow, ::setTitle)
     }
@@ -46,7 +51,13 @@ class StakeViewerScreen(wallet: WalletEntity): BaseListWalletScreen<ScreenContex
 
         fun newInstance(wallet: WalletEntity, address: String, name: String): StakeViewerScreen {
             val fragment = StakeViewerScreen(wallet)
-            fragment.setArgs(StakeViewerArgs(address, name))
+            fragment.setArgs(StakeViewerArgs(address, name, ""))
+            return fragment
+        }
+
+        fun newInstance(wallet: WalletEntity, ethenaType: EthenaEntity.Method.Type): StakeViewerScreen {
+            val fragment = StakeViewerScreen(wallet)
+            fragment.setArgs(StakeViewerArgs(ethenaType = ethenaType.id, address = "", name = ""))
             return fragment
         }
     }

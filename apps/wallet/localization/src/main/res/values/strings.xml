@@ -183,7 +183,7 @@
     <string name="minimum_amount">Minimum %1$s</string>
     <string name="min_amount">Min. amount: %1$s</string>
     <string name="stake_ethena_description">The tsUSDe token represents USDe held through Ethena, a decentralized staking service. tsUSDe automatically accrues staking rewards, with minimal lock up.</string>
-    <string name="stake_ethena_disclaimer">This is the estimated annual return based on the past week’s average protocol rewards and the average amount of staked USDe. The return is annualized with weekly compounding. <annotation colorAttr="textSecondaryColor">Past performance does not guarantee future results.</annotation> Staking and rewards are provided by Ethena, a third-party service, and are subject to their <annotation colorAttr="textAccentColor">terms</annotation>.</string>
+    <string name="stake_ethena_disclaimer">This is the estimated annual return based on the past week’s average protocol rewards and the average amount of staked USDe. The return is annualized with weekly compounding. <annotation colorAttr="textSecondaryColor">Past performance does not guarantee future results.</annotation>\n\nStaking services and related rewards are provided by Ethena, an independent third-party service. Subject to their <annotation colorAttr="textAccentColor">terms of service</annotation>.</string>
     <string name="stake_tonstakers_description">When you stake TON in a Tonstakers pool, you receive a token called tsTON that represents your share in the pool. As the pool accumulates profits, your tsTON represents larger amount of TON.</string>
     <string name="edit">Edit</string>
     <string name="pinned">Pinned</string>
@@ -690,4 +690,15 @@
     <string name="support_title">Need help?</string>
     <string name="support_subtitle">Ask us on Telegram — we’ll do our best to help.</string>
     <string name="ask_question">Ask a Question</string>
+    <string name="about_usde">About USDe</string>
+    <string name="empty_history">No transactions</string>
+    <string name="staked_usde">Staked USDe</string>
+    <string name="learn_more">Learn more</string>
+    <string name="charging_unavailable">Battery charging is unavailable</string>
+    <string name="ethena_operated_by">Operated by %1$s</string>
+    <string name="deposit_and_stake">Deposit &amp; Stake</string>
+    <string name="ethena" translatable="false">Ethena</string>
+    <string name="ethena_apy">One-week avg. APY ≈ %1$s</string>
+    <string name="ethena_check_eligibility">Check Eligibility</string>
+    <string name="about_ethena">About Ethena</string>
 </resources>

@@ -3,6 +3,7 @@ package com.tonapps.tonkeeper.ui.screen.qr
 import android.content.Intent
 import android.os.Bundle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -11,6 +12,7 @@ import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.extensions.copyToClipboard
 import com.tonapps.tonkeeper.extensions.toast
+import com.tonapps.tonkeeper.koin.api
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.ui.base.compose.ComposeWalletScreen
 import com.tonapps.uikit.color.accentOrangeColor
@@ -77,8 +79,8 @@ class QRScreen(wallet: WalletEntity) : ComposeWalletScreen(wallet), BaseFragment
 
     @Composable
     override fun ScreenContent() {
-        val isTronDisabled = remoteConfig?.isTronDisabled ?: false
-        val tabsVisible = !hasToken && wallet.hasPrivateKey && !wallet.testnet && !isTronDisabled
+        val hasTronBalance by viewModel.hasTronBalanceFlow.collectAsState(false)
+        val tabsVisible = !hasToken && wallet.hasPrivateKey && !wallet.testnet && (!viewModel.isTronDisabled || hasTronBalance)
         val qrContent by remember {
             derivedStateOf {
                 if (viewModel.address.isNotEmpty()) {

@@ -2,6 +2,7 @@ package com.tonapps.tonkeeper.ui.screen.wallet.main
 
 import android.content.Context
 import android.text.SpannableStringBuilder
+import android.util.Log
 import com.tonapps.icu.Coins
 import com.tonapps.icu.Coins.Companion.sumOf
 import com.tonapps.icu.CurrencyFormatter
@@ -183,7 +184,9 @@ sealed class State {
                 wallet = wallet,
                 token = TokenEntity.TON,
                 swapUri = config.swapUri,
-                tronEnabled = tronUsdtEnabled
+                tronEnabled = tronUsdtEnabled,
+                isSwapDisabled = config.flags.disableSwap,
+                isStakingDisabled = config.flags.disableStaking,
             )
         }
 

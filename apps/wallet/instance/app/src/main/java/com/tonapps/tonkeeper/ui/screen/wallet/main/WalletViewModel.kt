@@ -43,6 +43,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uikit.extensions.collectFlow
+import java.math.BigDecimal
 import kotlin.time.Duration.Companion.minutes
 
 class WalletViewModel(
@@ -90,9 +91,10 @@ class WalletViewModel(
     ) { _, _, _ -> }
 
     private val _stateSettingsFlow = combine(
+        api.configFlow,
         settingsRepository.hiddenBalancesFlow,
         statusFlow,
-    ) { hiddenBalance, status ->
+    ) { _, hiddenBalance, status ->
         State.Settings(hiddenBalance, api.config, status)
     }.distinctUntilChanged()
 
@@ -181,7 +183,7 @@ class WalletViewModel(
                     battery = State.Battery(
                         balance = batteryBalance,
                         beta = api.config.batteryBeta,
-                        disabled = api.config.batteryDisabled,
+                        disabled = (api.config.flags.disableBattery && batteryBalance.value == BigDecimal.ZERO),
                         viewed = settingsRepository.batteryViewed,
                     ),
                     lt = currentLt,
@@ -209,7 +211,7 @@ class WalletViewModel(
                         battery = State.Battery(
                             balance = batteryBalance,
                             beta = api.config.batteryBeta,
-                            disabled = api.config.batteryDisabled,
+                            disabled = (api.config.flags.disableBattery && batteryBalance.value == BigDecimal.ZERO),
                             viewed = settingsRepository.batteryViewed,
                         ),
                         lt = currentLt,

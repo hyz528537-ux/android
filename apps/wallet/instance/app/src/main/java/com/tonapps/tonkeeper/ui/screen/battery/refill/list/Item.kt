@@ -90,7 +90,7 @@ sealed class Item(type: Int) : BaseListItem(type) {
         val transactions: Map<BatteryTransaction, Int>
     ) : Item(TYPE_IAP)
 
-    data object RestoreIAP : Item(TYPE_RESTORE_IAP)
+    data class RestoreIAP(val chargeEnabled: Boolean) : Item(TYPE_RESTORE_IAP)
 
     data object Space : Item(TYPE_SPACE)
 }

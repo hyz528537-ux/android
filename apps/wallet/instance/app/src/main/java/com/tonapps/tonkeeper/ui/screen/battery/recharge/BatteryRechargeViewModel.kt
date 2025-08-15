@@ -221,8 +221,7 @@ class BatteryRechargeViewModel(
                         currency = token.symbol, value = remainingBalance
                     ),
                     formattedMinAmount = CurrencyFormatter.format(
-                        currency = token.symbol, value = minAmount,
-                        customScale = token.decimals,
+                        currency = token.symbol, value = minAmount
                     ),
                     isInsufficientBalance = remainingBalance.isNegative,
                     isLessThanMin = isLessThanMin,

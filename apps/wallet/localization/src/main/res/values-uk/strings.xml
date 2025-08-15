@@ -608,4 +608,15 @@
     <string name="dns_onsale_error_title">Домен зараз продається на торговельній платформі</string>
     <string name="dns_onsale_error_desc">Щоб поновити домен, спочатку слід зняти його з продажу.</string>
     <string name="choose_token">Виберіть токен</string>
+    <string name="about_usde">Про USDe</string>
+    <string name="empty_history">Немає транзакцій</string>
+    <string name="staked_usde">Застейканий USDe</string>
+    <string name="learn_more">Дізнатися більше</string>
+    <string name="charging_unavailable">Заряджання батареї недоступне</string>
+    <string name="ethena_operated_by">Керується %1$s</string>
+    <string name="deposit_and_stake">Депозит і стейкінг</string>
+    <string name="ethena_apy">APY (серед. за 7 дн.) ≈ %1$s</string>
+    <string name="ethena_check_eligibility">Перевірити статус</string>
+    <string name="about_ethena">Про Ethena</string>
+
 </resources>

@@ -10,7 +10,6 @@ data class OnRampArgsEntity(
     val wallet: String,
     val purchaseType: String,
     val amount: Coins,
-    val country: String,
     val paymentMethod: String?
 ) {
 
@@ -21,7 +20,6 @@ data class OnRampArgsEntity(
         put("wallet", wallet)
         put("purchase_type", purchaseType)
         put("amount", amount.value.toPlainString())
-        put("country", country)
         paymentMethod?.let {
             put("payment_method", it)
         }

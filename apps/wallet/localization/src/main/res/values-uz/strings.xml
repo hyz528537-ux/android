@@ -598,4 +598,15 @@
     <string name="dns_onsale_error_title">Domen hozirda bozorda sotilmoqda</string>
     <string name="dns_onsale_error_desc">Domenni yangilash uchun avval uni sotuvdan olib tashlashingiz kerak.</string>
     <string name="choose_token">Token-ni tanlang</string>
+    <string name="about_usde">USDe haqida</string>
+    <string name="empty_history">Tranzaksiyalar yo‘q</string>
+    <string name="staked_usde">Stak qilingan USDe</string>
+    <string name="learn_more">Batafsil ma’lumot</string>
+    <string name="charging_unavailable">Batareya zaryadlash mavjud emas</string>
+    <string name="ethena_operated_by">%1$s tomonidan boshqariladi</string>
+    <string name="deposit_and_stake">Depozit va stake qilish</string>
+    <string name="ethena_apy">APY (7 kunlik o‘rtacha) ≈ %1$s</string>
+    <string name="ethena_check_eligibility">Statusni tekshirish</string>
+    <string name="about_ethena">Ethena haqida</string>
+
 </resources>

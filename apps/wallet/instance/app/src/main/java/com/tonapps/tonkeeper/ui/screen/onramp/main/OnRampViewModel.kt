@@ -84,7 +84,7 @@ class OnRampViewModel(
 
     private val onRampDataFlow = purchaseRepository.onRampDataFlow(environment)
 
-    private val paymentMerchantsFlow = environment.countryFlow.map(purchaseRepository::getPaymentMethods)
+    private val paymentMerchantsFlow = environment.countryFlow.map { purchaseRepository.getPaymentMethods() }
 
     private val paymentMethodsFlow = paymentMerchantsFlow.map { merchants ->
         merchants.map { it.methods }.flatten().distinctBy { it.type }.filter { it.type != "apple_pay" }
@@ -396,7 +396,6 @@ class OnRampViewModel(
             wallet = walletAddress.trim(),
             purchaseType = purchaseType,
             amount = twinInput.state.send.coins,
-            country = environment.country,
             paymentMethod = paymentMethod
         )
     }

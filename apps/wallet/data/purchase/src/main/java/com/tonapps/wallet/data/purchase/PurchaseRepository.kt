@@ -38,32 +38,30 @@ class PurchaseRepository(
     private val onRampCache = simple<OnRamp.Data>(context, "onRamp", TimeUnit.DAYS.toMillis(1))
     private val paymentMethodCache = simpleJSON<List<OnRamp.PaymentMethodMerchant>>(context,"payment_methods", TimeUnit.DAYS.toMillis(1))
 
-    suspend fun getOnRamp(country: String): OnRamp.Data? = withContext(Dispatchers.IO) {
-        getOnRampData(country)
+    suspend fun getOnRamp(): OnRamp.Data? = withContext(Dispatchers.IO) {
+        getOnRampData()
     }
 
-    private fun loadOnRampPaymentMethods(country: String): List<OnRamp.PaymentMethodMerchant> {
+    private fun loadOnRampPaymentMethods(): List<OnRamp.PaymentMethodMerchant> {
         return try {
-            val data = api.getOnRampPaymentMethods(country) ?: throw Exception("No payment methods found for country: $country")
+            val data = api.getOnRampPaymentMethods() ?: throw Exception("No payment methods found for country: ${api.country}")
             Serializer.JSON.decodeFromString<List<OnRamp.PaymentMethodMerchant>>(data)
         } catch (e: Throwable) {
             emptyList()
         }
     }
 
-    suspend fun getPaymentMethods(
-        country: String
-    ): List<OnRamp.PaymentMethodMerchant> = withContext(Dispatchers.IO) {
-        var list = paymentMethodCache.getCache(country) ?: emptyList()
+    suspend fun getPaymentMethods(): List<OnRamp.PaymentMethodMerchant> = withContext(Dispatchers.IO) {
+        var list = paymentMethodCache.getCache(api.country) ?: emptyList()
         if (list.isEmpty()) {
-            list = loadOnRampPaymentMethods(country)
-            paymentMethodCache.setCache(country, list)
+            list = loadOnRampPaymentMethods()
+            paymentMethodCache.setCache(api.country, list)
         }
         list
     }
 
-    private suspend fun loadOnRampData(country: String): OnRamp.Data? = withContext(Dispatchers.IO) {
-        val data = api.getOnRampData(country) ?: return@withContext null
+    private suspend fun loadOnRampData(): OnRamp.Data? = withContext(Dispatchers.IO) {
+        val data = api.getOnRampData() ?: return@withContext null
         try {
             Serializer.fromJSON<OnRamp.Data>(data)
         } catch (e: Throwable) {
@@ -71,11 +69,11 @@ class PurchaseRepository(
         }
     }
 
-    private suspend fun getOnRampData(country: String): OnRamp.Data? {
-        val cacheKey = "data_$country"
+    private suspend fun getOnRampData(): OnRamp.Data? {
+        val cacheKey = "data_${api.country}"
         var data = onRampCache.getCache(cacheKey)
         if (data == null) {
-            data = loadOnRampData(country) ?: return null
+            data = loadOnRampData() ?: return null
             onRampCache.setCache(cacheKey, data)
         }
         return data

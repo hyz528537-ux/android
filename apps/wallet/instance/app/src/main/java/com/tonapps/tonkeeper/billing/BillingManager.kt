@@ -68,7 +68,6 @@ class BillingManager(
     }
 
     suspend fun consumeProduct(purchaseToken: String) = billingClient.ready { client ->
-        requestCountry(client)
         val params = ConsumeParams.newBuilder().setPurchaseToken(purchaseToken).build()
         client.consumePurchase(params)
     }
@@ -106,7 +105,6 @@ class BillingManager(
         productIds: List<String>,
         productType: String = ProductType.INAPP
     ): List<ProductDetails> = billingClient.ready { client ->
-        requestCountry(client)
         if (productIds.isEmpty()) {
             return@ready emptyList()
         }
@@ -166,7 +164,6 @@ class BillingManager(
         wallet: WalletEntity,
         productDetails: ProductDetails
     ) = billingClient.ready { client ->
-        requestCountry(client)
         val productDetailsParams = BillingFlowParams.ProductDetailsParams.newBuilder()
             .setProductDetails(productDetails)
             .build()
@@ -182,10 +179,18 @@ class BillingManager(
         Unit
     }
 
-    private fun requestCountry(client: BillingClient) {
+    private suspend fun requestCountry(client: BillingClient): String? = suspendCancellableCoroutine { continuation ->
         client.getBillingConfigAsync(GetBillingConfigParams.newBuilder().build()) { billingResult, billingConfig ->
-            billingConfig?.countryCode?.let(environment::setCountryFromStore)
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && billingConfig != null) {
+                continuation.resume(billingConfig.countryCode)
+            } else {
+                continuation.resume(null)
+            }
         }
+    }
+
+    suspend fun getCountry() = billingClient.ready { client ->
+        requestCountry(client)
     }
 
     @OptIn(FlowPreview::class)
@@ -194,7 +199,6 @@ class BillingManager(
     }.mapNotNull { it.firstOrNull() }.timeout(5.seconds)
 
     suspend fun restorePurchases(): List<Purchase> = billingClient.ready {
-        requestCountry(it)
         getPendingPurchases(it)
     }
 }

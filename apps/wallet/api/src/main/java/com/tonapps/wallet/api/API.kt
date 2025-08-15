@@ -3,7 +3,6 @@ package com.tonapps.wallet.api
 import android.content.Context
 import android.net.Uri
 import android.util.ArrayMap
-import android.util.Log
 import com.tonapps.blockchain.ton.contract.BaseWalletContract
 import com.tonapps.blockchain.ton.contract.WalletVersion
 import com.tonapps.blockchain.ton.extensions.EmptyPrivateKeyEd25519
@@ -21,13 +20,12 @@ import com.tonapps.network.post
 import com.tonapps.network.postJSON
 import com.tonapps.network.requestBuilder
 import com.tonapps.network.sse
-import com.tonapps.network.ws.WSConnection
-import com.tonapps.wallet.api.core.SourceAPI
 import com.tonapps.wallet.api.entity.AccountDetailsEntity
 import com.tonapps.wallet.api.entity.AccountEventEntity
 import com.tonapps.wallet.api.entity.BalanceEntity
 import com.tonapps.wallet.api.entity.ChartEntity
 import com.tonapps.wallet.api.entity.ConfigEntity
+import com.tonapps.wallet.api.entity.EthenaEntity
 import com.tonapps.wallet.api.entity.OnRampArgsEntity
 import com.tonapps.wallet.api.entity.OnRampMerchantEntity
 import com.tonapps.wallet.api.entity.SwapEntity
@@ -71,9 +69,7 @@ import org.json.JSONObject
 import org.ton.api.pub.PublicKeyEd25519
 import org.ton.cell.Cell
 import org.ton.crypto.hex
-import java.math.BigDecimal
 import java.util.Locale
-import kotlin.jvm.Throws
 
 class API(
     private val context: Context,
@@ -95,6 +91,13 @@ class API(
 
     private val bridgeUrl: String
         get() = "${config.tonConnectBridgeHost}/bridge"
+
+    val country: String
+        get() = internalApi.country
+
+    fun setCountry(deviceCountry: String, storeCountry: String?) = internalApi.setCountry(deviceCountry, storeCountry)
+
+    suspend fun initConfig() = configRepository.initConfig()
 
     suspend fun tonapiFetch(
         url: String,
@@ -182,9 +185,9 @@ class API(
         return withRetry { battery(testnet).getRechargeMethods(false) }
     }
 
-    fun getOnRampData(country: String) = internalApi.getOnRampData(country)
+    fun getOnRampData() = internalApi.getOnRampData()
 
-    fun getOnRampPaymentMethods(country: String) = internalApi.getOnRampPaymentMethods(country)
+    fun getOnRampPaymentMethods() = internalApi.getOnRampPaymentMethods()
 
     fun getSwapAssets(): JSONArray = runCatching {
         internalApi.getSwapAssets()?.let(::JSONArray)
@@ -196,8 +199,8 @@ class API(
         JSONObject(data).getJSONArray("items").map { OnRampMerchantEntity(it) }
     }
 
-    suspend fun getEthenaStakingAPY(address: String): BigDecimal = withContext(Dispatchers.IO) {
-        internalApi.getEthenaStakingAPY(address)
+    suspend fun getEthena(accountId: String): EthenaEntity? = withContext(Dispatchers.IO) {
+        withRetry { internalApi.getEthena(accountId) }
     }
 
     fun getBatteryBalance(

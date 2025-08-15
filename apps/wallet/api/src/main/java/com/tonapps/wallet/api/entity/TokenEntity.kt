@@ -90,9 +90,14 @@ data class TokenEntity(
 
         val TON_ICON_URI = Uri.Builder().scheme("res").path(R.drawable.ic_ton_with_bg.toString()).build()
         val USDT_ICON_URI = Uri.Builder().scheme("res").path(R.drawable.ic_usdt_with_bg.toString()).build()
+        val USDE_ICON_URI = Uri.Builder().scheme("res").path(R.drawable.ic_udse_ethena_with_bg.toString()).build()
+        val TS_USDE_ICON_URI = Uri.Builder().scheme("res").path(R.drawable.ic_tsusde_with_bg.toString()).build()
 
         const val TRC20_USDT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
         const val TON_USDT = "0:b113a994b5024a16719f69139328eb759596c38a25f59028b146fecdc3621dfe"
+        const val TON_USDE = "0:086fa2a675f74347b08dd4606a549b8fdb98829cb282bc1949d3b12fbaed9dcc"
+
+        const val TON_TS_USDE = "0:d0e545323c7acb7102653c073377f7e3c67f122eb94d430a250739f109d4a57d"
 
         val TON = TokenEntity(
             blockchain = Blockchain.TON,
@@ -126,6 +131,32 @@ data class TokenEntity(
             name = "Tether",
             symbol = "USD₮",
             imageUri = USDT_ICON_URI,
+            decimals = 6,
+            verification = Verification.whitelist,
+            isRequestMinting = false,
+            isTransferable = true,
+            customPayloadApiUri = null
+        )
+
+        val USDE = TokenEntity(
+            blockchain = Blockchain.TON,
+            address = TON_USDE,
+            name = "Ethena USDe",
+            symbol = "USDe",
+            imageUri = USDE_ICON_URI,
+            decimals = 6,
+            verification = Verification.whitelist,
+            isRequestMinting = false,
+            isTransferable = true,
+            customPayloadApiUri = null
+        )
+
+        val TS_USDE = TokenEntity(
+            blockchain = Blockchain.TON,
+            address = TON_TS_USDE,
+            name = "Ethena tsUSDe",
+            symbol = "tsUSDe",
+            imageUri = TS_USDE_ICON_URI,
             decimals = 6,
             verification = Verification.whitelist,
             isRequestMinting = false,

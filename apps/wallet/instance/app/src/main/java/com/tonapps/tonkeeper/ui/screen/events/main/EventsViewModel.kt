@@ -1,11 +1,9 @@
 package com.tonapps.tonkeeper.ui.screen.events.main
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.extensions.mapList
-import com.tonapps.tonkeeper.RemoteConfig
 import com.tonapps.tonkeeper.api.AccountEventWrap
 import com.tonapps.tonkeeper.core.history.ActionOptions
 import com.tonapps.tonkeeper.core.history.ActionOutStatus
@@ -59,7 +57,6 @@ class EventsViewModel(
     private val accountRepository: AccountRepository,
     private val api: API,
     private val cacheHelper: CacheHelper,
-    private val remoteConfig: RemoteConfig,
 ) : BaseWalletVM(app) {
 
     private var autoRefreshJob: Job? = null
@@ -175,6 +172,9 @@ class EventsViewModel(
         })
     }
 
+    private val tronEnabled: Boolean
+        get() = settingsRepository.getTronUsdtEnabled(wallet.id)
+
     init {
         with(settingsRepository) {
             tokenPrefsChangedFlow.drop(1).collectFlow { initialLoad() }
@@ -285,7 +285,7 @@ class EventsViewModel(
 
             setLoading(loading = true, trigger = true)
 
-            val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && !remoteConfig.isTronDisabled) {
+            val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && tronEnabled) {
                 accountRepository.getTronAddress(wallet.id)
             } else null
             val tonProofToken = accountRepository.requestTonProofToken(wallet) ?: ""
@@ -348,7 +348,7 @@ class EventsViewModel(
     }
 
     private suspend fun loadMoreTron() {
-        val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && !remoteConfig.isTronDisabled) {
+        val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && tronEnabled) {
             accountRepository.getTronAddress(wallet.id)
         } else null
 

@@ -1,12 +1,17 @@
 package com.tonapps.tonkeeper.ui.screen.staking.stake.amount
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.lifecycle.lifecycleScope
+import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
+import com.tonapps.tonkeeper.koin.analytics
 import com.tonapps.tonkeeper.ui.base.BaseHolderWalletScreen
 import com.tonapps.tonkeeper.ui.component.coin.CoinEditText
+import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppScreen
 import com.tonapps.tonkeeper.ui.screen.staking.stake.StakingScreen
 import com.tonapps.tonkeeper.ui.screen.staking.stake.StakingViewModel
 import com.tonapps.tonkeeper.ui.screen.staking.stake.confirm.StakeConfirmFragment
@@ -17,18 +22,25 @@ import com.tonapps.uikit.color.accentRedColor
 import com.tonapps.uikit.color.stateList
 import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
+import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.staking.StakingPool
 import com.tonapps.wallet.data.staking.entities.PoolEntity
 import com.tonapps.wallet.localization.Localization
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import uikit.extensions.collectFlow
 import uikit.extensions.focusWithKeyboard
 import uikit.extensions.hideKeyboard
 import uikit.extensions.withAlpha
 import uikit.widget.FrescoView
 import uikit.widget.HeaderView
+import kotlin.collections.map
+import kotlin.collections.plus
 
-class StakeAmountFragment: BaseHolderWalletScreen.ChildFragment<StakingScreen, StakingViewModel>(R.layout.fragment_stake_amount) {
+class StakeAmountFragment :
+    BaseHolderWalletScreen.ChildFragment<StakingScreen, StakingViewModel>(R.layout.fragment_stake_amount) {
+
+    private val from: String by lazy { arguments?.getString(ARG_FROM) ?: "" }
 
     private lateinit var amountView: CoinEditText
     private lateinit var poolItemView: View
@@ -51,27 +63,36 @@ class StakeAmountFragment: BaseHolderWalletScreen.ChildFragment<StakingScreen, S
         headerView.doOnActionClick = { finish() }
 
         amountView = view.findViewById(R.id.stake_amount)
-        amountView.suffix = "TON"
         amountView.doOnValueChange = { value, _ -> primaryViewModel.updateAmount(value) }
 
         currencyView = view.findViewById(R.id.stake_currency)
 
         poolItemView = view.findViewById(R.id.pool_item)
-        poolItemView.setOnClickListener { setFragment(StakeOptionsFragment.newInstance(primaryFragment.screenContext.wallet)) }
+        poolItemView.setOnClickListener {
+            setFragment(
+                StakeOptionsFragment.newInstance(
+                    primaryFragment.screenContext.wallet
+                )
+            )
+        }
 
         poolIconView = view.findViewById(R.id.pool_icon)
         poolIconView.setCircular()
 
         poolTitleView = view.findViewById(R.id.pool_name)
         poolMaxApyView = view.findViewById(R.id.pool_max_apy)
-        poolMaxApyView.backgroundTintList = requireContext().accentGreenColor.withAlpha(.16f).stateList
+        poolMaxApyView.backgroundTintList =
+            requireContext().accentGreenColor.withAlpha(.16f).stateList
 
         poolDescriptionView = view.findViewById(R.id.pool_description)
 
         availableView = view.findViewById(R.id.available)
 
         button = view.findViewById(R.id.next_button)
-        button.setOnClickListener { setFragment(StakeConfirmFragment.newInstance()) }
+
+        button.setOnClickListener {
+            openConfirm()
+        }
 
         view.findViewById<View>(R.id.max).setOnClickListener { applyMax() }
 
@@ -81,6 +102,16 @@ class StakeAmountFragment: BaseHolderWalletScreen.ChildFragment<StakingScreen, S
         collectFlow(primaryViewModel.apyFormatFlow.map {
             it.withCustomSymbol(requireContext())
         }, poolDescriptionView::setText)
+
+        collectFlow(primaryViewModel.tokenFlow) { token ->
+            amountView.suffix = token.symbol
+        }
+
+        collectFlow(primaryViewModel.analyticsFlow) { props ->
+            context?.analytics?.simpleTrackEvent(
+                "staking_plus_input", props.plus("from" to from) as MutableMap<String, Any>
+            )
+        }
     }
 
     private fun applyMax() {
@@ -110,20 +141,30 @@ class StakeAmountFragment: BaseHolderWalletScreen.ChildFragment<StakingScreen, S
     }
 
     private fun applyAvailableState(state: StakingViewModel.AvailableUiState) {
+        button.text = getString(Localization.continue_action)
         if (state.insufficientBalance) {
             availableView.setText(Localization.insufficient_balance)
             availableView.setTextColor(requireContext().accentRedColor)
             button.isEnabled = false
         } else if (state.remainingFormat == state.balanceFormat) {
-            availableView.text = if (state.hiddenBalance) HIDDEN_BALANCE else getString(Localization.available_balance, state.balanceFormat).withCustomSymbol(requireContext())
+            availableView.text = if (state.hiddenBalance) HIDDEN_BALANCE else getString(
+                Localization.available_balance,
+                state.balanceFormat
+            ).withCustomSymbol(requireContext())
             availableView.setTextColor(requireContext().textSecondaryColor)
             button.isEnabled = false
         } else if (state.requestMinStake) {
-            availableView.text = getString(Localization.minimum_amount, state.minStakeFormat).withCustomSymbol(requireContext())
+            availableView.text =
+                getString(Localization.minimum_amount, state.minStakeFormat).withCustomSymbol(
+                    requireContext()
+                )
             availableView.setTextColor(requireContext().accentRedColor)
             button.isEnabled = false
         } else {
-            availableView.text = getString(Localization.remaining_balance, state.remainingFormat).withCustomSymbol(requireContext())
+            availableView.text =
+                getString(Localization.remaining_balance, state.remainingFormat).withCustomSymbol(
+                    requireContext()
+                )
             availableView.setTextColor(requireContext().textSecondaryColor)
             button.isEnabled = true
         }
@@ -137,10 +178,22 @@ class StakeAmountFragment: BaseHolderWalletScreen.ChildFragment<StakingScreen, S
         poolMaxApyView.visibility = if (pool.maxApy) View.VISIBLE else View.GONE
     }
 
+    private fun openConfirm() {
+        setFragment(StakeConfirmFragment.newInstance())
+    }
+
     companion object {
 
         const val TAG = "stake_amount_fragment"
 
-        fun newInstance() = StakeAmountFragment()
+        private const val ARG_FROM = "from"
+
+        fun newInstance(from: String): StakeAmountFragment {
+            val fragment = StakeAmountFragment()
+            fragment.arguments = Bundle().apply {
+                putString(ARG_FROM, from)
+            }
+            return fragment
+        }
     }
 }
