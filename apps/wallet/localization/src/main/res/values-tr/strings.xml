@@ -605,7 +605,6 @@
     <string name="charging_unavailable">Batarya şarjı mevcut değil</string>
     <string name="ethena_operated_by">%1$s tarafından işletilmektedir</string>
     <string name="deposit_and_stake">Yatır &amp; Stake et</string>
-    <string name="ethena_apy">APY (7 günlük ort.) ≈ %1$s</string>
     <string name="ethena_check_eligibility">Durumu Kontrol Et</string>
     <string name="about_ethena">Ethena Hakkında</string>
 

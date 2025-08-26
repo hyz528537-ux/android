@@ -10,6 +10,7 @@ import com.tonapps.tonkeeper.core.DevSettings
 import com.tonapps.tonkeeper.extensions.requestVault
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.card.CardScreen
+import com.tonapps.wallet.api.API
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.dapps.DAppsRepository
 import com.tonapps.wallet.data.rn.RNLegacy
@@ -31,6 +32,7 @@ class DevViewModel(
     private val accountRepository: AccountRepository,
     private val dAppsRepository: DAppsRepository,
     private val environment: Environment,
+    private val api: API,
 ): BaseWalletVM(app) {
 
     val debugCountryFlow = environment.countryDataFlow.map {
@@ -66,6 +68,9 @@ class DevViewModel(
     fun setCountry(country: String?) {
         DevSettings.country = country?.uppercase()
         environment.setDebugCountry(DevSettings.country)
+        viewModelScope.launch {
+            api.refreshConfig(false)
+        }
     }
 
     private fun maskValues(input: JSONObject): JSONObject {
@@ -107,7 +112,6 @@ class DevViewModel(
 
         return builder.toString()
     }
-
 
     fun openCard() {
         accountRepository.selectedWalletFlow.take(1).onEach {

@@ -2,6 +2,7 @@ package com.tonapps.tonkeeper.ui.screen.onramp.picker.currency
 
 import android.app.Application
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.facebook.common.util.UriUtil
 import com.tonapps.extensions.MutableEffectFlow
@@ -54,7 +55,7 @@ class OnRampPickerViewModel(
 
     private val currencyByCountry: WalletCurrency
         get() {
-            val code = AndroidCurrency.resolve(settingsRepository.country)?.currencyCode ?: "USA"
+            val code = AndroidCurrency.resolve(environment.country)?.currencyCode ?: "US"
             return WalletCurrency.ofOrDefault(code)
         }
 
@@ -122,7 +123,7 @@ class OnRampPickerViewModel(
     fun openFiatPicker() {
         onRampFlow
             .take(1)
-            .map { it.availableFiatSlugs }
+            .map { (it.availableFiatSlugs + WalletCurrency.FIAT).distinct() }
             .map { codes ->
                 codes.mapNotNull { WalletCurrency.of(it) }
             }.collectFlow {
@@ -200,7 +201,7 @@ class OnRampPickerViewModel(
             val selected = selectedCurrency == currency
             list.add(Item.Currency(currency, position, selected))
         }
-        if (query.isEmpty() && list.size > 0) {
+        if (query.isEmpty() && list.isNotEmpty()) {
             list.add(Item.More(
                 id = ALL_CURRENCIES_ID,
                 title = getString(Localization.all_currencies),
@@ -306,7 +307,7 @@ class OnRampPickerViewModel(
             list.add(Item.Currency(currency, position, selected))
         }
 
-        if (query.isEmpty() && list.size > 0) {
+        if (query.isEmpty() && list.isNotEmpty()) {
             list.add(Item.More(
                 id = ALL_CRYPTO_ID,
                 title = getString(Localization.all_assets),

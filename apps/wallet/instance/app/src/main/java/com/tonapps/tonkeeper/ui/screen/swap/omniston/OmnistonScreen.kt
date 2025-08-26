@@ -11,6 +11,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.lifecycle.lifecycleScope
+import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.InsufficientFundsException
 import com.tonapps.tonkeeper.extensions.addFeeItem
@@ -51,6 +52,7 @@ import uikit.extensions.withClickable
 import uikit.extensions.withInterpunct
 import uikit.span.ClickableSpanCompat
 import uikit.widget.HeaderView
+import uikit.widget.LoadableButton
 import uikit.widget.LoaderView
 import uikit.widget.ModalHeader
 import uikit.widget.ProcessTaskView
@@ -73,6 +75,9 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         ActionSheet(requireContext())
     }
 
+    private val disableNext: Boolean
+        get() = continueButton.isLoading || !continueButton.isEnabled
+
     private val rootViewMode: RootViewModel by activityViewModel()
 
     private lateinit var slidesView: SlideBetweenView
@@ -80,16 +85,17 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
     private lateinit var modalHeaderView: ModalHeader
     private lateinit var sendInputView: CurrencyInputView
     private lateinit var receiveInputView: CurrencyInputView
-    private lateinit var continueButton: Button
+    private lateinit var continueButton: LoadableButton
     private lateinit var actionContainerView: View
     private lateinit var detailsContainerView: View
     private lateinit var reviewSendView: ReviewInputView
     private lateinit var reviewReceiveView: ReviewInputView
     private lateinit var priceView: AppCompatTextView
-    private lateinit var loaderView: LoaderView
+    private lateinit var priceReversedView: AppCompatTextView
     private lateinit var slideActionView: SlideActionView
     private lateinit var taskView: ProcessTaskView
     private lateinit var feeView: ItemLineView
+    private lateinit var slippageView: ItemLineView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,7 +104,10 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.findViewById<View>(R.id.edit).setOnClickListener { viewModel.reset() }
+        view.findViewById<View>(R.id.edit).setOnClickListener {
+            reset()
+            sendInputView.focusWithKeyboard()
+        }
 
         headerView = view.findViewById(R.id.header)
         headerView.doOnCloseClick = { onBackPressed() }
@@ -106,7 +115,7 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
 
         taskView = view.findViewById(R.id.task)
         priceView = view.findViewById(R.id.price)
-        loaderView = view.findViewById(R.id.loader)
+        priceReversedView = view.findViewById(R.id.price_reversed)
         slideActionView = view.findViewById(R.id.slide_action)
         slideActionView.doOnDone = { sign() }
         feeView = view.findViewById(R.id.details_fee)
@@ -126,6 +135,8 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         reviewReceiveView.setBackgroundResource(uikit.R.drawable.bg_content_top)
         reviewReceiveView.setTitleTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
         reviewReceiveView.setValueTextSize(TypedValue.COMPLEX_UNIT_SP, 28f)
+
+        slippageView = view.findViewById(R.id.details_slippage)
 
         sendInputView = view.findViewById(R.id.send_input)
         sendInputView.doOnTextChange = viewModel::updateSendInput
@@ -156,11 +167,11 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
 
         reviewReceiveView.setOnClickListener {
             receiveInputView.focusWithKeyboard()
-            viewModel.reset()
+            reset()
         }
         reviewSendView.setOnClickListener {
             sendInputView.focusWithKeyboard()
-            viewModel.reset()
+            reset()
         }
 
         continueButton = view.findViewById(R.id.continue_button)
@@ -176,12 +187,14 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         }
 
         sendInputView.doOnEditorAction = { actionId ->
-            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+            if (disableNext) {
+                continueButton.reject()
+                true
+            } else if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
                 if (sendInputView.isEmpty) {
                     receiveInputView.focusWithKeyboard()
-                } else {
-                    next()
                 }
+                next()
                 true
             } else {
                 false
@@ -189,12 +202,14 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         }
 
         receiveInputView.doOnEditorAction = { actionId ->
-            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+            if (disableNext) {
+                continueButton.reject()
+                true
+            } else if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
                 if (receiveInputView.isEmpty) {
                     sendInputView.focusWithKeyboard()
-                } else {
-                    next()
                 }
+                next()
                 true
             } else {
                 false
@@ -202,7 +217,10 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         }
 
         collectFlow(viewModel.quoteStateFlow, ::applyQuoteState)
-        collectFlow(viewModel.priceFlow, priceView::setText)
+        collectFlow(viewModel.priceFlow) { (first, second) ->
+            priceView.text = first
+            priceReversedView.text = second
+        }
         collectFlow(viewModel.stepFlow) { step ->
             if (step == OmnistonStep.Input) {
                 headerView.visibility = View.GONE
@@ -211,27 +229,38 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
             } else {
                 headerView.visibility = View.VISIBLE
                 modalHeaderView.visibility = View.GONE
+                slideActionView.startReverseProgress()
                 slidesView.next()
-                loaderView.visibility = View.GONE
-                continueButton.visibility = View.VISIBLE
                 hideKeyboard()
             }
         }
 
         collectFlow(viewModel.sendOutputCurrencyFlow, sendInputView::setCurrency)
+        collectFlow(viewModel.sendPlaceholderValueFlow, sendInputView::setPlaceholder)
+
         collectFlow(viewModel.sendOutputValueFlow, sendInputView::setValue)
+        collectFlow(viewModel.receiveOutputValueFlow, receiveInputView::setValue)
 
         collectFlow(viewModel.receiveOutputCurrencyFlow, receiveInputView::setCurrency)
-        collectFlow(viewModel.receiveOutputValueFlow, receiveInputView::setValue)
+        collectFlow(viewModel.receivePlaceholderValueFlow, receiveInputView::setPlaceholder)
         collectFlow(viewModel.uiStateToken, ::applyTokenState)
-        collectFlow(viewModel.uiButtonEnabledFlow, continueButton::setEnabled)
         collectFlow(viewModel.inputPrefixFlow, ::applyPrefix)
+        collectFlow(viewModel.countDownFlow, ::applyResetProgress)
+
+        collectFlow(viewModel.uiButtonStateFlow, continueButton::applyUiState)
 
         collectFlow(viewModel.requestFocusFlow) { inputType ->
             when (inputType) {
                 TwinInput.Type.Send -> sendInputView.focusWithKeyboard()
                 TwinInput.Type.Receive -> receiveInputView.focusWithKeyboard()
             }
+        }
+    }
+
+    private fun applyResetProgress(progress: Float) {
+        slideActionView.setReverseProgress(progress)
+        if (progress >= 1f) {
+            reset()
         }
     }
 
@@ -269,7 +298,8 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         val text = "$prefix · $edit"
         val spannable = SpannableString(text)
         spannable.setSpan(ClickableSpanCompat(requireContext().textAccentColor) {
-            viewModel.reset()
+            reset()
+            sendInputView.focusWithKeyboard()
         }, prefix.length + 3, text.length, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE)
 
         reviewSendView.setTitleMovementMethod(LinkMovementMethod.getInstance())
@@ -342,22 +372,27 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         if (slidesView.isFirst) {
             return super.onBackPressed()
         } else {
-            viewModel.reset()
+            reset()
+            sendInputView.focusWithKeyboard()
             return false
         }
     }
 
+    private fun reset() {
+        viewModel.reset()
+        continueButton.isLoading = false
+        continueButton.isEnabled = true
+    }
+
     private fun next() {
         hideKeyboard()
-        loaderView.visibility = View.VISIBLE
-        continueButton.visibility = View.GONE
+        continueButton.isLoading = true
         lifecycleScope.launch {
             try {
                 viewModel.next()
             } catch (e: Throwable) {
                 inputErrorState()
-                loaderView.visibility = View.GONE
-                continueButton.visibility = View.VISIBLE
+                continueButton.isLoading = false
                 if (e is InsufficientFundsException) {
                     insufficientFundsDialog.show(wallet, e)
                 }
@@ -375,12 +410,14 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         reviewSendView.setValue(state.fromUnitsFormat)
         receiveInputView.setValue(state.toUnits)
         reviewReceiveView.setValue(state.toUnitsFormat)
+        slippageView.value = CurrencyFormatter.formatPercent(state.slippage / 100)
         applyDetailsContainer(state)
 
         if (state.insufficientFunds != null) {
             postDelayed(1000) {
                 insufficientFundsDialog.show(wallet, state.insufficientFunds)
-                viewModel.reset()
+                reset()
+                sendInputView.focusWithKeyboard()
             }
         }
     }
@@ -430,8 +467,8 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
 
         fun newInstance(
             wallet: WalletEntity,
-            fromToken: String = "TON",
-            toToken: String = TokenEntity.TON_USDT
+            fromToken: WalletCurrency = WalletCurrency.TON,
+            toToken: WalletCurrency = WalletCurrency.USDT_TON
         ): OmnistonScreen {
             val screen = OmnistonScreen(wallet)
             screen.setArgs(OmnistonArgs(fromToken, toToken))

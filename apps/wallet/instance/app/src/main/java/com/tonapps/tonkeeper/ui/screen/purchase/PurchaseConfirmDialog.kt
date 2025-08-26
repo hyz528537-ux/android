@@ -15,6 +15,7 @@ import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.color.accentBlueColor
 import com.tonapps.uikit.color.textAccentColor
 import com.tonapps.uikit.color.textSecondaryColor
+import com.tonapps.wallet.data.purchase.entity.MerchantEntity
 import com.tonapps.wallet.data.purchase.entity.PurchaseMethodEntity
 import com.tonapps.wallet.localization.Localization
 import uikit.dialog.modal.ModalDialog
@@ -62,7 +63,7 @@ class PurchaseConfirmDialog(
             dismiss()
         }
         checkbox.checked = false
-        applyInfoButtons(method.infoButtons)
+        // applyInfoButtons(method.infoButtons)
     }
 
     fun show(
@@ -82,7 +83,7 @@ class PurchaseConfirmDialog(
         applyInfoButtons(provider.buttons)
     }
 
-    private fun applyInfoButtons(buttons: List<PurchaseMethodEntity.Button>) {
+    private fun applyInfoButtons(buttons: List<MerchantEntity.Button>) {
         if (buttons.isNotEmpty()) {
             val builder = SpannableStringBuilder()
             for ((index, button) in buttons.withIndex()) {

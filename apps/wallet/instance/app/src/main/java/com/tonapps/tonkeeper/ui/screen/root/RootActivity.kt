@@ -119,6 +119,7 @@ class RootActivity : BaseWalletActivity() {
         handleIntent(intent)
 
         lockView = findViewById(R.id.lock)
+        lockView.setOnClickListener {  }
         lockPasscodeView = findViewById(R.id.lock_passcode)
         lockPasscodeView.doOnCheck = {
             passcodeManager.lockscreenCheck(this, it)

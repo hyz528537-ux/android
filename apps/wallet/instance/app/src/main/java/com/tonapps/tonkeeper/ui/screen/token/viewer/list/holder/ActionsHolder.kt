@@ -4,6 +4,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.tonapps.tonkeeper.helper.BrowserHelper
 import com.tonapps.tonkeeper.koin.remoteConfig
+import com.tonapps.tonkeeper.koin.serverFlags
 import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppScreen
 import com.tonapps.tonkeeper.ui.screen.qr.QRScreen
 import com.tonapps.tonkeeper.ui.screen.send.main.SendScreen
@@ -48,15 +49,13 @@ class ActionsHolder(parent: ViewGroup) : Holder<Item.Actions>(parent, R.layout.v
             if (item.swapMethod != null) {
                 BrowserHelper.openPurchase(context, item.swapMethod)
             } else {
-                navigation?.add(
-                    SwapScreen.newInstance(
-                        wallet = item.wallet,
-                        fromToken = item.tokenAddress,
-                        toToken = "TON",
-                        nativeSwap = context.remoteConfig?.newSwapEnabled == true,
-                        uri = item.swapUri
-                    )
+                val fragment = SwapScreen.newInstance(
+                    wallet = item.wallet,
+                    fromToken = item.currency,
+                    nativeSwap = context.serverFlags?.disableNativeSwap != true,
+                    uri = item.swapUri
                 )
+                navigation?.add(fragment)
             }
         }
     }

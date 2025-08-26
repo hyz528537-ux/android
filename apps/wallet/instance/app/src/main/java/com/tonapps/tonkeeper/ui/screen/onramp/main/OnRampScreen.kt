@@ -2,6 +2,7 @@ package com.tonapps.tonkeeper.ui.screen.onramp.main
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -125,6 +126,9 @@ class OnRampScreen(wallet: WalletEntity): BaseOnRampScreen(wallet) {
 
         collectFlow(viewModel.receiveOutputCurrencyFlow, buyInput::setCurrency)
         collectFlow(viewModel.receiveOutputValueFlow, buyInput::setValue)
+        collectFlow(viewModel.sendValueFlow) {
+            sellInput.setValue(it, true)
+        }
 
         collectFlow(viewModel.inputPrefixFlow, ::applyPrefix)
         collectFlow(viewModel.rateFormattedFlow, ::applyRateFormatted)
@@ -196,6 +200,20 @@ class OnRampScreen(wallet: WalletEntity): BaseOnRampScreen(wallet) {
     }
 
     private fun createPaymentMethodViews(methods: List<OnRampPaymentMethodState.Method>) {
+        if (methods.isEmpty()) {
+            paymentView.visibility = View.GONE
+            confirmPageView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = 0
+            }
+            return
+        } else {
+            paymentView.visibility = View.VISIBLE
+        }
+
+        if (paymentView.childCount > 1) {
+            paymentView.removeViews(1, paymentView.childCount - 1)
+        }
+
         for ((index, method) in methods.withIndex()) {
             val position = ListCell.getPosition(methods.size, index)
             val view = createPaymentTypeView(method)
@@ -213,9 +231,7 @@ class OnRampScreen(wallet: WalletEntity): BaseOnRampScreen(wallet) {
     }
 
     private fun applyPaymentMethodState(state: OnRampPaymentMethodState) {
-        if (1 >= paymentView.childCount) {
-            createPaymentMethodViews(state.methods)
-        }
+        createPaymentMethodViews(state.methods)
         for (view in paymentView.allViews) {
             if (view is PaymentTypeView) {
                 view.isChecked = view.tag.equals(state.selectedType)

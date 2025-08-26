@@ -18,12 +18,16 @@ data class EthenaEntity(
         val tsusdeDescription: String,
         val faqUrl: String,
         val aboutUrl: String,
+        val stakeTitle: String,
+        val stakeDescription: String,
     ) : Parcelable {
         constructor(json: JSONObject) : this(
             description = json.getString("description"),
             tsusdeDescription = json.getString("tsusde_description"),
             faqUrl = json.getString("faq_url"),
-            aboutUrl = json.getString("about_url")
+            aboutUrl = json.getString("about_url"),
+            stakeTitle = json.getString("tsusde_stake_title"),
+            stakeDescription = json.getString("tsusde_stake_description"),
         )
     }
 

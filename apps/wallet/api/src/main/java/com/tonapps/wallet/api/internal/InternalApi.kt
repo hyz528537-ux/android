@@ -24,6 +24,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import org.json.JSONObject
+import java.math.BigDecimal
 import java.util.Locale
 
 internal class InternalApi(
@@ -49,6 +50,7 @@ internal class InternalApi(
         platform: String,
         build: String,
         boot: Boolean = false,
+        queryParams: Map<String, String> = emptyMap(),
     ): String = runBlocking {
         val builder = Uri.Builder()
         builder.scheme("https")
@@ -67,6 +69,10 @@ internal class InternalApi(
             builder.appendQueryParameter("device_country_code", it)
         }
 
+        queryParams.forEach {
+            builder.appendQueryParameter(it.key, it.value)
+        }
+
         builder.build().toString()
     }
 
@@ -77,8 +83,9 @@ internal class InternalApi(
         build: String = appVersionName,
         locale: Locale,
         boot: Boolean = false,
+        queryParams: Map<String, String> = emptyMap(),
     ): JSONObject {
-        val url = endpoint(path, testnet, platform, build, boot)
+        val url = endpoint(path, testnet, platform, build, boot, queryParams)
         val headers = ArrayMap<String, String>()
         headers["Accept-Language"] = locale.toString()
         val body = withRetry {
@@ -101,15 +108,6 @@ internal class InternalApi(
         return builder.build().toString()
     }
 
-    fun swapOmnistonBuild(args: SwapEntity.Args): SwapEntity.Messages {
-        val json = Serializer.JSON.encodeToString(args)
-        val response = okHttpClient.postJSON(
-            url = swapEndpoint("v2/swap/omniston/build"),
-            json = json
-        ).body?.string() ?: throw IllegalStateException("Internal API request failed")
-        return Serializer.JSON.decodeFromString(response)
-    }
-
     fun getSwapAssets() = withRetry {
         okHttpClient.get(swapEndpoint("v2/swap/assets"))
     }
@@ -122,10 +120,13 @@ internal class InternalApi(
         okHttpClient.get(swapEndpoint("v2/onramp/payment_methods"))
     }
 
+    fun getOnRampMerchants() = withRetry {
+        okHttpClient.get(swapEndpoint("v2/onramp/merchants"))
+    }
+
     fun calculateOnRamp(args: OnRampArgsEntity): String? {
         val json = args.toJSON()
         _deviceCountry?.let { json.put("country", _deviceCountry) }
-        Log.d("InternalAPI", "json: $json")
         return withRetry {
             okHttpClient.postJSON(
                 swapEndpoint("v2/onramp/calculate"),
@@ -181,10 +182,6 @@ internal class InternalApi(
 
     fun downloadConfig(testnet: Boolean): ConfigEntity? {
         return try {
-            Log.d(
-                "InternalAPI",
-                "downloadConfig, device country: $_deviceCountry, store country: $_storeCountry"
-            )
             val json = request("keys", testnet, locale = context.locale, boot = true)
             ConfigEntity(json, context.isDebug)
         } catch (e: Throwable) {
@@ -228,7 +225,12 @@ internal class InternalApi(
     }
 
     fun getEthena(accountId: String): EthenaEntity? = withRetry {
-        val json = request("staking/ethena?address=$accountId", false, locale = context.locale)
+        val json = request(
+            "staking/ethena",
+            false,
+            locale = context.locale,
+            queryParams = mapOf("address" to accountId)
+        )
         EthenaEntity(json)
     }
 

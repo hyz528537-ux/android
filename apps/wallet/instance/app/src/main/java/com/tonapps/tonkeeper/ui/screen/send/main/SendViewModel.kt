@@ -434,13 +434,12 @@ class SendViewModel(
             builder.setBounceable(true)
             builder.setAmount(Coins.ZERO)
             builder.setMax(false)
+        } else if (!transaction.token.isTon) {
+            builder.setMax(transaction.amount.value == token.balance.value)
+            builder.setBounceable(true)
+            builder.setAmount(transaction.amount.value)
         } else {
-            val isDirectTransferType = userInputFlow.value.type == SendScreen.Companion.Type.Direct
-            if (isDirectTransferType) {
-                builder.setMax(false)
-            } else {
-                builder.setMax(transaction.isRealMax(token.balance.value))
-            }
+            builder.setMax(transaction.amount.value == getTONBalance())
             builder.setAmount(transaction.amount.value)
             builder.setBounceable(transaction.destination.isBounce)
         }
@@ -540,6 +539,10 @@ class SendViewModel(
         _userInputFlow.update {
             it.copy(type = type)
         }
+    }
+
+    suspend fun isNeedMemoAddress(targetAddress: String): Boolean = withContext(Dispatchers.IO) {
+       api.resolveAccount(targetAddress, wallet.testnet)?.memoRequired == true
     }
 
     private fun applyAmount(token: TokenEntity, amountNano: Long?) {

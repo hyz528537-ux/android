@@ -149,7 +149,11 @@ data class Coins(
                 v = "0"
             }
             return v
+        }
 
+
+        fun string(coins: Coins): String {
+            return coins.value.toPlainString()
         }
 
         inline fun <T> Iterable<T>.sumOf(selector: (T) -> Coins): Coins {
@@ -212,6 +216,10 @@ data class Coins(
         )
     }
 
+    operator fun div(other: Float): Coins {
+        return of(value.divide(other.toBigDecimal(), mathContext), decimals)
+    }
+
     operator fun rem(other: Coins) = of(value.remainder(other.value), decimals)
 
     operator fun inc() = Coins(value + ONE.value, decimals)
@@ -261,11 +269,7 @@ data class Coins(
         return multipliedValue.toDouble()
     }
 
-    fun toNano(): String {
-        val multiplier = BigDecimal.TEN.pow(decimals)
-        val multipliedValue = value.multiply(multiplier)
-        return multipliedValue.toBigInteger().toString()
-    }
+    fun toNano(decimals: Int) = value.movePointRight(decimals).setScale(0, RoundingMode.DOWN).toPlainString()
 
     fun diff(coins: Coins): Float {
         if (coins.isZero || isZero) {

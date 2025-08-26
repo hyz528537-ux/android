@@ -1,11 +1,14 @@
 package com.tonapps.tonkeeper.ui.screen.swap.omniston
 
 import android.os.Bundle
+import com.tonapps.extensions.getParcelableCompat
+import com.tonapps.wallet.api.entity.TokenEntity
+import com.tonapps.wallet.data.core.currency.WalletCurrency
 import uikit.base.BaseArgs
 
 data class OmnistonArgs(
-    val fromToken: String,
-    val toToken: String,
+    val fromToken: WalletCurrency,
+    val toToken: WalletCurrency
 ): BaseArgs() {
 
     private companion object {
@@ -14,14 +17,12 @@ data class OmnistonArgs(
     }
 
     constructor(bundle: Bundle) : this(
-        fromToken = bundle.getString(ARG_FROM_TOKEN)!!,
-        toToken = bundle.getString(ARG_TO_TOKEN)!!
+        fromToken = bundle.getParcelableCompat(ARG_FROM_TOKEN)!!,
+        toToken = bundle.getParcelableCompat(ARG_TO_TOKEN)!!
     )
 
     override fun toBundle(): Bundle = Bundle().apply {
-        putString(ARG_FROM_TOKEN, fromToken)
-        toToken?.let {
-            putString(ARG_TO_TOKEN, it)
-        }
+        putParcelable(ARG_FROM_TOKEN, fromToken)
+        putParcelable(ARG_TO_TOKEN, toToken)
     }
 }

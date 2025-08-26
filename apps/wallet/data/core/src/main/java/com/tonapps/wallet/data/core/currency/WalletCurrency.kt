@@ -2,6 +2,7 @@ package com.tonapps.wallet.data.core.currency
 
 import android.net.Uri
 import android.os.Parcelable
+import android.util.Log
 import androidx.annotation.DrawableRes
 import com.tonapps.extensions.toUriOrNull
 import com.tonapps.uikit.flag.getFlagDrawable
@@ -193,6 +194,7 @@ data class WalletCurrency(
             "KWD", // Kuwaiti Dinar
             "RON", // Romanian Leu
             "EGP", // Egyptian Pound
+            "NOK" // Norwegian Krone
         )
 
         const val USDT_KEY = "USDT"
@@ -358,6 +360,9 @@ data class WalletCurrency(
         }
 
         fun of(code: String?): WalletCurrency? {
+            if (code == "US") {
+                return of("USD")
+            }
             if (code.isNullOrBlank()) {
                 return null
             } else if (code in FIAT) {

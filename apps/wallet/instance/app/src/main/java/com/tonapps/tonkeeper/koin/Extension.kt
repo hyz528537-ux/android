@@ -16,6 +16,7 @@ import com.tonapps.tonkeeper.ui.base.ScreenContext
 import com.tonapps.tonkeeper.ui.base.compose.ComposeWalletScreen
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.entity.ConfigEntity
+import com.tonapps.wallet.api.entity.FlagsEntity
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.passcode.PasscodeManager
 import com.tonapps.wallet.data.rates.RatesRepository
@@ -85,6 +86,9 @@ val Context.remoteConfig: RemoteConfig?
 
 val Context.serverConfig: ConfigEntity?
     get() = api?.config
+
+val Context.serverFlags: FlagsEntity?
+    get() = api?.config?.flags
 
 val Context.settingsRepository: SettingsRepository?
     get() = koin?.get<SettingsRepository>()

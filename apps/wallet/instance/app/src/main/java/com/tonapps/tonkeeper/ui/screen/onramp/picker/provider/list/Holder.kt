@@ -2,6 +2,7 @@ package com.tonapps.tonkeeper.ui.screen.onramp.picker.provider.list
 
 import android.text.SpannableStringBuilder
 import android.util.Log
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
@@ -25,6 +26,7 @@ class Holder(
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val descriptionView = findViewById<AppCompatTextView>(R.id.description)
     private val arrowView = findViewById<AppCompatImageView>(R.id.arrow)
+    private val minView = findViewById<AppCompatTextView>(R.id.min)
 
     init {
         arrowView.imageTintList = context.accentBlueColor.stateList
@@ -46,6 +48,16 @@ class Holder(
             arrowView.setImageResource(UIKitIcon.ic_donemark_otline_28)
         } else {
             arrowView.setImageDrawable(null)
+        }
+        setMin(item.minAmountFormat)
+    }
+
+    private fun setMin(minAmountFormat: CharSequence) {
+        if (minAmountFormat.isEmpty()) {
+            minView.visibility = View.GONE
+        } else {
+            minView.visibility = View.VISIBLE
+            minView.text = context.getString(Localization.min_amount, minAmountFormat)
         }
     }
 

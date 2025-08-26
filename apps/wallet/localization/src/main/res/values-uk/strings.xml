@@ -615,7 +615,6 @@
     <string name="charging_unavailable">Заряджання батареї недоступне</string>
     <string name="ethena_operated_by">Керується %1$s</string>
     <string name="deposit_and_stake">Депозит і стейкінг</string>
-    <string name="ethena_apy">APY (серед. за 7 дн.) ≈ %1$s</string>
     <string name="ethena_check_eligibility">Перевірити статус</string>
     <string name="about_ethena">Про Ethena</string>
 

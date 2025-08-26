@@ -6,7 +6,9 @@ import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Matrix
 import android.graphics.Shader
+import android.os.Build
 import android.util.AttributeSet
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -17,6 +19,7 @@ import androidx.core.graphics.toColorInt
 import androidx.core.math.MathUtils
 import androidx.customview.widget.ViewDragHelper
 import com.tonapps.uikit.color.backgroundContentColor
+import com.tonapps.uikit.color.iconTertiaryColor
 import com.tonapps.uikit.color.stateList
 import com.tonapps.uikit.color.textTertiaryColor
 import com.tonapps.uikit.icon.UIKitIcon
@@ -25,6 +28,8 @@ import uikit.HapticHelper
 import uikit.extensions.dp
 import uikit.extensions.getDimension
 import uikit.extensions.getDimensionPixelSize
+import uikit.extensions.hapticConfirm
+import uikit.extensions.hapticReject
 import uikit.extensions.isDark
 import uikit.extensions.useAttributes
 
@@ -104,6 +109,7 @@ class SlideActionView @JvmOverloads constructor(
 
     private val textView: GradientTextView
     private val buttonView: AppCompatImageView
+    private val progressView: LoaderView
     private val dragHelper: ViewDragHelper
 
     init {
@@ -113,12 +119,25 @@ class SlideActionView @JvmOverloads constructor(
         textView = findViewById(R.id.text)
         buttonView = findViewById(R.id.button)
 
+        progressView = findViewById(R.id.progress)
+
         dragHelper = ViewDragHelper.create(this, 0.2f, drawCallback)
         dragHelper.setEdgeTrackingEnabled(ViewDragHelper.EDGE_LEFT or ViewDragHelper.EDGE_RIGHT)
 
         context.useAttributes(attrs, R.styleable.SlideActionView) {
             textView.text = it.getString(R.styleable.SlideActionView_android_text)
         }
+    }
+
+    fun startReverseProgress() {
+        progressView.setTrackColor(context.iconTertiaryColor)
+        progressView.visibility = VISIBLE
+        progressView.type = LoaderView.TYPE_TIMER
+        progressView.setProgress(0f)
+    }
+
+    fun setReverseProgress(progress: Float) {
+        progressView.setProgress(1f - progress)
     }
 
     fun setTint(color: Int) {
@@ -141,6 +160,7 @@ class SlideActionView @JvmOverloads constructor(
         icon = checkIcon
         doOnDone?.invoke()
         isDone = true
+        hapticConfirm()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -226,6 +246,15 @@ class SlideActionView @JvmOverloads constructor(
             matrix.setTranslate(w * progress, 0f)
             paint.shader?.setLocalMatrix(matrix)
             invalidate()
+        }
+
+        override fun onVisibilityChanged(changedView: View, visibility: Int) {
+            super.onVisibilityChanged(changedView, visibility)
+            if (visibility == VISIBLE) {
+                animator.start()
+            } else {
+                animator.cancel()
+            }
         }
 
         override fun onAttachedToWindow() {

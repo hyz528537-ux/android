@@ -85,6 +85,12 @@
                 android:name="@string/fee"/>
 
             <uikit.widget.item.ItemLineView
+                android:id="@+id/details_slippage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:name="@string/slippage"/>
+
+            <uikit.widget.item.ItemLineView
                 android:id="@+id/details_provider"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

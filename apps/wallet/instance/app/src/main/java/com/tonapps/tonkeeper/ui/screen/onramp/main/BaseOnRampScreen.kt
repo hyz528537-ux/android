@@ -75,6 +75,7 @@ open class BaseOnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.
             onKeyboardAnimation(offset, progress, isShowing)
         }
 
+        collectFlow(viewModel.openWidgetFlow, ::openWidget)
         collectFlow(viewModel.allowedPairFlow, ::applyAllowedPair)
         collectFlow(viewModel.stepFlow, ::applyStep)
         collectFlow(viewModel.buttonUiStateFlow, button::applyUiState)
@@ -87,6 +88,7 @@ open class BaseOnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.
                 minMaxView.text = getString(Localization.min_amount, it)
             }
         }
+
     }
 
     override fun finish() {

@@ -9,7 +9,6 @@ import com.tonapps.wallet.data.token.entities.AccountTokenEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.ton.block.AddrStd
-import org.ton.block.Coins
 import org.ton.contract.wallet.WalletTransfer
 
 suspend fun SignRequestEntity.getTransfers(

@@ -32,6 +32,7 @@ data class SwapQuoteState(
     val insufficientFunds: InsufficientFundsException? = null,
     val canEditFeeMethod: Boolean = true,
     val meanFeeSwap: Coins = Coins.ZERO,
+    val slippage: Int = 0
 ) {
 
     data class Tx(
@@ -71,7 +72,7 @@ data class SwapQuoteState(
         get() = selectedFee?.method == PreferredFeeMethod.BATTERY
 
     val toUnitsFormat: CharSequence by lazy {
-        CurrencyFormatter.format(toCurrency.code, toUnits)
+        CurrencyInputView.EQUALS_SIGN_PREFIX + CurrencyFormatter.format(toCurrency.code, toUnits)
     }
 
     val fromUnitsFormat: CharSequence by lazy {

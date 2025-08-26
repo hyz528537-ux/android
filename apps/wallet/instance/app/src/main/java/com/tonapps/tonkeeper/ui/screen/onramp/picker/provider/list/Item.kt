@@ -13,9 +13,10 @@ data class Item(
     val id: String,
     val iconUri: Uri,
     val title: String,
-    val description: String,
+    val description: CharSequence,
     val selected: Boolean,
-    val best: Boolean
+    val best: Boolean,
+    val minAmountFormat: CharSequence
 ): BaseListItem(0) {
 
     constructor(
@@ -23,7 +24,8 @@ data class Item(
         provider: ProviderEntity,
         selected: Boolean,
         best: Boolean,
-        rateFormat: String
+        rateFormat: CharSequence,
+        minAmountFormat: CharSequence
     ) : this(
         position = position,
         id = provider.id,
@@ -31,6 +33,7 @@ data class Item(
         title = provider.title,
         description = rateFormat,
         selected = selected,
-        best = best
+        best = best,
+        minAmountFormat = minAmountFormat
     )
 }

@@ -651,7 +651,6 @@
     <string name="charging_unavailable">Зареждането на батерията не е налично</string>
     <string name="ethena_operated_by">Управлява се от %1$s</string>
     <string name="deposit_and_stake">Депозирайте и заложете</string>
-    <string name="ethena_apy">APY (ср. за 7 дни) ≈ %1$s</string>
     <string name="ethena_check_eligibility">Проверете статуса</string>
     <string name="about_ethena">Относно Ethena</string>
 

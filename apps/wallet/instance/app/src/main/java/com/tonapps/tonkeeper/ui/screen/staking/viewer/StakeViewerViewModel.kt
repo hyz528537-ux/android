@@ -96,7 +96,6 @@ class StakeViewerViewModel(
                 balanceFormat = CurrencyFormatter.format(
                     tokenUsde.symbol,
                     balance,
-                    customScale = 4
                 ),
                 fiat = fiat,
                 fiatFormat = CurrencyFormatter.formatFiat(currency.code, fiat),
@@ -186,7 +185,7 @@ class StakeViewerViewModel(
             Item.Balance(
                 poolImplementation = staked.pool.implementation,
                 balance = amount,
-                balanceFormat = CurrencyFormatter.format(currencyCode, amount, customScale = 4),
+                balanceFormat = CurrencyFormatter.format(currencyCode, amount),
                 fiat = fiat,
                 fiatFormat = CurrencyFormatter.formatFiat(currency.code, fiat),
                 hiddenBalance = settingsRepository.hiddenBalances,

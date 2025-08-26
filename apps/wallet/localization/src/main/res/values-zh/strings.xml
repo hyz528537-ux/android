@@ -600,7 +600,6 @@
     <string name="charging_unavailable">电池充电不可用</string>
     <string name="ethena_operated_by">由 %1$s 运营</string>
     <string name="deposit_and_stake">存入并质押</string>
-    <string name="ethena_apy">APY（7日均值）≈ %1$s</string>
     <string name="ethena_check_eligibility">检查状态</string>
     <string name="about_ethena">关于 Ethena</string>
 

@@ -1,7 +1,6 @@
 package com.tonapps.wallet.api.internal
 
 import android.content.Context
-import android.util.Log
 import com.tonapps.extensions.file
 import com.tonapps.extensions.toByteArray
 import com.tonapps.extensions.toParcel
@@ -10,7 +9,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -33,8 +31,11 @@ internal class ConfigRepository(
 
     init {
         scope.launch(Dispatchers.IO) {
-            readCache()?.let {
-                setConfig(it)
+            val cached = readCache()
+            if (cached != null) {
+                setConfig(cached)
+            } else {
+                initConfig()
             }
         }
     }
@@ -54,6 +55,11 @@ internal class ConfigRepository(
         val config = internalApi.downloadConfig(testnet) ?: return@withContext null
         configFile.writeBytes(config.toByteArray())
         config
+    }
+
+    suspend fun refresh(testnet: Boolean) {
+        val config = remote(testnet) ?: return
+        setConfig(config)
     }
 
     suspend fun initConfig() {

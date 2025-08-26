@@ -1,10 +1,8 @@
 package com.tonapps.tonkeeper.ui.component.coin
 
-import android.animation.ValueAnimator
 import android.content.Context
 import android.text.TextPaint
 import android.util.AttributeSet
-import android.util.Log
 import android.util.TypedValue
 import androidx.appcompat.R
 import androidx.lifecycle.findViewTreeLifecycleOwner
@@ -16,13 +14,10 @@ import com.tonapps.tonkeeper.ui.component.coin.drawable.SuffixDrawable
 import com.tonapps.tonkeeper.ui.component.coin.format.CoinFormattingConfig
 import com.tonapps.tonkeeper.ui.component.coin.format.CoinFormattingFilter
 import com.tonapps.tonkeeper.ui.component.coin.format.CoinFormattingTextWatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import uikit.extensions.dp
@@ -219,6 +214,21 @@ class CoinEditText @JvmOverloads constructor(
         }
     }
 
+    fun setValue(
+        value: String?,
+        notifyByUser: Boolean = false,
+    ) {
+        if (value.isNullOrBlank()) {
+            clear()
+        } else if (value != text?.toString()) {
+            text?.clear()
+            text?.insert(0, value)
+        }
+        if (notifyByUser) {
+            notifyUpdateDelay(true)
+        }
+    }
+
     fun clear() {
         text?.clear()
     }
@@ -279,9 +289,9 @@ class CoinEditText @JvmOverloads constructor(
         }
     }
 
-    private companion object {
+    companion object {
 
-        private fun BigDecimal.asString(): String? {
+        fun BigDecimal.asString(): String? {
             if (BigDecimal.ZERO == this) {
                 return null
             }
@@ -295,6 +305,19 @@ class CoinEditText @JvmOverloads constructor(
                 return null
             }
             return string
+        }
+
+        fun BigDecimal.asString2(
+            customValueScale: Int = 0,
+        ): String {
+            val string = if (customValueScale == 0) asString() else setScale(customValueScale, RoundingMode.HALF_EVEN).asString()
+            if (string.isNullOrBlank() && this != BigDecimal.ZERO) {
+                val newCustomValueScale = CurrencyFormatter.getScale(this)
+                if (newCustomValueScale != customValueScale) {
+                    return asString2(CurrencyFormatter.getScale(this))
+                }
+            }
+            return string ?: ""
         }
 
     }

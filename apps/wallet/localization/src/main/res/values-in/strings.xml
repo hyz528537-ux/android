@@ -600,7 +600,6 @@
     <string name="charging_unavailable">Pengisian baterai tidak tersedia</string>
     <string name="ethena_operated_by">Dioperasikan oleh %1$s</string>
     <string name="deposit_and_stake">Deposit &amp; Stake</string>
-    <string name="ethena_apy">APY (rata-rata 7 hari) ≈ %1$s</string>
     <string name="ethena_check_eligibility">Periksa Status</string>
     <string name="about_ethena">Tentang Ethena</string>
 

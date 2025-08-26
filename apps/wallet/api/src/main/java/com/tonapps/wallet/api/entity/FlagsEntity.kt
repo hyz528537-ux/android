@@ -19,6 +19,8 @@ data class FlagsEntity(
     val disableBattery: Boolean,
     val disableGasless: Boolean,
     val disableUsde: Boolean,
+    val disableNativeSwap: Boolean,
+    val disableOnboardingStory: Boolean
 ) : Parcelable {
 
     constructor(json: JSONObject) : this(
@@ -34,6 +36,8 @@ data class FlagsEntity(
         disableBattery = json.optBoolean("disable_battery", false),
         disableGasless = json.optBoolean("disable_gaseless", false),
         disableUsde = json.optBoolean("disable_usde", false),
+        disableNativeSwap = json.optBoolean("disable_native_swap", false),
+        disableOnboardingStory = json.optBoolean("disable_onboarding_story", false)
     )
 
     constructor() : this(
@@ -49,5 +53,7 @@ data class FlagsEntity(
         disableBattery = false,
         disableGasless = false,
         disableUsde = false,
+        disableNativeSwap = false,
+        disableOnboardingStory = false
     )
 }

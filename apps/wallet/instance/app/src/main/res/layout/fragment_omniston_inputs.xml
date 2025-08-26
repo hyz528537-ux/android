@@ -29,7 +29,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:title="@string/receive"
-                    app:valueScale="3"/>
+                    app:valueScale="3"
+                    android:clickable="false"/>
 
             </uikit.widget.ColumnLayout>
 
@@ -49,8 +50,18 @@
             android:id="@+id/price"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:gravity="center"
-            android:padding="12dp"
+            android:paddingHorizontal="12dp"
+            android:textAppearance="@style/TextAppearance.Body2"
+            android:textColor="?attr/textSecondaryColor"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/price_reversed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
             android:textAppearance="@style/TextAppearance.Body2"
             android:textColor="?attr/textSecondaryColor"/>
 
@@ -61,22 +72,16 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/itemHeight"
         android:layout_gravity="bottom"
-        android:layout_margin="@dimen/offsetMedium">
+        android:layout_marginVertical="@dimen/offsetMedium">
 
-        <uikit.widget.LoaderView
-            android:id="@+id/loader"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="center"
-            android:visibility="gone"/>
-
-        <Button
-            style="@style/Widget.App.Button"
+        <uikit.widget.LoadableButton
             android:id="@+id/continue_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/continue_action"
-            android:textAppearance="@style/TextAppearance.Label1"/>
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="@dimen/offsetMedium"
+            android:text="@string/continue_action"/>
+
 
     </FrameLayout>
 

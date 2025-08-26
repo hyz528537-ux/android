@@ -13,8 +13,14 @@ data class SwapTokenState(
     val tokenBalance: BalanceEntity?
         get() = fromToken?.token?.balance
 
+    val balance: Coins
+        get() = tokenBalance?.value ?: Coins.ZERO
+
     val insufficientBalance: Boolean
         get() = remaining.isNegative
+
+    val isTon: Boolean
+        get() = fromToken?.token?.isTon == true
 
     val remainingFormat: CharSequence? by lazy {
         CurrencyFormatter.format("", remaining)

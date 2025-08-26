@@ -1,5 +1,6 @@
 package com.tonapps.tonkeeper.helper
 
+import android.util.Log
 import com.tonapps.icu.Coins
 import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.rates.entity.RatesEntity
@@ -40,6 +41,9 @@ class TwinInput(
         val coins: Coins by lazy {
             Coins.of(value, currency.decimals)
         }
+
+        val fiat: Boolean
+            get() = currency.fiat
 
         val address: String
             get() = currency.address
@@ -144,11 +148,16 @@ class TwinInput(
     val state: State
         get() = _stateFlow.value
 
-    fun createConvertFlow(ratesFlow: Flow<RatesEntity>, forType: Type) = combine(
+    fun createConvertFlow(ratesFlow: Flow<RatesEntity>, forType: Type, reductionFactor: Float = 1f) = combine(
         ratesFlow,
         stateFlow.filter { it.focus != forType }.distinctUntilChanged()
     ) { rates, inputsState ->
-        inputsState.convert(rates)
+        val converted = inputsState.convert(rates)
+        if (reductionFactor == 0f || reductionFactor == 1f || !converted.isPositive) {
+            converted
+        } else {
+            converted / reductionFactor
+        }
     }.distinctUntilChanged()
 
     fun getCurrency(forType: Type = state.focus) = if (forType == Type.Send) {
@@ -177,8 +186,10 @@ class TwinInput(
                 focus = it.focus.opposite
             )
         }
+    }
 
-        // updateValue(state.focus, getValue(state.focus.opposite))
+    fun updateValue() {
+        updateValue(state.focus, getValue(state.focus.opposite))
     }
 
     fun updateFocus(type: Type) {
@@ -199,10 +210,14 @@ class TwinInput(
 
     fun updateValue(type: Type, value: String) {
         _stateFlow.update {
+            var normalizedValue = value.trim()
+            if (normalizedValue == "0") {
+                normalizedValue = ""
+            }
             if (type == Type.Send) {
-                it.copy(send = it.send.copy(value = value.trim()))
+                it.copy(send = it.send.copy(value = normalizedValue))
             } else {
-                it.copy(receive = it.receive.copy(value = value.trim()))
+                it.copy(receive = it.receive.copy(value = normalizedValue))
             }
         }
     }

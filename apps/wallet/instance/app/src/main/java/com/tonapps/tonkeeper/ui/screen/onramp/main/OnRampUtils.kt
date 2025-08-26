@@ -23,22 +23,4 @@ object OnRampUtils {
         }
         return value
     }
-
-    fun resolveNetwork(currency: WalletCurrency): String {
-        if (currency.fiat) {
-            return "fiat"
-        } else if (currency.symbol.equals("TON", ignoreCase = true)) {
-            return "native"
-        }
-        return when (currency.chain.name.lowercase()) {
-            "etc", "erc-20" -> "erc-20"
-            "ton", "jetton" -> "jetton"
-            "tron", "trc-20" -> "trc-20"
-            "sol", "spl" -> "spl"
-            "bnb", "bep-20" -> "bep-20"
-            "avalanche" -> "avalanche"
-            "arbitrum" -> "arbitrum"
-            else -> "native"
-        }
-    }
 }

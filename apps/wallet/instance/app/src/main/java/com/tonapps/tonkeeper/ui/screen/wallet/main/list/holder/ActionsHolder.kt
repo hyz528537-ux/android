@@ -3,6 +3,7 @@ package com.tonapps.tonkeeper.ui.screen.wallet.main.list.holder
 import android.view.View
 import android.view.ViewGroup
 import com.tonapps.tonkeeper.koin.remoteConfig
+import com.tonapps.tonkeeper.koin.serverFlags
 import com.tonapps.tonkeeper.ui.screen.camera.CameraScreen
 import com.tonapps.tonkeeper.ui.screen.onramp.main.OnRampScreen
 import com.tonapps.tonkeeper.ui.screen.qr.QRScreen
@@ -40,7 +41,7 @@ class ActionsHolder(parent: ViewGroup): Holder<Item.Actions>(parent, R.layout.vi
         swapView.setOnClickListener {
             navigation?.add(SwapScreen.newInstance(
                 wallet = item.wallet,
-                nativeSwap = context.remoteConfig?.newSwapEnabled == true,
+                nativeSwap = context.serverFlags?.disableNativeSwap != true,
                 uri = item.swapUri
             ))
         }

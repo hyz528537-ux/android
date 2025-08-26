@@ -60,6 +60,7 @@ data class ConfigEntity(
     val apkName: AppVersion?,
     val tronApiUrl: String,
     val enabledStaking: List<String>,
+    val qrScannerExtends: List<QRScannerExtendsEntity>,
 ): Parcelable {
 
     @IgnoredOnParcel
@@ -155,6 +156,9 @@ data class ConfigEntity(
         enabledStaking = json.optJSONArray("enabled_staking")?.let { array ->
             (0 until array.length()).map { array.getString(it) }
         } ?: emptyList(),
+        qrScannerExtends = json.optJSONArray("qr_scanner_extends")?.let { array ->
+            QRScannerExtendsEntity.of(array)
+        } ?: emptyList()
     )
 
     constructor() : this(
@@ -206,6 +210,7 @@ data class ConfigEntity(
         apkName = null,
         tronApiUrl = "https://api.trongrid.io",
         enabledStaking = emptyList(),
+        qrScannerExtends = emptyList()
     )
 
     companion object {

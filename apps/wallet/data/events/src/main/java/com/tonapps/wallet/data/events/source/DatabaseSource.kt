@@ -61,7 +61,7 @@ internal class DatabaseSource(
     fun addSpam(accountId: String, testnet: Boolean, events: List<AccountEvent>) {
         writableDatabase.withTransaction {
             for (event in events) {
-                writableDatabase.insert(SPAM_TABLE_NAME, null, event.toValues(accountId, testnet))
+                writableDatabase.insertWithOnConflict(SPAM_TABLE_NAME, null, event.toValues(accountId, testnet), SQLiteDatabase.CONFLICT_REPLACE)
             }
         }
     }

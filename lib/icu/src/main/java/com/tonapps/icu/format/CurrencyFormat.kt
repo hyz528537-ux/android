@@ -15,6 +15,7 @@ internal class CurrencyFormat(val locale: Locale) {
     companion object {
         private const val CURRENCY_SIGN = "¤"
         private const val SMALL_SPACE = " "
+        private const val DEFAULT_SPACE = " "
         private const val APOSTROPHE = "'"
         const val TON_SYMBOL = "TON"
 
@@ -125,6 +126,7 @@ internal class CurrencyFormat(val locale: Locale) {
             return when {
                 value >= BigDecimal("1000") -> 0
                 value >= BigDecimal.ONE -> 2
+                BigDecimal("0.0000001") >= value -> 0
                 else -> {
                     val plainString = value.stripTrailingZeros().toPlainString()
                     val dotIndex = plainString.indexOf('.')
@@ -197,14 +199,14 @@ internal class CurrencyFormat(val locale: Locale) {
                 builder.append(value)
             } else {
                 builder.append(value)
-                builder.append(SMALL_SPACE)
+                builder.append(DEFAULT_SPACE)
                 builder.append(symbol)
             }
         } else if (currency == "") {
             builder.append(value)
         } else {
             builder.append(value)
-            builder.append(SMALL_SPACE)
+            builder.append(DEFAULT_SPACE)
             builder.append(currency)
         }
         return builder.toString()

@@ -1,5 +1,6 @@
 package com.tonapps.tonkeeper.usecase.emulation
 
+import android.util.Log
 import com.tonapps.blockchain.ton.extensions.toRawAddress
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
@@ -32,7 +33,6 @@ data class Emulated(
     companion object {
         val defaultExtra = Extra(false, Coins.ONE, Coins.ONE)
 
-
         suspend fun Emulated.buildFee(
             wallet: WalletEntity,
             api: API,
@@ -59,12 +59,13 @@ data class Emulated(
                 val fee = Fee(extra.value, extra.isRefund)
                 val rates = ratesRepository.getTONRates(currency)
                 val converted = rates.convertTON(fee.value)
-
+                val totalFees = consequences?.trace?.transaction?.totalFees ?: 0
                 SendFee.Ton(
                     amount = fee,
                     fiatAmount = converted,
                     fiatCurrency = currency,
-                    extra = consequences?.event?.extra ?: 0
+                    // extra = consequences?.event?.extra ?: 0
+                    extra = totalFees
                 )
             }
         }

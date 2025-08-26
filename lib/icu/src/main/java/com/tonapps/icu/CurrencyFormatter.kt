@@ -68,6 +68,10 @@ object CurrencyFormatter {
         return "$format%"
     }
 
+    fun formatPercent(
+        value: Int
+    ) = formatPercent(value.toBigDecimal())
+
     fun format(
         currency: String = "",
         value: BigDecimal,

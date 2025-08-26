@@ -605,7 +605,6 @@
     <string name="charging_unavailable">La carga de la batería no está disponible</string>
     <string name="ethena_operated_by">Operado por %1$s</string>
     <string name="deposit_and_stake">Depositar y hacer staking</string>
-    <string name="ethena_apy">APY (prom. 7 días) ≈ %1$s</string>
     <string name="ethena_check_eligibility">Comprobar estado</string>
     <string name="about_ethena">Acerca de Ethena</string>
 

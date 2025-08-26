@@ -15,10 +15,10 @@ class RemoteConfig(context: Context, private val api: API) {
         IN_APP_UPDATE_AVAILABLE("inAppUpdateAvailable"),
         IS_COUNTRY_PICKER_DISABLE("isCountryPickerDisable"),
         NATIVE_ONRAMP_ENABLED("native_onrmap_enabled"),
-        ONBOARDING_STORIES_ENABLED("onboarding_stories_enabled"),
-        NEW_SWAP_ENABLED("new_swap_enabled");
+        ONBOARDING_STORIES_ENABLED("onboarding_stories_enabled");
     }
 
+    //
     init {
         val configSettings = FirebaseRemoteConfigSettings.Builder()
             .setMinimumFetchIntervalInSeconds(0)
@@ -42,9 +42,6 @@ class RemoteConfig(context: Context, private val api: API) {
             }
         }
     }
-
-    val newSwapEnabled: Boolean
-        get() = remoteConfig.getBoolean(FeatureFlag.NEW_SWAP_ENABLED.key)
 
     val inAppUpdateAvailable: Boolean
         get() = remoteConfig.getBoolean(FeatureFlag.IN_APP_UPDATE_AVAILABLE.key)

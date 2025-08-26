@@ -11,6 +11,8 @@ import com.tonapps.extensions.query
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.extensions.isLightTheme
 import com.tonapps.tonkeeper.extensions.removeAllFragments
+import com.tonapps.tonkeeper.koin.serverConfig
+import com.tonapps.tonkeeper.koin.serverFlags
 import com.tonapps.tonkeeper.ui.base.BaseWalletScreen
 import com.tonapps.tonkeeper.ui.base.ScreenContext
 import com.tonapps.tonkeeper.ui.base.WalletContextScreen
@@ -150,7 +152,7 @@ class MainScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_main, S
         collectFlow(rootViewModel.eventFlow.filterIsInstance<RootEvent.Swap>()) {
             navigation?.add(SwapScreen.newInstance(
                 wallet = it.wallet,
-                nativeSwap = remoteConfig?.newSwapEnabled == true,
+                nativeSwap = context?.serverFlags?.disableNativeSwap != true,
                 uri = it.uri
             ))
         }

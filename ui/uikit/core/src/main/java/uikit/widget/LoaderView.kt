@@ -11,6 +11,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
@@ -71,7 +72,13 @@ class LoaderView @JvmOverloads constructor(
         this.type = type
         updatePaint()
         stopAnimation()
-        startAnimation()
+        if (type == TYPE_TIMER) {
+            indeterminateRotateOffset = 0f
+            startAngle = -90f
+            invalidate()
+        } else {
+            startAnimation()
+        }
     }
 
     fun setProgressAnimation(progress: Float) {
@@ -148,22 +155,55 @@ class LoaderView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        if (trackColor != Color.TRANSPARENT) {
-            canvas.drawArc(bounds, 0f, 360f, false, trackPaint)
-        }
         when (type) {
             TYPE_DEFAULT -> drawDefault(canvas)
             TYPE_PROGRESS -> drawProgress(canvas)
+            TYPE_TIMER -> drawTimer(canvas)
         }
     }
 
     private fun drawDefault(canvas: Canvas) {
+        if (trackColor != Color.TRANSPARENT) {
+            canvas.drawArc(bounds, 0f, 360f, false, trackPaint)
+        }
         canvas.drawArc(bounds, startAngle + indeterminateRotateOffset, indeterminateSweep, false, paint)
     }
 
     private fun drawProgress(canvas: Canvas) {
+        if (trackColor != Color.TRANSPARENT) {
+            canvas.drawArc(bounds, 0f, 360f, false, trackPaint)
+        }
         val angle = 360 * progress
         canvas.drawArc(bounds, startAngle + indeterminateRotateOffset, angle, false, paint)
+    }
+
+    private fun drawTimer(canvas: Canvas) {
+        if (progress > TIMER_FADE_START) {
+            return
+        }
+        val fadeEnd = TIMER_FADE_START - TIMER_FADE_WINDOW
+        val alphaMul = when {
+            progress >= fadeEnd -> ((TIMER_FADE_START - progress) / TIMER_FADE_WINDOW).coerceIn(0f, 1f)
+            else -> 1f
+        }
+
+        val savedPaintAlpha = paint.alpha
+        val savedTrackAlpha = trackPaint.alpha
+
+        val basePaintAlpha = Color.alpha(color)
+        paint.alpha = (basePaintAlpha * alphaMul).toInt()
+
+        if (trackColor != Color.TRANSPARENT) {
+            val baseTrackAlpha = Color.alpha(trackColor)
+            trackPaint.alpha = (baseTrackAlpha * alphaMul).toInt()
+            canvas.drawArc(bounds, 0f, 360f, false, trackPaint)
+        }
+
+        val angle = 360f * progress.coerceIn(0f, 1f)
+        canvas.drawArc(bounds, -90f, angle, false, paint)
+
+        paint.alpha = savedPaintAlpha
+        trackPaint.alpha = savedTrackAlpha
     }
 
     private fun cancelAnimator(animator: Animator?) {
@@ -226,7 +266,7 @@ class LoaderView @JvmOverloads constructor(
 
         if (type == TYPE_PROGRESS) {
             startProgressAnimation()
-        } else {
+        } else if (type == TYPE_DEFAULT) {
             startDefaultAnimation()
         }
     }
@@ -297,7 +337,11 @@ class LoaderView @JvmOverloads constructor(
 
     companion object {
         private const val INDETERMINANT_MIN_SWEEP = 15f
+        private const val TIMER_FADE_START = 0.8f
+        private const val TIMER_FADE_WINDOW = 0.008f
+
         const val TYPE_PROGRESS = 1
         const val TYPE_DEFAULT = 2
+        const val TYPE_TIMER = 3
     }
 }

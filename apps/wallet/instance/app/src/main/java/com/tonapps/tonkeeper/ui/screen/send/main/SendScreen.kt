@@ -12,6 +12,7 @@ import android.widget.Button
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.lifecycleScope
 import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.extensions.getUserMessage
 import com.tonapps.extensions.isPositive
@@ -59,8 +60,10 @@ import com.tonapps.wallet.data.collectibles.entities.NftEntity
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.localization.Localization
 import com.tonapps.wallet.localization.Plurals
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.launch
 import org.koin.core.parameter.parametersOf
 import org.ton.cell.Cell
 import uikit.base.BaseFragment
@@ -445,20 +448,37 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
         targetAddress?.let { addressInput.text = it }
         bin?.let { viewModel.userInputBin(it) }
 
-        if (type == Type.Direct && amountNano.isPositive()) {
-            reviewHeaderView.setIcon(0)
-            reviewHeaderView.setAction(UIKitIcon.ic_close_16)
-            reviewHeaderView.doOnActionClick = { finish() }
-            next()
-            slidesView.next(false)
-            addressInput.hideKeyboard()
+        if (targetAddress != null) {
+            lifecycleScope.launch(Dispatchers.Main) {
+                if (viewModel.isNeedMemoAddress(targetAddress)) {
+                    showReviewState()
+                    commentInput.focus()
+                } else if (type == Type.Direct && amountNano.isPositive()) {
+                    showDirectState()
+                }
+            }
+        } else if (type == Type.Direct && amountNano.isPositive()) {
+            showDirectState()
         } else {
-            reviewHeaderView.setAction(0)
-            reviewHeaderView.setIcon(UIKitIcon.ic_chevron_left_16)
-            reviewHeaderView.doOnCloseClick = { showCreate() }
-            showCreate()
-            addressInput.focus()
+            showReviewState()
         }
+    }
+
+    fun showDirectState() {
+        reviewHeaderView.setIcon(0)
+        reviewHeaderView.setAction(UIKitIcon.ic_close_16)
+        reviewHeaderView.doOnActionClick = { finish() }
+        next()
+        slidesView.next(false)
+        addressInput.hideKeyboard()
+    }
+
+    fun showReviewState() {
+        reviewHeaderView.setAction(0)
+        reviewHeaderView.setIcon(UIKitIcon.ic_chevron_left_16)
+        reviewHeaderView.doOnCloseClick = { showCreate() }
+        showCreate()
+        addressInput.focus()
     }
 
     private fun applyCommentEncryptState(enabled: Boolean) {

@@ -9,9 +9,11 @@ import com.tonapps.tonkeeper.core.entities.WalletExtendedEntity
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.send.contacts.main.list.Item
 import com.tonapps.uikit.list.ListCell
+import com.tonapps.wallet.api.API
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.account.entities.WalletEntity
+import com.tonapps.wallet.data.battery.BatteryRepository
 import com.tonapps.wallet.data.contacts.ContactsRepository
 import com.tonapps.wallet.data.contacts.entities.ContactEntity
 import com.tonapps.wallet.data.events.EventsRepository
@@ -33,6 +35,7 @@ class SendContactsViewModel(
     private val settingsRepository: SettingsRepository,
     private val contactsRepository: ContactsRepository,
     private val eventsRepository: EventsRepository,
+    private val batteryRepository: BatteryRepository,
 ) : BaseWalletVM(app) {
 
     private val _myWalletsFlow = MutableStateFlow<List<Item.MyWallet>>(emptyList())
@@ -144,18 +147,21 @@ class SendContactsViewModel(
             accountId = wallet.accountId,
             testnet = wallet.testnet
         ),
-        latestTronContactsFlow,
+        latestTronContactsFlow
     ) { _, recipients, tronContacts ->
+        val gasProxyAddresses = batteryRepository.getConfig(wallet.testnet).gasProxy
         val tonContacts = recipients.filter {
             !contactsRepository.isHidden(it.account.address.toRawAddress(), wallet.testnet)
         }.mapIndexed { index, recipient ->
             val position = ListCell.getPosition(recipients.size, index)
             Item.LatestContact(position, recipient.account, recipient.timestamp, wallet.testnet)
+        }.filter {
+            it.address !in gasProxyAddresses
         }
 
-        Log.d("SendContactsViewModel", "tronContacts: $tronContacts")
-
-        val contacts = (tonContacts + tronContacts).sortedByDescending { it.timestamp }.take(6)
+        val contacts = (tonContacts + tronContacts).sortedByDescending {
+            it.timestamp
+        }.take(6)
 
         contacts.mapIndexed { index, item ->
             item.copy(

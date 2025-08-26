@@ -32,6 +32,7 @@ import com.tonapps.wallet.api.entity.SwapEntity
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.api.internal.ConfigRepository
 import com.tonapps.wallet.api.internal.InternalApi
+import com.tonapps.wallet.api.internal.SwapApi
 import com.tonapps.wallet.api.tron.TronApi
 import io.Serializer
 import io.batteryapi.apis.DefaultApi
@@ -58,6 +59,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -77,6 +80,7 @@ class API(
 ) : CoreAPI(context) {
 
     private val internalApi = InternalApi(context, defaultHttpClient, appVersionName)
+    private val swapApi = SwapApi(defaultHttpClient)
     private val configRepository = ConfigRepository(context, scope, internalApi)
 
     val config: ConfigEntity
@@ -189,14 +193,22 @@ class API(
 
     fun getOnRampPaymentMethods() = internalApi.getOnRampPaymentMethods()
 
+    fun getOnRampMerchants() = internalApi.getOnRampMerchants()
+
     fun getSwapAssets(): JSONArray = runCatching {
-        internalApi.getSwapAssets()?.let(::JSONArray)
+        swapApi.getSwapAssets()?.let(::JSONArray)
     }.getOrNull() ?: JSONArray()
 
     @kotlin.Throws
-    suspend fun calculateOnRamp(args: OnRampArgsEntity): List<OnRampMerchantEntity> = withContext(Dispatchers.IO) {
+    suspend fun calculateOnRamp(args: OnRampArgsEntity): OnRampMerchantEntity.Data = withContext(Dispatchers.IO) {
         val data = internalApi.calculateOnRamp(args) ?: throw Exception("Empty response")
-        JSONObject(data).getJSONArray("items").map { OnRampMerchantEntity(it) }
+        val json = JSONObject(data)
+        val items = json.getJSONArray("items").map { OnRampMerchantEntity(it) }
+        val suggested = json.optJSONArray("suggested")?.map { OnRampMerchantEntity(it) } ?: emptyList()
+        OnRampMerchantEntity.Data(
+            items = items,
+            suggested = suggested
+        )
     }
 
     suspend fun getEthena(accountId: String): EthenaEntity? = withContext(Dispatchers.IO) {
@@ -242,6 +254,12 @@ class API(
         val url = "$endpoint/sse/traces?account=$accountId&token=${config.tonApiV2Key}"
         return seeHttpClient.sse(url, onFailure = onFailure)
     }
+
+    suspend fun refreshConfig(testnet: Boolean) {
+        configRepository.refresh(testnet)
+    }
+
+    fun swapStream(from: SwapAssetParam, to: SwapAssetParam, userAddress: String) = swapApi.stream(from, to, userAddress)
 
     suspend fun getPageTitle(url: String): String = withContext(Dispatchers.IO) {
         try {
@@ -291,10 +309,6 @@ class API(
     ) = withContext(Dispatchers.IO) {
         withRetry { accounts(testnet).getAccountDnsExpiring(accountId, period).items } ?: emptyList()
     }
-
-    fun swapOmnistonBuild(args: SwapEntity.Args) = withRetry {
-        internalApi.swapOmnistonBuild(args)
-    } ?: throw Exception("Failed to build swap messages")
 
     fun getEvents(
         accountId: String,

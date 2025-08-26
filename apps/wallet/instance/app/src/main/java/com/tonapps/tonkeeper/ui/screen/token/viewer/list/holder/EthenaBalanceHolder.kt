@@ -31,7 +31,7 @@ class EthenaBalanceHolder(parent: ViewGroup) :
         itemView.background = item.position.drawable(context)
 
         titleView.text = if (item.staked) {
-            getString(Localization.staked_usde)
+            item.title ?: getString(Localization.staked_usde)
         } else {
             TokenEntity.USDE.symbol
         }
@@ -43,7 +43,7 @@ class EthenaBalanceHolder(parent: ViewGroup) :
             iconView.visibility = View.VISIBLE
             item.iconRes?.let { iconView.setLocalRes(it) }
             apyView.text = if (item.showApy) {
-                context.getString(Localization.ethena_apy, item.apy)
+                item.apyText
             } else {
                 getString(Localization.ethena)
             }

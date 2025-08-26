@@ -1,17 +1,9 @@
 package com.tonapps.wallet.api.entity
 
+import io.Serializer
 import kotlinx.serialization.Serializable
 
 object SwapEntity {
-
-    @Serializable
-    data class Args(
-        val fromAsset: String,
-        val toAsset: String,
-        val fromAmount: String,
-        val userAddress: String,
-        val slippage: Int
-    )
 
     @Serializable
     data class Message(
@@ -26,7 +18,34 @@ object SwapEntity {
         val quoteId: String,
         val resolverName: String,
         val askUnits: String,
+        val bidUnits: String,
+        val protocolFeeUnits: String,
+        val tradeStartDeadline: String,
         val gasBudget: String,
-        val estimatedGasConsumption: String
+        val estimatedGasConsumption: String,
+        val slippage: Int
+    ) {
+
+        val isEmpty: Boolean
+            get() = messages.isEmpty()
+    }
+
+    val empty = Messages(
+        messages = emptyList(),
+        quoteId = "",
+        resolverName = "",
+        askUnits = "",
+        bidUnits = "",
+        protocolFeeUnits = "",
+        tradeStartDeadline = "",
+        gasBudget = "",
+        estimatedGasConsumption = "",
+        slippage = 100
     )
+
+    fun parse(data: String) = try {
+        Serializer.fromJSON<Messages>(data)
+    } catch (ignored: Throwable) {
+        null
+    }
 }

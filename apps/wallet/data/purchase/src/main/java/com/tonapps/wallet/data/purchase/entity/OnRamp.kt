@@ -3,6 +3,7 @@ package com.tonapps.wallet.data.purchase.entity
 import android.os.Parcelable
 import android.util.Log
 import com.tonapps.wallet.data.core.currency.WalletCurrency
+import com.tonapps.wallet.data.purchase.OnRampUtils
 import kotlinx.coroutines.flow.map
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
@@ -160,11 +161,17 @@ sealed class OnRamp: Parcelable {
             WalletCurrency.sort(list)
         }
 
-        fun isValidPair(from: String, to: String): AllowedPair? {
-            return allowedPairs.find { pair ->
-                (pair.from.symbol.equals(from, true) && pair.to.symbol.equals(to, true))
-                // || (pair.from.symbol.equals(to, true) && pair.to.symbol.equals(from, true))
+        fun resolveNetwork(input: Boolean, currency: WalletCurrency): String? {
+            if (currency.fiat) {
+                return null
             }
+            val assets = assets.filter { asset ->
+                asset.slug.equals(currency.code, true)
+            }
+            val methods = assets.flatMap {
+                if (input) it.inputMethods else it.outputMethods
+            }
+            return OnRampUtils.normalizeType(currency) ?: methods.firstOrNull()?.type
         }
 
         fun findValidPairs(from: String, to: String): Pairs {

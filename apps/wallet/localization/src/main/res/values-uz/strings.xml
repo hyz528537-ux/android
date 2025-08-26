@@ -605,7 +605,6 @@
     <string name="charging_unavailable">Batareya zaryadlash mavjud emas</string>
     <string name="ethena_operated_by">%1$s tomonidan boshqariladi</string>
     <string name="deposit_and_stake">Depozit va stake qilish</string>
-    <string name="ethena_apy">APY (7 kunlik o‘rtacha) ≈ %1$s</string>
     <string name="ethena_check_eligibility">Statusni tekshirish</string>
     <string name="about_ethena">Ethena haqida</string>
 
