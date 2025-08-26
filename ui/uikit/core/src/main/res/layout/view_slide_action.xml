@@ -9,6 +9,14 @@
         android:textAppearance="@style/TextAppearance.Label1"
         android:textColor="?attr/textTertiaryColor"/>
 
+    <uikit.widget.LoaderView
+        android:id="@+id/progress"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="center_vertical|end"
+        android:layout_marginEnd="16dp"
+        android:visibility="gone"/>
+
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/button"
         android:layout_width="76dp"

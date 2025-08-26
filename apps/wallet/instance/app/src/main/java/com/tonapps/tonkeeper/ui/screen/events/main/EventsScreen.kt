@@ -33,6 +33,8 @@ import com.tonapps.uikit.list.ListPaginationListener
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.localization.Localization
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.take
 import uikit.drawable.BarDrawable
 import uikit.drawable.HeaderDrawable
 import uikit.extensions.collectFlow
@@ -154,9 +156,10 @@ class EventsScreen(wallet: WalletEntity) : MainScreen.Child(R.layout.fragment_ma
     }
 
     private fun scrollToFirst() {
-        listView.postDelayed({
+        listView.scrollToPosition(0)
+        collectFlow(viewModel.uiStateFlow.take(1)) {
             listView.scrollToPosition(0)
-        }, 120)
+        }
     }
 
     private fun setLoading(loading: Boolean) {

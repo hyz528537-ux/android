@@ -32,7 +32,7 @@ class BottomSheetLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
-) : FrameLayout(context, attrs, defStyle), ValueAnimator.AnimatorUpdateListener {
+) : FrameLayout(context, attrs, defStyle) {
 
     private companion object {
         private const val parentScale = .92f
@@ -86,14 +86,12 @@ class BottomSheetLayout @JvmOverloads constructor(
         }
     }
 
-    private val showAnimation = ValueAnimator.ofFloat(0f, 1f).apply {
+    private val parentAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
         duration = 285
         interpolator = BottomSheetLayout.interpolator
-        addUpdateListener(this@BottomSheetLayout)
-        doOnStart { setLayerType(LAYER_TYPE_HARDWARE, null) }
-        doOnEnd {
-            setLayerType(LAYER_TYPE_NONE, null)
-            doOnAnimationEnd?.invoke()
+        addUpdateListener {
+            val progress = it.animatedValue as Float
+            onAnimationUpdateParent(progress)
         }
     }
 
@@ -129,7 +127,19 @@ class BottomSheetLayout @JvmOverloads constructor(
         doOnLayout {
             behavior.peekHeight = contentView.measuredHeight
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            showAnimation.start()
+
+            parentAnimator.start()
+
+            contentView.translationY = measuredHeight.toFloat()
+            contentView.animate()
+                .translationY(0f)
+                .setDuration(285)
+                .setInterpolator(interpolator)
+                .withLayer()
+                .withEndAction {
+                    doOnAnimationEnd?.invoke()
+                }
+                .start()
         }
     }
 
@@ -144,13 +154,6 @@ class BottomSheetLayout @JvmOverloads constructor(
             behavior.isHideable = true
         }
         behavior.state = BottomSheetBehavior.STATE_HIDDEN
-    }
-
-    override fun onAnimationUpdate(animation: ValueAnimator) {
-        val value = animation.animatedValue as Float
-        onAnimationUpdateParent(value)
-        val height = measuredHeight
-        contentView.translationY = height * (1 - value)
     }
 
     private fun onAnimationUpdateParent(progress: Float) {

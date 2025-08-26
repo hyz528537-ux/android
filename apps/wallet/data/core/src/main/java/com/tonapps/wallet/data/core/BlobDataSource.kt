@@ -2,17 +2,14 @@ package com.tonapps.wallet.data.core
 
 import android.content.Context
 import android.os.Parcelable
-import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.extensions.cacheFolder
 import com.tonapps.extensions.file
 import com.tonapps.extensions.toByteArray
 import com.tonapps.extensions.toParcel
-import com.tonapps.wallet.api.fromJSON
-import com.tonapps.wallet.api.toJSON
+import io.Serializer
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 abstract class BlobDataSource<D>(
@@ -40,7 +37,7 @@ abstract class BlobDataSource<D>(
             timeout: Long = TimeUnit.DAYS.toMillis(90)
         ): BlobDataSource<T> {
             return object : BlobDataSource<T>(context, path, timeout) {
-                override fun onMarshall(data: T) = toJSON(data).toByteArray()
+                override fun onMarshall(data: T) = Serializer.toJSON(data).toByteArray()
 
                 override fun onUnmarshall(bytes: ByteArray): T? {
                     if (bytes.isEmpty()) {
@@ -48,7 +45,7 @@ abstract class BlobDataSource<D>(
                     }
                     return try {
                         val string = String(bytes)
-                        fromJSON(string)
+                        Serializer.fromJSON(string)
                     } catch (e: Throwable) {
                         FirebaseCrashlytics.getInstance().recordException(e)
                         null

@@ -17,28 +17,31 @@ package io.tonapi.models
 
 import io.tonapi.models.AccountAddress
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param domain 
- * @param contractAddress 
- * @param renewer 
- */
 
+@Serializable
 
 data class DomainRenewAction (
 
-    @Json(name = "domain")
+    @SerialName(value = "domain")
     val domain: kotlin.String,
 
-    @Json(name = "contract_address")
+    @SerialName(value = "contract_address")
     val contractAddress: kotlin.String,
 
-    @Json(name = "renewer")
+    @SerialName(value = "renewer")
     val renewer: AccountAddress
 
-)
+) {
+
+
+}
 

@@ -5,6 +5,7 @@ import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.RemoteConfig
 import com.tonapps.tonkeeper.billing.BillingManager
 import com.tonapps.tonkeeper.client.safemode.SafeModeClient
+import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.manager.assets.AssetsManager
 import com.tonapps.tonkeeper.manager.tx.TransactionManager
 import com.tonapps.tonkeeper.core.history.HistoryHelper
@@ -66,6 +67,7 @@ val koinModel = module {
     singleOf(::APKManager)
     singleOf(::CacheHelper)
     singleOf(::ReferrerClientHelper)
+    singleOf(::AnalyticsHelper)
 
     factoryOf(::SignUseCase)
     factoryOf(::EmulationUseCase)

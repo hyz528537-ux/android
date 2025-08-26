@@ -129,7 +129,6 @@ internal class WalletPrefsFolder(context: Context, scope: CoroutineScope): BaseS
     }
 
     fun getPreferredFeeMethod(walletId: String): PreferredFeeMethod {
-        val key = keyPreferredFeeMethod(walletId)
         val value = getInt(keyPreferredFeeMethod(walletId), PreferredFeeMethod.UNSPECIFIED.id)
         return PreferredFeeMethod.fromId(value)
     }

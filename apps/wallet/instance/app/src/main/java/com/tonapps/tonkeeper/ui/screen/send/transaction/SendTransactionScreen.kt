@@ -55,6 +55,19 @@ import uikit.widget.SimpleRecyclerView
 import uikit.widget.SlideActionView
 import java.util.concurrent.CancellationException
 import androidx.core.view.isVisible
+import com.tonapps.extensions.uri
+import com.tonapps.icu.CurrencyFormatter
+import com.tonapps.tonkeeper.extensions.addFeeItem
+import com.tonapps.tonkeeper.extensions.formattedAmount
+import com.tonapps.tonkeeper.extensions.formattedCharges
+import com.tonapps.tonkeeper.extensions.formattedFiat
+import com.tonapps.tonkeeper.extensions.id
+import com.tonapps.tonkeeper.extensions.symbol
+import com.tonapps.tonkeeper.popup.ActionSheet
+import com.tonapps.tonkeeper.ui.screen.send.main.state.SendFee
+import com.tonapps.uikit.color.accentGreenColor
+import com.tonapps.wallet.localization.Plurals
+import uikit.extensions.dp
 import uikit.extensions.getDimensionPixelSize
 
 class SendTransactionScreen(wallet: WalletEntity) :
@@ -73,7 +86,17 @@ class SendTransactionScreen(wallet: WalletEntity) :
         parametersOf(args.request, args.batteryTransactionType, args.forceRelayer)
     }
 
-    private val historyAdapter = object : HistoryAdapter(disableOpenAction = true) {
+    private val feeMethodSelector: ActionSheet by lazy {
+        ActionSheet(requireContext())
+    }
+
+    private val historyAdapter = object : HistoryAdapter(
+        disableOpenAction = true,
+        shouldShowFeeToggle = {
+            viewModel.feeOptions.size > 1
+        },
+        showFeeMethods = ::showFeeMethods,
+    ) {
         override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
             super.onAttachedToRecyclerView(recyclerView)
             recyclerView.isNestedScrollingEnabled = true
@@ -164,10 +187,7 @@ class SendTransactionScreen(wallet: WalletEntity) :
         slideTextBuilder.append("\n")
         slideTextBuilder.append(SpannableString(secondLineText).apply {
             setSpan(
-                RelativeSizeSpan(0.8f),
-                0,
-                secondLineText.length,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                RelativeSizeSpan(0.8f), 0, secondLineText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
             )
             setSpan(
                 ForegroundColorSpan(
@@ -326,6 +346,23 @@ class SendTransactionScreen(wallet: WalletEntity) :
         walletView.text = builder
     }
 
+    private fun showFeeMethods(currentFee: SendFee, targetView: View) {
+        feeMethodSelector.width = 264.dp
+
+        if (feeMethodSelector.isShowing) {
+            return
+        }
+
+        feeMethodSelector.clearItems()
+
+        viewModel.feeOptions.forEach { fee ->
+            feeMethodSelector.addFeeItem(fee, fee.id == currentFee?.id) {
+                viewModel.setFeeMethod(fee)
+            }
+        }
+        feeMethodSelector.showPopupAboveRight(targetView)
+    }
+
     companion object {
 
         const val ERROR = "error"
@@ -349,8 +386,7 @@ class SendTransactionScreen(wallet: WalletEntity) :
             batteryTxType: BatteryTransaction = BatteryTransaction.UNKNOWN,
             forceRelayer: Boolean = false,
         ): String {
-            val activity =
-                context.activity ?: throw IllegalArgumentException("Context must be an Activity")
+            val activity = context.activity ?: throw IllegalArgumentException("Context must be an Activity")
             val fragment = newInstance(wallet, request, batteryTxType, forceRelayer)
             val result = activity.addForResult(fragment)
             if (result.containsKey(ERROR)) {

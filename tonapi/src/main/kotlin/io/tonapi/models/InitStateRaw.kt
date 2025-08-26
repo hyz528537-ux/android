@@ -16,28 +16,31 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param workchain 
- * @param rootHash 
- * @param fileHash 
- */
 
+@Serializable
 
 data class InitStateRaw (
 
-    @Json(name = "workchain")
+    @SerialName(value = "workchain")
     val workchain: kotlin.Int,
 
-    @Json(name = "root_hash")
+    @SerialName(value = "root_hash")
     val rootHash: kotlin.String,
 
-    @Json(name = "file_hash")
+    @SerialName(value = "file_hash")
     val fileHash: kotlin.String
 
-)
+) {
+
+
+}
 

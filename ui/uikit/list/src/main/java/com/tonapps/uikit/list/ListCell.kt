@@ -3,6 +3,7 @@ package com.tonapps.uikit.list
 interface ListCell {
 
     companion object {
+
         fun getPosition(size: Int, index: Int): Position {
             if (1 >= size) {
                 return Position.SINGLE

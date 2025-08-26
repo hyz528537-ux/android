@@ -28,6 +28,8 @@ import android.webkit.WebSettings
 import android.webkit.WebStorage
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toUri
 import androidx.webkit.OutcomeReceiverCompat
 import androidx.webkit.PrefetchException
 import androidx.webkit.Profile
@@ -51,18 +53,25 @@ open class WebViewFixed @JvmOverloads constructor(
 ) : WebView(context, attrs, defStyle) {
 
     open class Callback {
-        open fun onScroll(y: Int, x: Int) {  }
-        open fun onElementBlurred() {  }
-        open fun onElementFocused(rect: RectF) { }
-        open fun onPageStarted(url: String, favicon: Bitmap?) { }
-        open fun shouldOverrideUrlLoading(request: WebResourceRequest): Boolean { return false }
-        open fun onPageFinished(url: String) { }
-        open fun onReceivedTitle(title: String) { }
-        open fun onProgressChanged(newProgress: Int) { }
-        open fun onLoadResource(url: String): Boolean { return true }
-        open fun onWindowClose() { }
-        open fun onNewTab(url: String) { }
-        open fun openFilePicker(fileChooserParams: FileChooserParams) { }
+        open fun onScroll(y: Int, x: Int) {}
+        open fun onElementBlurred() {}
+        open fun onElementFocused(rect: RectF) {}
+        open fun onPageStarted(url: String, favicon: Bitmap?) {}
+        open fun shouldOverrideUrlLoading(request: WebResourceRequest): Boolean {
+            return false
+        }
+
+        open fun onPageFinished(url: String) {}
+        open fun onReceivedTitle(title: String) {}
+        open fun onProgressChanged(newProgress: Int) {}
+        open fun onLoadResource(url: String): Boolean {
+            return true
+        }
+
+        open fun onWindowClose() {}
+        open fun onNewTab(url: String) {}
+        open fun openFilePicker(fileChooserParams: FileChooserParams) {}
+        open fun onPermissionRequest(request: PermissionRequest) {}
     }
 
     private var isPageLoaded = false
@@ -102,6 +111,7 @@ open class WebViewFixed @JvmOverloads constructor(
         settings.textSize = WebSettings.TextSize.NORMAL
         settings.setGeolocationEnabled(false)
 
+
         if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
             WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings, false)
         }
@@ -123,7 +133,9 @@ open class WebViewFixed @JvmOverloads constructor(
                 callbacks.forEach { it.onPageStarted(url, favicon) }
             }
 
-            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+            override fun shouldOverrideUrlLoading(
+                view: WebView, request: WebResourceRequest
+            ): Boolean {
                 for (callback in callbacks) {
                     if (callback.shouldOverrideUrlLoading(request)) {
                         return true
@@ -135,6 +147,20 @@ open class WebViewFixed @JvmOverloads constructor(
             override fun onPageFinished(view: WebView?, url: String) {
                 super.onPageFinished(view, url)
                 callbacks.forEach { it.onPageFinished(url) }
+
+                val anchor = url.toUri().fragment
+                if (!anchor.isNullOrEmpty()) {
+                    evaluateJavascript(
+                        """
+                        (function() {
+                            var el = document.getElementById('$anchor');
+                            if (el) {
+                                el.scrollIntoView({behavior: 'smooth'});
+                            }
+                        })();
+                        """.trimIndent()
+                    )
+                }
             }
 
             override fun onLoadResource(view: WebView?, url: String) {
@@ -161,16 +187,12 @@ open class WebViewFixed @JvmOverloads constructor(
                 callbacks.forEach { it.onProgressChanged(newProgress) }
             }
 
-            /*override fun onPermissionRequest(request: PermissionRequest) {
-                val resources = request.resources
-                request.grant(resources)
-            }*/
+            override fun onPermissionRequest(request: PermissionRequest) {
+                callbacks.forEach { it.onPermissionRequest(request) }
+            }
 
             override fun onCreateWindow(
-                view: WebView,
-                isDialog: Boolean,
-                isUserGesture: Boolean,
-                resultMsg: Message?
+                view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?
             ): Boolean {
                 if (isDialog) {
                     return resultMsg?.let { openNewWindow(it) } ?: false
@@ -203,7 +225,6 @@ open class WebViewFixed @JvmOverloads constructor(
     }
 
     fun setFilePickerResult(arrays: Array<Uri>) {
-        Log.d("DAppScreenLog", "setFilePickerResult: ${arrays.joinToString(", ")}")
         filePathCallback?.onReceiveValue(arrays)
         filePathCallback = null
     }
@@ -217,9 +238,7 @@ open class WebViewFixed @JvmOverloads constructor(
     }
 
     private fun getTargetUrl(
-        view: WebView,
-        resultMsg: Message?,
-        callback: (url: String) -> Unit
+        view: WebView, resultMsg: Message?, callback: (url: String) -> Unit
     ) {
         val extra = view.hitTestResult.extra
         if (extra != null) {
@@ -230,9 +249,7 @@ open class WebViewFixed @JvmOverloads constructor(
     }
 
     private fun getTargetUrlHack(
-        view: WebView,
-        resultMsg: Message?,
-        callback: (url: String) -> Unit
+        view: WebView, resultMsg: Message?, callback: (url: String) -> Unit
     ) {
         val newWebView = WebView(view.context).apply {
             settings.apply {
@@ -243,8 +260,7 @@ open class WebViewFixed @JvmOverloads constructor(
             }
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(
-                    view: WebView?,
-                    request: WebResourceRequest?
+                    view: WebView?, request: WebResourceRequest?
                 ): Boolean {
                     request?.url?.let {
                         callback(it.toString())
@@ -276,7 +292,8 @@ open class WebViewFixed @JvmOverloads constructor(
         return true
     }
 
-    private class NewWindowDialog(context: Context, profileName: String): Dialog(context, R.style.Widget_Dialog) {
+    private class NewWindowDialog(context: Context, profileName: String) :
+        Dialog(context, R.style.Widget_Dialog) {
 
         val webView = WebViewFixed(context)
 
@@ -334,15 +351,8 @@ open class WebViewFixed @JvmOverloads constructor(
     }
 
     suspend fun getInputBottom(): Float = suspendCancellableCoroutine { continuation ->
-        val jsCode = "(function() {" +
-                "var focusedElement = document.activeElement;" +
-                "if (focusedElement && (focusedElement.tagName === 'INPUT' || focusedElement.tagName === 'TEXTAREA')) {" +
-                "   var rect = focusedElement.getBoundingClientRect();" +
-                "   return rect.bottom;" +
-                "} else {" +
-                "   return -1;" +
-                "}" +
-                "})()"
+        val jsCode =
+            "(function() {" + "var focusedElement = document.activeElement;" + "if (focusedElement && (focusedElement.tagName === 'INPUT' || focusedElement.tagName === 'TEXTAREA')) {" + "   var rect = focusedElement.getBoundingClientRect();" + "   return rect.bottom;" + "} else {" + "   return -1;" + "}" + "})()"
         evaluateJavascript(jsCode) { value ->
             val elementBottom = value.toFloatOrNull() ?: -1f
             continuation.resume(elementBottom)
@@ -354,14 +364,16 @@ open class WebViewFixed @JvmOverloads constructor(
         super.clearHistory()
         try {
             (this.parent as ViewGroup).removeView(this)
-        } catch (ignored: Throwable) { }
+        } catch (ignored: Throwable) {
+        }
     }
 
     override fun destroy() {
         reset()
         try {
             removeAllViews()
-        } catch (ignored: Throwable) { }
+        } catch (ignored: Throwable) {
+        }
         super.destroy()
     }
 
@@ -425,7 +437,12 @@ open class WebViewFixed @JvmOverloads constructor(
         @JavascriptInterface
         fun onElementFocused(value: String) {
             val json = JSONObject(value)
-            val rect = RectF(json.getDouble("left").toFloat(), json.getDouble("top").toFloat(), json.getDouble("right").toFloat(), json.getDouble("bottom").toFloat())
+            val rect = RectF(
+                json.getDouble("left").toFloat(),
+                json.getDouble("top").toFloat(),
+                json.getDouble("right").toFloat(),
+                json.getDouble("bottom").toFloat()
+            )
             this@WebViewFixed.onElementFocused(rect)
         }
     }

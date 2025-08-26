@@ -3,7 +3,6 @@ package com.tonapps.wallet.api
 import android.content.Context
 import android.net.Uri
 import android.util.ArrayMap
-import com.squareup.moshi.JsonAdapter
 import com.tonapps.blockchain.ton.contract.BaseWalletContract
 import com.tonapps.blockchain.ton.contract.WalletVersion
 import com.tonapps.blockchain.ton.extensions.EmptyPrivateKeyEd25519
@@ -21,25 +20,27 @@ import com.tonapps.network.post
 import com.tonapps.network.postJSON
 import com.tonapps.network.requestBuilder
 import com.tonapps.network.sse
-import com.tonapps.wallet.api.core.SourceAPI
 import com.tonapps.wallet.api.entity.AccountDetailsEntity
 import com.tonapps.wallet.api.entity.AccountEventEntity
 import com.tonapps.wallet.api.entity.BalanceEntity
 import com.tonapps.wallet.api.entity.ChartEntity
 import com.tonapps.wallet.api.entity.ConfigEntity
+import com.tonapps.wallet.api.entity.EthenaEntity
 import com.tonapps.wallet.api.entity.OnRampArgsEntity
 import com.tonapps.wallet.api.entity.OnRampMerchantEntity
+import com.tonapps.wallet.api.entity.SwapEntity
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.api.internal.ConfigRepository
 import com.tonapps.wallet.api.internal.InternalApi
+import com.tonapps.wallet.api.internal.SwapApi
 import com.tonapps.wallet.api.tron.TronApi
-import io.batteryapi.apis.BatteryApi
-import io.batteryapi.apis.BatteryApi.UnitsGetBalance
+import io.Serializer
+import io.batteryapi.apis.DefaultApi
 import io.batteryapi.models.Balance
 import io.batteryapi.models.Config
+import io.batteryapi.models.EstimateGaslessCostRequest
 import io.batteryapi.models.RechargeMethods
-import io.tonapi.infrastructure.ClientException
-import io.tonapi.infrastructure.Serializer
+import io.infrastructure.ClientException
 import io.tonapi.models.Account
 import io.tonapi.models.AccountAddress
 import io.tonapi.models.AccountEvent
@@ -58,6 +59,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -69,7 +72,6 @@ import org.json.JSONObject
 import org.ton.api.pub.PublicKeyEd25519
 import org.ton.cell.Cell
 import org.ton.crypto.hex
-import java.math.BigDecimal
 import java.util.Locale
 
 class API(
@@ -78,6 +80,7 @@ class API(
 ) : CoreAPI(context) {
 
     private val internalApi = InternalApi(context, defaultHttpClient, appVersionName)
+    private val swapApi = SwapApi(defaultHttpClient)
     private val configRepository = ConfigRepository(context, scope, internalApi)
 
     val config: ConfigEntity
@@ -93,8 +96,12 @@ class API(
     private val bridgeUrl: String
         get() = "${config.tonConnectBridgeHost}/bridge"
 
-    @Volatile
-    private var cachedCountry: String? = null
+    val country: String
+        get() = internalApi.country
+
+    fun setCountry(deviceCountry: String, storeCountry: String?) = internalApi.setCountry(deviceCountry, storeCountry)
+
+    suspend fun initConfig() = configRepository.initConfig()
 
     suspend fun tonapiFetch(
         url: String,
@@ -140,18 +147,13 @@ class API(
         Provider(config.tonapiMainnetHost, config.tonapiTestnetHost, tonAPIHttpClient)
     }
 
-    private val batteryApi by lazy {
-        SourceAPI(
-            BatteryApi(config.batteryHost, tonAPIHttpClient),
-            BatteryApi(config.batteryTestnetHost, tonAPIHttpClient)
-        )
+    private val batteryProvider: BatteryProvider by lazy {
+        BatteryProvider(config.batteryHost, config.batteryTestnetHost, tonAPIHttpClient)
     }
 
-    private val emulationJSONAdapter: JsonAdapter<MessageConsequences> by lazy {
-        Serializer.moshi.adapter(MessageConsequences::class.java)
+    val tron: TronApi by lazy {
+        TronApi(config, defaultHttpClient, batteryProvider.default.get(false))
     }
-
-    val tron = TronApi(config, defaultHttpClient, batteryApi.get(false))
 
     fun accounts(testnet: Boolean) = provider.accounts.get(testnet)
 
@@ -173,7 +175,11 @@ class API(
 
     fun rates() = provider.rates.get(false)
 
-    fun battery(testnet: Boolean) = batteryApi.get(testnet)
+    fun battery(testnet: Boolean) = batteryProvider.default.get(testnet)
+
+    fun batteryWallet(testnet: Boolean) = batteryProvider.wallet.get(testnet)
+
+    fun batteryEmulation(testnet: Boolean) = batteryProvider.emulation.get(testnet)
 
     fun getBatteryConfig(testnet: Boolean): Config? {
         return withRetry { battery(testnet).getConfig() }
@@ -183,22 +189,36 @@ class API(
         return withRetry { battery(testnet).getRechargeMethods(false) }
     }
 
-    fun getOnRampData(country: String) = internalApi.getOnRampData(country)
+    fun getOnRampData() = internalApi.getOnRampData()
 
-    suspend fun calculateOnRamp(args: OnRampArgsEntity): List<OnRampMerchantEntity> = withContext(Dispatchers.IO) {
-        val data = internalApi.calculateOnRamp(args) ?: return@withContext emptyList()
-        val items = JSONObject(data).getJSONArray("items")
-        items.map { OnRampMerchantEntity(it) }
+    fun getOnRampPaymentMethods() = internalApi.getOnRampPaymentMethods()
+
+    fun getOnRampMerchants() = internalApi.getOnRampMerchants()
+
+    fun getSwapAssets(): JSONArray = runCatching {
+        swapApi.getSwapAssets()?.let(::JSONArray)
+    }.getOrNull() ?: JSONArray()
+
+    @kotlin.Throws
+    suspend fun calculateOnRamp(args: OnRampArgsEntity): OnRampMerchantEntity.Data = withContext(Dispatchers.IO) {
+        val data = internalApi.calculateOnRamp(args) ?: throw Exception("Empty response")
+        val json = JSONObject(data)
+        val items = json.getJSONArray("items").map { OnRampMerchantEntity(it) }
+        val suggested = json.optJSONArray("suggested")?.map { OnRampMerchantEntity(it) } ?: emptyList()
+        OnRampMerchantEntity.Data(
+            items = items,
+            suggested = suggested
+        )
     }
 
-    suspend fun getEthenaStakingAPY(address: String): BigDecimal = withContext(Dispatchers.IO) {
-        internalApi.getEthenaStakingAPY(address)
+    suspend fun getEthena(accountId: String): EthenaEntity? = withContext(Dispatchers.IO) {
+        withRetry { internalApi.getEthena(accountId) }
     }
 
     fun getBatteryBalance(
         tonProofToken: String,
         testnet: Boolean,
-        units: UnitsGetBalance = UnitsGetBalance.ton
+        units: DefaultApi.UnitsGetBalance = DefaultApi.UnitsGetBalance.ton
     ): Balance? {
         return withRetry { battery(testnet).getBalance(tonProofToken, units) }
     }
@@ -210,7 +230,7 @@ class API(
     private fun isOkStatus(testnet: Boolean): Boolean {
         try {
             val status = withRetry {
-                provider.blockchain.get(testnet).status()
+                provider.utilities.get(testnet).status()
             } ?: return false
             if (!status.restOnline) {
                 return false
@@ -234,6 +254,12 @@ class API(
         val url = "$endpoint/sse/traces?account=$accountId&token=${config.tonApiV2Key}"
         return seeHttpClient.sse(url, onFailure = onFailure)
     }
+
+    suspend fun refreshConfig(testnet: Boolean) {
+        configRepository.refresh(testnet)
+    }
+
+    fun swapStream(from: SwapAssetParam, to: SwapAssetParam, userAddress: String) = swapApi.stream(from, to, userAddress)
 
     suspend fun getPageTitle(url: String): String = withContext(Dispatchers.IO) {
         try {
@@ -274,6 +300,14 @@ class API(
 
     fun getBurnAddress() = config.burnZeroDomain.ifBlank {
         "UQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJKZ"
+    }
+
+    suspend fun getDnsExpiring(
+        accountId: String,
+        testnet: Boolean,
+        period: Int
+    ) = withContext(Dispatchers.IO) {
+        withRetry { accounts(testnet).getAccountDnsExpiring(accountId, period).items } ?: emptyList()
     }
 
     fun getEvents(
@@ -329,6 +363,7 @@ class API(
             lt = event.lt,
             inProgress = event.inProgress,
             extra = 0L,
+            progress = 0f,
         )
         listOf(accountEvent)
     }
@@ -400,7 +435,7 @@ class API(
             accounts(testnet).getAccountJettonsBalances(
                 accountId = accountId,
                 currencies = currency?.let { listOf(it) },
-                extensions = extensions,
+                supportedExtensions = extensions,
             ).balances
         } ?: return null
         return jettonsBalances.map { BalanceEntity(it) }.filter { it.value.isPositive }
@@ -439,7 +474,11 @@ class API(
             val wallets = withRetry {
                 wallet(testnet).getWalletsByPublicKey(query).accounts
             } ?: return emptyList()
-            wallets.map { AccountDetailsEntity(query, it, testnet) }.map {
+            wallets.map { AccountDetailsEntity(
+                query = query,
+                wallet = it,
+                testnet = testnet
+            ) }.map {
                 if (it.walletVersion == WalletVersion.UNKNOWN) {
                     it.copy(
                         walletVersion = BaseWalletContract.resolveVersion(
@@ -566,7 +605,7 @@ class API(
         cell: Cell,
         testnet: Boolean,
     ): String? {
-        val request = io.batteryapi.models.EstimateGaslessCostRequest(cell.base64(), false)
+        val request = EstimateGaslessCostRequest(cell.base64(), false)
 
         return withRetry {
             battery(testnet).estimateGaslessCost(jettonMaster, request, tonProofToken).commission
@@ -601,7 +640,11 @@ class API(
         val withBattery = supportedByBattery && allowedByBattery
 
         val string = response.body?.string() ?: return null
-        val consequences = emulationJSONAdapter.fromJson(string) ?: return null
+        val consequences = try {
+            Serializer.JSON.decodeFromString<MessageConsequences>(string)
+        } catch (e: Throwable) {
+            return null
+        }
         return Pair(consequences, withBattery)
     }
 
@@ -619,7 +662,7 @@ class API(
         val request = EmulateMessageToWalletRequest(
             boc = boc,
             params = params,
-            safeMode = safeModeEnabled
+            // safeMode = safeModeEnabled
         )
         withRetry {
             emulation(testnet).emulateMessageToWallet(request)
@@ -667,12 +710,15 @@ class API(
             return@withContext SendBlockchainState.STATUS_ERROR
         }
 
+        val meta = hashMapOf(
+            "platform" to "android",
+            "version" to appVersionName,
+            "source" to source,
+            "confirmation_time" to confirmationTime.toString()
+        )
         val request = SendBlockchainMessageRequest(
             boc = boc,
-            platform = "android",
-            version = appVersionName,
-            source = source,
-            confirmationTime = confirmationTime
+            meta = meta
         )
         withRetry {
             blockchain(testnet).sendBlockchainMessage(request)
@@ -889,16 +935,25 @@ class API(
         }
     }
 
-    fun getServerTime(testnet: Boolean) = withRetry {
-        liteServer(testnet).getRawTime().time
-    } ?: (System.currentTimeMillis() / 1000).toInt()
-
-    suspend fun resolveCountry(): String? = withContext(Dispatchers.IO) {
-        if (cachedCountry == null) {
-            cachedCountry = internalApi.resolveCountry()
+    fun getServerTime(testnet: Boolean): Int {
+        /*val time = serverTimeProvider.getServerTime(testnet)
+        if (time == null) {
+            val serverTimeSeconds = withRetry { liteServer(testnet).getRawTime().time }
+            if (serverTimeSeconds == null) {
+                return (System.currentTimeMillis() / 1000).toInt()
+            }
+            serverTimeProvider.setServerTime(testnet, serverTimeSeconds)
+            return serverTimeSeconds
         }
-        cachedCountry
+        return time*/
+        val serverTimeSeconds = withRetry { liteServer(testnet).getRawTime().time }
+        if (serverTimeSeconds == null) {
+            return (System.currentTimeMillis() / 1000).toInt()
+        }
+        return serverTimeSeconds
     }
+
+    suspend fun resolveCountry(): String? = internalApi.resolveCountry()
 
     suspend fun reportNtfSpam(
         nftAddress: String,

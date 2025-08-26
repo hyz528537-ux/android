@@ -119,6 +119,6 @@ data class NftEntity(
         verified = item.approvedBy.isNotEmpty(),
         inSale = item.sale != null,
         dns = item.dns,
-        trust = Trust(item.trust),
+        trust = Trust(item.trust.value),
     )
 }

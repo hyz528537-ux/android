@@ -2,8 +2,6 @@ package com.tonapps.tonkeeper.ui.screen.battery.refill.list
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.tonapps.tonkeeper.ui.screen.battery.recharge.list.holder.AddressHolder
-import com.tonapps.tonkeeper.ui.screen.battery.recharge.list.holder.AmountHolder
 import com.tonapps.tonkeeper.ui.screen.battery.refill.list.holder.BatteryHolder
 import com.tonapps.tonkeeper.ui.screen.battery.refill.list.holder.GiftHolder
 import com.tonapps.tonkeeper.ui.screen.battery.refill.list.holder.IAPPackHolder

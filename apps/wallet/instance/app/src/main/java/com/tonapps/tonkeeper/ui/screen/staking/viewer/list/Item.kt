@@ -1,10 +1,10 @@
 package com.tonapps.tonkeeper.ui.screen.staking.viewer.list
 
 import android.net.Uri
-import androidx.annotation.StringRes
 import com.tonapps.icu.Coins
+import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.list.BaseListItem
-import com.tonapps.uikit.list.ListCell
+import com.tonapps.wallet.api.entity.EthenaEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.staking.StakingPool
 
@@ -18,10 +18,12 @@ sealed class Item(type: Int): BaseListItem(type) {
         const val TYPE_TOKEN = 5
         const val TYPE_SPACE = 6
         const val TYPE_DESCRIPTION = 7
+        const val TYPE_ETHENA_DETAILS = 8
     }
 
     data class Balance(
-        val poolImplementation: StakingPool.Implementation,
+        val poolImplementation: StakingPool.Implementation? = null,
+        val ethenaType: EthenaEntity.Method.Type? = null,
         val balance: Coins,
         val balanceFormat: CharSequence,
         val fiat: Coins,
@@ -30,18 +32,43 @@ sealed class Item(type: Int): BaseListItem(type) {
     ): Item(TYPE_BALANCE) {
 
         val currencyIcon: Int by lazy {
-            if (poolImplementation == StakingPool.Implementation.Ethena) {
+            if (ethenaType != null) {
                 com.tonapps.wallet.api.R.drawable.ic_udse_ethena_with_bg
             } else {
                 com.tonapps.wallet.api.R.drawable.ic_ton_with_bg
             }
         }
+
+        val iconRes: Int?
+            get() {
+                if (poolImplementation != null) {
+                    return StakingPool.getIcon(poolImplementation)
+                } else {
+                    return when (ethenaType) {
+                        EthenaEntity.Method.Type.STONFI -> R.drawable.ethena
+                        EthenaEntity.Method.Type.AFFLUENT -> R.drawable.affluent
+                        null -> null
+                    }
+                }
+            }
     }
 
     data class Actions(
-        val poolAddress: String,
         val wallet: WalletEntity,
-    ): Item(TYPE_ACTIONS)
+        val stakeDisabled: Boolean = false,
+        val unstakeDisabled: Boolean = false,
+        val poolAddress: String? = null,
+        val ethenaMethod: EthenaEntity.Method? = null,
+    ): Item(TYPE_ACTIONS) {
+        val iconRes: Int?
+            get() {
+                return when (ethenaMethod?.type) {
+                    EthenaEntity.Method.Type.STONFI -> R.drawable.stonfi
+                    EthenaEntity.Method.Type.AFFLUENT -> R.drawable.affluent
+                    null -> null
+                }
+            }
+    }
 
     data class Details(
         val apyFormat: String,
@@ -74,7 +101,20 @@ sealed class Item(type: Int): BaseListItem(type) {
     data object Space: Item(TYPE_SPACE)
 
     data class Description(
-        @StringRes val resId: Int,
+        val description: String,
         val uri: Uri? = null,
+        val isEthena: Boolean = false,
     ): Item(TYPE_DESCRIPTION)
+
+    data class EthenaDetails(
+        val apyFormat: CharSequence,
+        val apyTitle: String,
+        val apyDescription: String,
+        val bonusApyFormat: CharSequence? = null,
+        val bonusTitle: String? = null,
+        val bonusDescription: String? = null,
+        val bonusUrl: String? = null,
+        val faqUrl: String,
+    ): Item(TYPE_ETHENA_DETAILS)
+
 }

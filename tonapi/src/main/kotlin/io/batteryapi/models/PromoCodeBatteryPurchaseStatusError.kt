@@ -16,23 +16,19 @@
 package io.batteryapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param msg 
- * @param code 
- */
 
+@Serializable
 
 data class PromoCodeBatteryPurchaseStatusError (
 
-    @Json(name = "msg")
+    @SerialName(value = "msg")
     val msg: kotlin.String,
 
-    @Json(name = "code")
+    @SerialName(value = "code")
     val code: PromoCodeBatteryPurchaseStatusError.Code
 
 ) {
@@ -42,11 +38,11 @@ data class PromoCodeBatteryPurchaseStatusError (
      *
      * Values: promoMinusCodeMinusNotMinusFound,promoMinusExceededMinusAttempts,temporaryMinusError
      */
-    @JsonClass(generateAdapter = false)
+    @Serializable
     enum class Code(val value: kotlin.String) {
-        @Json(name = "promo-code-not-found") promoMinusCodeMinusNotMinusFound("promo-code-not-found"),
-        @Json(name = "promo-exceeded-attempts") promoMinusExceededMinusAttempts("promo-exceeded-attempts"),
-        @Json(name = "temporary-error") temporaryMinusError("temporary-error");
+        @SerialName(value = "promo-code-not-found") promoMinusCodeMinusNotMinusFound("promo-code-not-found"),
+        @SerialName(value = "promo-exceeded-attempts") promoMinusExceededMinusAttempts("promo-exceeded-attempts"),
+        @SerialName(value = "temporary-error") temporaryMinusError("temporary-error");
     }
 
 }

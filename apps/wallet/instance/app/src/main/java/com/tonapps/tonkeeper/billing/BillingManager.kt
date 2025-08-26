@@ -8,6 +8,8 @@ import com.android.billingclient.api.BillingClient.ProductType
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ConsumeParams
+import com.android.billingclient.api.GetBillingConfigParams
+import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
@@ -17,6 +19,7 @@ import com.android.billingclient.api.consumePurchase
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.extensions.filterList
+import com.tonapps.tonkeeper.Environment
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
@@ -40,11 +43,12 @@ import kotlin.time.Duration.Companion.seconds
 class BillingManager(
     context: Context,
     scope: CoroutineScope,
+    private val environment: Environment,
 ) : PurchasesUpdatedListener {
 
     private var billingClient: BillingClient = BillingClient.newBuilder(context)
         .setListener(this)
-        .enablePendingPurchases()
+        .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().enablePrepaidPlans().build())
         .build()
 
     private val _productsFlow = MutableStateFlow<List<ProductDetails>?>(null)
@@ -90,7 +94,7 @@ class BillingManager(
     private suspend fun getProductDetails(client: BillingClient, params: QueryProductDetailsParams): List<ProductDetails> = suspendCancellableCoroutine { continuation ->
         client.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                continuation.resume(productDetailsList)
+                continuation.resume(productDetailsList.productDetailsList)
             } else {
                 continuation.resumeWithException(BillingException(billingResult))
             }
@@ -173,6 +177,20 @@ class BillingManager(
             log("Failed to launch billing flow", BillingException(result))
         }
         Unit
+    }
+
+    private suspend fun requestCountry(client: BillingClient): String? = suspendCancellableCoroutine { continuation ->
+        client.getBillingConfigAsync(GetBillingConfigParams.newBuilder().build()) { billingResult, billingConfig ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && billingConfig != null) {
+                continuation.resume(billingConfig.countryCode)
+            } else {
+                continuation.resume(null)
+            }
+        }
+    }
+
+    suspend fun getCountry() = billingClient.ready { client ->
+        requestCountry(client)
     }
 
     @OptIn(FlowPreview::class)

@@ -232,6 +232,7 @@
     <string name="multi_account_secret_wrong">Пожалуйста, используйте Tonkeeper Desktop для акаунта мульти-кошелька</string>
     <string name="insufficient_balance_default">Необходимо: %1$s.\nВаш баланс: %2$s.</string>
     <string name="name">Имя</string>
+    <string name="purchase">Покупка</string>
     <string name="new_contact">Новый адрес</string>
     <string name="edit">Ред.</string>
     <string name="edit_full">Изменить</string>
@@ -250,13 +251,20 @@
     <string name="safe_mode_tonconnect_title">Подключение доступно только к проверенным приложениям</string>
     <string name="safe_mode_tonconnect_description">Вы можете изменить это в настройках безопасности вашего кошелька.</string>
     <string name="your_address">Ваш адрес:</string>
+    <string name="exchange_rate">Курс</string>
     <string name="address_prefix">Адрес:</string>
     <string name="safe_mode_tokens_footer">Безопасный режим включён. Доступны только проверенные токены. <annotation colorAttr="textAccentColor">Настройки</annotation></string>
     <string name="all">Все</string>
     <string name="report_encrypted_comment">Комментарий из этой транзакции будет отправлен вместе с жалобой в расшифрованном виде.</string>
     <string name="report_encrypted_comment_button">Пожаловаться всё равно</string>
     <string name="tx_marked_as_not_spam">Отмечено как не спам</string>
-
+    <string name="renew_dns_title">Истекающие домены</string>
+    <string name="renew_dns_expires">Истекает через %1$d д.</string>
+    <string name="wallet_renew_dns">У вас есть %1$d домена с истекающим сроком аренды. Продлите все до %2$s.</string>
+    <string name="renew_dns_until">Продлить все до %1$s</string>
+    <string name="renew_signel_dns_until">Продлить  до %1$s</string>
+    <string name="renew_dns_all">Продлить все</string>
+    <string name="renew_dns_done">Домен продлён на 1 год</string>
 
     <!-- not reviewed -->
     <string name="unstake_amount">Сумма снятия ставки</string>
@@ -266,6 +274,7 @@
     <string name="stake_tonstakers_description">Когда вы делаете ставку TON в пуле Tonstakers, вы получаете токен под названием tsTON, который представляет вашу долю в пуле. По мере того, как пул накапливает прибыль, ваш tsTON представляет большее количество TON.</string>
 
     <string name="view_details">Подробнее</string>
+    <string name="on_sale">В ПРОДАЖЕ</string>
     <string name="nft_transfer">Отправка NFT</string>
     <string name="nft_disabled_transfer">NFT сейчас продается на маркетплейсе. Для передачи следует сначала снять его с продажи.</string>
     <string name="delete_account_alert">Удалить аккаунт?</string>
@@ -308,6 +317,7 @@
     <string name="tokens">Токены</string>
 
     <string name="address">Адрес</string>
+    <string name="enter_amount">Введите сумму</string>
     <string name="call_contract">Вызов контракта</string>
     <string name="contract_address">Адрес контракта</string>
     <string name="about_collection">Подробнее о коллекции</string>
@@ -408,6 +418,7 @@
     <string name="logout_confirmation">У меня есть резервная копия фразы восстановления кошелька %1$s</string>
     <string name="back_up_now">Скопировать сейчас</string>
     <string name="last_updated">Обновлён в %1$s</string>
+    <string name="confirm_swap">Подтвердить обмен</string>
     <string name="max">Макс</string>
 
 
@@ -543,7 +554,6 @@
         <item quantity="many">≈ %1$s отправок токенов</item>
         <item quantity="other">≈ %1$s отправок токенов</item>
     </plurals>
-    <string name="will_be_paid_with_battery">Будет оплачена батарейкой</string>
     <string name="battery_settings_title">Настройки батарейки</string>
     <string name="battery_settings_subtitle">Выбранные транзакции будут оплачены батарейкой Tonkeeper.</string>
     <string name="battery_recharge_title">Зарядка</string>
@@ -557,7 +567,6 @@
     <string name="promocode_hint">Промокод</string>
     <string name="refund">Возврат</string>
     <string name="gasless_switch_label">Оплатить в %1$s</string>
-    <string name="change_fee_method">Изменить способ оплаты</string>
     <string name="or">или</string>
     <string name="battery_large_pack">Большой</string>
     <string name="battery_medium_pack">Средний</string>
@@ -649,8 +658,21 @@
     <string name="close">Закрыть</string>
     <string name="dapp_safe_modal_title">Ссылка ведет на мошеннический сервис</string>
     <string name="dapp_safe_model_button">Как оставаться в безопасности</string>
+    <string name="min_amount">Мин. сумма: %1$s</string>
     <string name="stake_ethena_description">Токен tsUSDe представляет собой USDe, хранящиеся через Ethena, децентрализованный сервис ставок. tsUSDe автоматически накапливает вознаграждения за ставки с минимальной блокировкой.</string>
     <string name="support_title">Нужна помощь?</string>
     <string name="support_subtitle">Задайте свой вопрос в нашем боте в Telegram — поможем разобраться.</string>
     <string name="ask_question">Задать вопрос</string>
+    <string name="dns_onsale_error_title">Домен сейчас продается на торговой площадке</string>
+    <string name="dns_onsale_error_desc">Для продления домена вам необходимо сначала снять его с продажи.</string>
+    <string name="choose_token">Выберите токен</string>
+    <string name="about_usde">Подробнее про USDe</string>
+    <string name="empty_history">Транзакций нет</string>
+    <string name="staked_usde">Стейкинг USDe</string>
+    <string name="learn_more">Подробнее</string>
+    <string name="charging_unavailable">Зарядка батарейки недоступна</string>
+    <string name="ethena_operated_by">Управляется %1$s</string>
+    <string name="deposit_and_stake">Депозит и стейкинг</string>
+    <string name="ethena_check_eligibility">Проверить статус</string>
+    <string name="about_ethena">Подробнее об Ethena</string>
 </resources>

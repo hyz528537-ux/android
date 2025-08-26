@@ -2,32 +2,24 @@ package com.tonapps.wallet.data.purchase
 
 import android.content.Context
 import android.util.Log
-import com.tonapps.extensions.JSON
 import com.tonapps.extensions.getParcelable
 import com.tonapps.extensions.prefs
 import com.tonapps.extensions.putParcelable
-import com.tonapps.extensions.putString
-import com.tonapps.extensions.state
 import com.tonapps.extensions.toByteArray
 import com.tonapps.extensions.toParcel
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.data.core.BlobDataSource
 import com.tonapps.wallet.data.core.currency.WalletCurrency
+import com.tonapps.wallet.data.purchase.entity.MerchantEntity
 import com.tonapps.wallet.data.purchase.entity.OnRamp
 import com.tonapps.wallet.data.purchase.entity.PurchaseCategoryEntity
 import com.tonapps.wallet.data.purchase.entity.PurchaseDataEntity
 import com.tonapps.wallet.data.purchase.entity.PurchaseMethodEntity
+import io.Serializer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import org.ton.crypto.digest.sha512
 import org.ton.crypto.hex
@@ -45,57 +37,66 @@ class PurchaseRepository(
     timeout = TimeUnit.DAYS.toMillis(1)
 ) {
 
-    private companion object {
-        private const val SEND_CURRENCY_KEY = "send_currency"
-        private const val RECEIVE_CURRENCY_KEY = "receive_currency"
-    }
-
-    private val prefs = context.prefs("onramp")
     private val onRampCache = simple<OnRamp.Data>(context, "onRamp", TimeUnit.DAYS.toMillis(1))
+    private val paymentMethodCache = simpleJSON<List<OnRamp.PaymentMethodMerchant>>(context,"payment_methods", TimeUnit.DAYS.toMillis(1))
+    private val merchantsCache = simpleJSON<List<MerchantEntity>>(context,"merchants", TimeUnit.DAYS.toMillis(1))
 
-    private val _sendCurrencyFlow = MutableStateFlow<WalletCurrency?>(null)
-    val sendCurrencyFlow = _sendCurrencyFlow.asStateFlow()
-
-    private val _receiveCurrencyFlow = MutableStateFlow(WalletCurrency.TON)
-    val receiveCurrencyFlow = _receiveCurrencyFlow.asStateFlow()
-
-    var sendCurrency: WalletCurrency?
-        get() = prefs.getParcelable(SEND_CURRENCY_KEY)
-        set(value) {
-            _sendCurrencyFlow.value = value
-            prefs.putParcelable(SEND_CURRENCY_KEY, value)
-        }
-
-    var receiveCurrency: WalletCurrency
-        get() = prefs.getParcelable(RECEIVE_CURRENCY_KEY) ?: WalletCurrency.TON
-        set(value) {
-            _receiveCurrencyFlow.value = value
-            prefs.putParcelable(RECEIVE_CURRENCY_KEY, value)
-        }
-
-    init {
-        _sendCurrencyFlow.value = sendCurrency
-        _receiveCurrencyFlow.value = receiveCurrency
+    suspend fun getOnRamp(): OnRamp.Data? = withContext(Dispatchers.IO) {
+        getOnRampData()
     }
 
-    suspend fun getOnRamp(country: String): OnRamp.Data? = withContext(Dispatchers.IO) {
-        getOnRampData(country)
+    private fun loadOnRampMerchants(): List<MerchantEntity> {
+        return try {
+            val data = api.getOnRampMerchants() ?: throw Exception("No merchants found")
+            Log.d("PurchaseRepositoryLog", "data: $data")
+            Serializer.JSON.decodeFromString<List<MerchantEntity>>(data)
+        } catch (e: Throwable) {
+            Log.e("PurchaseRepositoryLog", "loadOnRampMerchants", e)
+            emptyList()
+        }
     }
 
-    private suspend fun loadOnRampData(country: String): OnRamp.Data? = withContext(Dispatchers.IO) {
-        val data = api.getOnRampData(country) ?: return@withContext null
+    fun getMerchants(): List<MerchantEntity> {
+        var list = merchantsCache.getCache("main") ?: emptyList()
+        if (list.isEmpty()) {
+            list = loadOnRampMerchants()
+            merchantsCache.setCache("main", list)
+        }
+        return list
+    }
+
+    private fun loadOnRampPaymentMethods(): List<OnRamp.PaymentMethodMerchant> {
+        return try {
+            val data = api.getOnRampPaymentMethods() ?: throw Exception("No payment methods found for country: ${api.country}")
+            Serializer.JSON.decodeFromString<List<OnRamp.PaymentMethodMerchant>>(data)
+        } catch (e: Throwable) {
+            emptyList()
+        }
+    }
+
+    suspend fun getPaymentMethods(): List<OnRamp.PaymentMethodMerchant> = withContext(Dispatchers.IO) {
+        var list = paymentMethodCache.getCache(api.country) ?: emptyList()
+        if (list.isEmpty() || list.map { it.methods }.flatten().isEmpty()) {
+            list = loadOnRampPaymentMethods()
+            paymentMethodCache.setCache(api.country, list)
+        }
+        list
+    }
+
+    private suspend fun loadOnRampData(): OnRamp.Data? = withContext(Dispatchers.IO) {
+        val data = api.getOnRampData() ?: return@withContext null
         try {
-            JSON.decodeFromString<OnRamp.Data>(data)
+            Serializer.fromJSON<OnRamp.Data>(data)
         } catch (e: Throwable) {
             null
         }
     }
 
-    private suspend fun getOnRampData(country: String): OnRamp.Data? {
-        val cacheKey = "data_$country"
+    private suspend fun getOnRampData(): OnRamp.Data? {
+        val cacheKey = "data_${api.country}"
         var data = onRampCache.getCache(cacheKey)
         if (data == null) {
-            data = loadOnRampData(country) ?: return null
+            data = loadOnRampData() ?: return null
             onRampCache.setCache(cacheKey, data)
         }
         return data

@@ -2,70 +2,60 @@ package com.tonapps.tonkeeper.ui.screen.onramp.picker.currency
 
 import android.app.Application
 import android.net.Uri
-import android.text.SpannableStringBuilder
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.facebook.common.util.UriUtil
 import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.extensions.mapList
 import com.tonapps.icu.CurrencyFormatter
-import com.tonapps.tonkeeper.api.getCurrencyCodeByCountry
-import com.tonapps.tonkeeper.extensions.getNormalizeCountryFlow
+import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.extensions.onRampDataFlow
-import com.tonapps.tonkeeper.extensions.onRampFormCurrencyFlow
 import com.tonapps.tonkeeper.manager.assets.AssetsManager
 import com.tonapps.tonkeeper.os.AndroidCurrency
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.onramp.picker.currency.main.list.Item
 import com.tonapps.tonkeeperx.R
-import com.tonapps.uikit.color.accentBlueColor
 import com.tonapps.uikit.list.ListCell
 import com.tonapps.wallet.api.API
+import com.tonapps.wallet.api.entity.Blockchain
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.purchase.PurchaseRepository
 import com.tonapps.wallet.data.purchase.entity.OnRampCurrencies
-import com.tonapps.wallet.data.purchase.entity.TONAssetsEntity
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.data.token.TokenRepository
 import com.tonapps.wallet.localization.Localization
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import uikit.extensions.badgeAccentColor
 import uikit.extensions.withBlueBadge
-import kotlin.math.acos
 
 class OnRampPickerViewModel(
     app: Application,
+    private val args: OnRampPickerArgs,
     private val wallet: WalletEntity,
-    private val send: Boolean,
     private val settingsRepository: SettingsRepository,
     private val purchaseRepository: PurchaseRepository,
     private val tokenRepository: TokenRepository,
     private val assetsManager: AssetsManager,
-    private val api: API
+    private val api: API,
+    private val environment: Environment,
 ): BaseWalletVM(app) {
 
-    private val formCurrencyFlow = purchaseRepository.onRampFormCurrencyFlow(settingsRepository)
-
     private val onRampResultFlow = purchaseRepository
-        .onRampDataFlow(settingsRepository, api)
+        .onRampDataFlow(environment)
 
     private val onRampFlow = onRampResultFlow.map { it.data }
 
     private val currencyByCountry: WalletCurrency
         get() {
-            val code = AndroidCurrency.resolve(settingsRepository.country)?.currencyCode ?: "USA"
+            val code = AndroidCurrency.resolve(environment.country)?.currencyCode ?: "US"
             return WalletCurrency.ofOrDefault(code)
         }
 
@@ -74,11 +64,13 @@ class OnRampPickerViewModel(
 
     private val uiItemsTONAssetsFlow = onRampFlow.map {
         val assets = it.tonAssets
-        if (send) assets.input else assets.output
+        if (args.send) assets.input else assets.output
     }.map { jettonAddress ->
         val uiItems = mutableListOf<Item.Currency>()
-        if (send) {
-            val balances = assetsManager.getTokens(wallet, jettonAddress).sortedBy { it.fiat }.asReversed()
+        if (args.send) {
+            val balances = assetsManager.getTokens(wallet, jettonAddress).sortedBy {
+                it.fiat
+            }.filter { jettonAddress.contains(it.address) && it.blockchain == Blockchain.TON }.asReversed()
             for ((index, balance) in balances.withIndex()) {
                 val position = ListCell.getPosition(balances.size, index)
                 val format = CurrencyFormatter.format(settingsRepository.currency.code, balance.fiat)
@@ -105,22 +97,18 @@ class OnRampPickerViewModel(
         uiItems.toList()
     }.flowOn(Dispatchers.IO)
 
-    private val tonAssetsFlow = uiItemsTONAssetsFlow.mapList { it.currency }
-
     private val _searchQueryFlow = MutableStateFlow("")
     val searchQueryFlow = _searchQueryFlow.asSharedFlow().map { it.trim() }
 
     val uiItemsFlow = combine(
-        formCurrencyFlow,
         onRampFlow,
         uiItemsTONAssetsFlow,
         searchQueryFlow,
-    ) { (sendCurrency, receiveCurrency), supportedCurrencies, tonAssets, searchQuery ->
-        val selectedCurrency = if (send) sendCurrency else receiveCurrency
+    ) { supportedCurrencies, tonAssets, searchQuery ->
         val list = mutableListOf<Item>()
-        list.addAll(buildFiatBlock(selectedCurrency, supportedCurrencies.fiat, searchQuery))
-        list.addAll(buildTONAssetsBlock(selectedCurrency, tonAssets, searchQuery))
-        list.addAll(buildExternalBlock(selectedCurrency, supportedCurrencies.externalCurrency, searchQuery))
+        list.addAll(buildFiatBlock(args.currency, supportedCurrencies.fiat, searchQuery))
+        list.addAll(buildTONAssetsBlock(args.currency, tonAssets, searchQuery))
+        list.addAll(buildExternalBlock(args.currency, supportedCurrencies.externalCurrency, searchQuery))
         list.toList()
     }
 
@@ -135,27 +123,34 @@ class OnRampPickerViewModel(
     fun openFiatPicker() {
         onRampFlow
             .take(1)
-            .map { it.availableFiatSlugs }
+            .map { (it.availableFiatSlugs + WalletCurrency.FIAT).distinct() }
             .map { codes ->
                 codes.mapNotNull { WalletCurrency.of(it) }
-            }.collectFlow(::openCurrencyPicker)
+            }.collectFlow {
+                openCurrencyPicker(Localization.currency, it)
+            }
     }
 
     fun openTONAssetsPicker() {
-        tonAssetsFlow
+        uiItemsTONAssetsFlow
             .take(1)
-            .collectFlow(::openCurrencyPicker)
+            .collectFlow { assets ->
+                val currencies = assets.map { it.currency }
+                openCurrencyPicker(Localization.ton_assets, currencies, assets.map { it.title.toString() })
+            }
     }
 
     fun openCryptoPicker() {
         onRampFlow
             .take(1)
             .map { it.externalCurrency }
-            .collectFlow(::openCurrencyPicker)
+            .collectFlow {
+                openCurrencyPicker(Localization.crypto, it)
+            }
     }
 
-    private fun openCurrencyPicker(currencies: List<WalletCurrency>) {
-        pushCommand(OnRampPickerCommand.OpenCurrencyPicker(currencies))
+    private fun openCurrencyPicker(localization: Int, currencies: List<WalletCurrency>, extras: List<String> = emptyList()) {
+        pushCommand(OnRampPickerCommand.OpenCurrencyPicker(localization, currencies, extras))
     }
 
     fun close() {
@@ -173,7 +168,7 @@ class OnRampPickerViewModel(
                     add(selectedCurrency)
                 }
                 add(currencyByCountry)
-            }.distinct()
+            }.distinctBy { it.code }
         } else {
             WalletCurrency.FIAT.mapNotNull { WalletCurrency.of(it) }.filter {
                 it.containsQuery(query)
@@ -206,7 +201,7 @@ class OnRampPickerViewModel(
             val selected = selectedCurrency == currency
             list.add(Item.Currency(currency, position, selected))
         }
-        if (query.isEmpty() && list.size > 0) {
+        if (query.isEmpty() && list.isNotEmpty()) {
             list.add(Item.More(
                 id = ALL_CURRENCIES_ID,
                 title = getString(Localization.all_currencies),
@@ -214,8 +209,8 @@ class OnRampPickerViewModel(
             ))
         }
 
-        if (list.size > 0) {
-            val titleItem = Item.Title(getString(Localization.currency), fiatMethodIcons(if (send) supportedFiat.inputs else supportedFiat.outputs), true)
+        if (list.isNotEmpty()) {
+            val titleItem = Item.Title(getString(Localization.currency), fiatMethodIcons(if (args.send) supportedFiat.inputs else supportedFiat.outputs), true)
             list.add(0, titleItem)
         }
 
@@ -227,7 +222,7 @@ class OnRampPickerViewModel(
         tonAssets: List<Item.Currency>,
         query: String
     ): List<Item> {
-        val max = if (send) {
+        val max = if (args.send) {
             if (tonAssets.size == 4) 4 else 3
         } else {
             2
@@ -245,6 +240,16 @@ class OnRampPickerViewModel(
             }.take(3)
         }
 
+        val moreItem = if (query.isEmpty() && tonAssets.size > max) {
+            Item.More(
+                id = ALL_TON_ASSETS_ID,
+                title = getString(Localization.all_ton_assets),
+                values = tonAssets.drop(max).map { it.currency },
+            )
+        } else {
+            null
+        }
+
         var list = mutableListOf<Item>()
         for ((index, asset) in assets.withIndex()) {
             val selected = asset.currency == selectedCurrency
@@ -252,6 +257,8 @@ class OnRampPickerViewModel(
                 ListCell.getPosition(assets.size, index)
             } else if (index == 0) {
                 ListCell.Position.FIRST
+            } else if (moreItem == null && index == assets.size - 1) {
+                ListCell.Position.LAST
             } else {
                 ListCell.Position.MIDDLE
             }
@@ -261,13 +268,9 @@ class OnRampPickerViewModel(
             ))
         }
 
-        if (query.isEmpty() && tonAssets.size > max) {
+        if (moreItem != null) {
             list = list.take(max + 1).toMutableList()
-            list.add(Item.More(
-                id = ALL_TON_ASSETS_ID,
-                title = getString(Localization.all_ton_assets),
-                values = tonAssets.drop(max).map { it.currency },
-            ))
+            list.add(moreItem)
         }
 
         if (list.isNotEmpty()) {
@@ -304,7 +307,7 @@ class OnRampPickerViewModel(
             list.add(Item.Currency(currency, position, selected))
         }
 
-        if (query.isEmpty() && list.size > 0) {
+        if (query.isEmpty() && list.isNotEmpty()) {
             list.add(Item.More(
                 id = ALL_CRYPTO_ID,
                 title = getString(Localization.all_assets),
@@ -312,7 +315,7 @@ class OnRampPickerViewModel(
             ))
         }
 
-        if (list.size > 0) {
+        if (list.isNotEmpty()) {
             list.add(0, Item.Title(getString(Localization.crypto)))
         }
 
@@ -339,12 +342,7 @@ class OnRampPickerViewModel(
     }
 
     fun setCurrency(currency: WalletCurrency) {
-        if (send) {
-            purchaseRepository.sendCurrency = currency
-        } else {
-            purchaseRepository.receiveCurrency = currency
-        }
-        close()
+        pushCommand(OnRampPickerCommand.SetCurrency(currency))
     }
 
     companion object {

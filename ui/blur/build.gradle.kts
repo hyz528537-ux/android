@@ -6,6 +6,7 @@ plugins {
 android {
     namespace = "com.tonapps.ui.blur"
     compileSdk = Build.compileSdkVersion
+    ndkVersion = Build.ndkVersion
 
     defaultConfig {
         minSdk = Build.minSdkVersion
@@ -33,5 +34,5 @@ android {
 }
 
 dependencies {
-    implementation(Dependence.AndroidX.annotation)
+    implementation(libs.androidX.annotation)
 }

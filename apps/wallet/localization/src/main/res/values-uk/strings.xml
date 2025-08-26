@@ -10,6 +10,7 @@
     <string name="staking_pending_withdraw">%1$s буде знято через %2$s</string>
     <string name="edit_full">Редагувати</string>
     <string name="safe_mode_tonconnect_description">Ви можете змінити це в налаштуваннях безпеки свого гаманця.</string>
+    <string name="renew_dns_done">Домен продовжено на 1 рік</string>
     <string name="staking_unstake_cycle">Запит на скасування ставки буде оброблено після завершення циклу перевірки в %1$s</string>
     <string name="send_transaction_scroll">Перевірте всі деталі для підтвердження</string>
     <string name="send_transaction_detail">Загальна вартість токенів, які будуть надіслані з вашого гаманця. Відшкодування не входять до загальної вартості.</string>
@@ -149,6 +150,7 @@
     <string name="unsubscribed">Відписано</string>
     <string name="subscribed">Підписано</string>
     <string name="received">Отримано</string>
+    <string name="on_sale">РОЗПРОДАЖ</string>
     <string name="nft_transfer">Передача NFT</string>
     <string name="nft_disabled_transfer">NFT зараз продається на ринку. Для передачі спочатку зніміть його з продажу.</string>
     <string name="continue_action">Продовжити</string>
@@ -172,6 +174,7 @@
     <string name="yesterday">Вчора</string>
     <string name="collectibles">Колекційні предмети</string>
     <string name="purchases">Покупки</string>
+    <string name="enter_amount">Введіть суму</string>
     <string name="call_contract">Викликати контракт</string>
     <string name="contract_address">Адреса контракту</string>
     <string name="about_collection">Про колекцію</string>
@@ -329,6 +332,7 @@
     <string name="logout_confirmation">У мене є резервна копія фрази відновлення для %1$s</string>
     <string name="last_updated">Оновлено %1$s</string>
     <string name="back_up_now">Зробити резервну копію зараз</string>
+    <string name="confirm_swap">Підтвердити обмін</string>
     <string name="max">Макс</string>
     <string name="confirm_and_send">Підтвердити та надіслати</string>
     <string name="confirm_action">Підтвердити дію</string>
@@ -353,7 +357,7 @@
     <string name="system">Система</string>
     <string name="network_fee">Мережевий збір</string>
     <string name="confirm">Підтвердити</string>
-    <string name="send_request_comment">Ви повинні додати примітку від обміну для переказу. Без неї ваші кошти будуть втрачені.</string>
+    <string name="send_request_comment">Під час надсилання обов’язково додайте примітку або тег від біржі. Без цього кошти не будуть зараховані й можуть бути втрачені.</string>
     <string name="banner_top">Ви використовуєте експериментальну версію Tonkeeper.</string>
     <string name="banner_top_button">Встановити стабільну версію</string>
     <string name="signer_description">Відкрийте Signer » Виберіть потрібний ключ » Скануйте QR-код</string>
@@ -433,7 +437,6 @@
         <item quantity="many">≈ %1$s зарядів за %2$s</item>
         <item quantity="other">≈ %1$s зарядів за %2$s</item>
     </plurals>
-    <string name="will_be_paid_with_battery">Буде сплачено батареєю</string>
     <string name="battery_settings_title">Налаштування батареї</string>
     <string name="battery_settings_subtitle">Вибрані транзакції будуть сплачені батареєю Tonkeeper.</string>
     <string name="battery_recharge_title">Перезарядка</string>
@@ -447,7 +450,6 @@
     <string name="promocode_hint">Промокод</string>
     <string name="refund">Повернення</string>
     <string name="gasless_switch_label">Торкніться, щоб оплатити %1$s</string>
-    <string name="change_fee_method">Змінити спосіб оплати</string>
     <string name="battery_large_pack">Великий</string>
     <string name="battery_medium_pack">Середній</string>
     <string name="battery_small_pack">Маленький</string>
@@ -490,6 +492,7 @@
     <string name="nothing_to_restore">Відновлювати нічого</string>
     <string name="name">Ім\'я</string>
     <string name="ledger_blind_signing_error">Сліпий підпис має бути ввімкнено в налаштуваннях Ledger</string>
+    <string name="purchase">Купівля</string>
     <string name="new_contact">Нова адреса</string>
     <string name="contact_delete_dialog">Ви впевнені, що бажаєте видалити «%1$s» зі своєї адресної книги?</string>
     <string name="add_to_contact">Додати до адресної книги</string>
@@ -519,6 +522,7 @@
     <string name="stories_safemode_2_subtitle">Щоб уникнути спаму та фейків.</string>
     <string name="stories_safemode_3_title">Тільки перевірені токени</string>
     <string name="tx_marked_as_spam">Трансакцію позначено як спам</string>
+    <string name="exchange_rate">Обмінний курс</string>
     <string name="address_prefix">Адреса:</string>
     <string name="your_address">Адреса гаманця:</string>
     <string name="safe_mode_tokens_footer">Безпечний режим увімкнено. Доступні лише перевірені токени. <annotation colorAttr="textAccentColor">Налаштування</annotation></string>
@@ -590,8 +594,28 @@
     <string name="credit_card_subtitle">Visa або Mastercard</string>
     <string name="currency_not_found">Валюта не знайдена</string>
     <string name="onrmap_provider_description">Інші постачальники доступні для різних валютних пар.</string>
+    <string name="min_amount">Мінімальна сума: %1$s</string>
     <string name="stake_ethena_description">Токен tsUSDe представляє USDe, що зберігається через Ethena, децентралізований сервіс стейкінгу. tsUSDe автоматично накопичує винагороду за стейкінг з мінімальним блокуванням.</string>
     <string name="support_title">Потрібна допомога?</string>
     <string name="support_subtitle">Напишіть нам у Telegram — ми зробимо все можливе, щоб допомогти.</string>
     <string name="ask_question">Поставити запитання</string>
+    <string name="renew_dns_title">Домени, термін дії яких закінчується</string>
+    <string name="renew_dns_expires">Термін дії закінчується через %1$d днів</string>
+    <string name="wallet_renew_dns">У вас є %1$d доменів, термін дії яких закінчується. Поновіть усі до %2$s.</string>
+    <string name="renew_dns_until">Поновити все до %1$s</string>
+    <string name="renew_signel_dns_until">Поновити до %1$s</string>
+    <string name="renew_dns_all">Поновити все</string>
+    <string name="dns_onsale_error_title">Домен зараз продається на торговельній платформі</string>
+    <string name="dns_onsale_error_desc">Щоб поновити домен, спочатку слід зняти його з продажу.</string>
+    <string name="choose_token">Виберіть токен</string>
+    <string name="about_usde">Про USDe</string>
+    <string name="empty_history">Немає транзакцій</string>
+    <string name="staked_usde">Застейканий USDe</string>
+    <string name="learn_more">Дізнатися більше</string>
+    <string name="charging_unavailable">Заряджання батареї недоступне</string>
+    <string name="ethena_operated_by">Керується %1$s</string>
+    <string name="deposit_and_stake">Депозит і стейкінг</string>
+    <string name="ethena_check_eligibility">Перевірити статус</string>
+    <string name="about_ethena">Про Ethena</string>
+
 </resources>

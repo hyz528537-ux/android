@@ -14,10 +14,11 @@ import uikit.extensions.inflate
 import uikit.extensions.setLeftDrawable
 import uikit.navigation.Navigation
 import uikit.widget.FlexboxWithGapLayout
+import androidx.core.net.toUri
 
 class LinksHolder(
     parent: ViewGroup,
-): Holder<Item.Links>(parent, R.layout.view_staking_links) {
+) : Holder<Item.Links>(parent, R.layout.view_staking_links) {
 
     private val linkDrawable = context.drawable(UIKitIcon.ic_globe_16)
     private val linksView = findViewById<FlexboxWithGapLayout>(R.id.links)
@@ -25,11 +26,16 @@ class LinksHolder(
     override fun onBind(item: Item.Links) {
         linksView.removeAllViews()
         for (link in item.links) {
-            val host = Uri.parse(link).host!!
+            val host = link.toUri().host ?: link
             val linkView = context.inflate(R.layout.view_link, linksView) as AppCompatTextView
             linkView.text = host
             linkView.setLeftDrawable(linkDrawable)
-            linkView.setOnClickListener { BrowserHelper.open(context, link) }
+            val fixedLink = if (link.startsWith("http")) {
+                    link
+                } else {
+                "https://$link"
+            }
+            linkView.setOnClickListener { BrowserHelper.open(context, fixedLink) }
             linksView.addView(linkView)
         }
     }

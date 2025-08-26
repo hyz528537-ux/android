@@ -1,6 +1,8 @@
 package com.tonapps.network
 
 import android.util.ArrayMap
+import android.util.Log
+import com.tonapps.network.ws.WSEvent
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
@@ -63,7 +65,7 @@ fun OkHttpClient.get(
     url: String,
     headers: ArrayMap<String, String>? = null
 ): String {
-    return simple(url, headers).body?.string() ?: throw Exception("Empty response")
+    return simple(url, headers).body.string()
 }
 
 fun OkHttpClient.simple(
@@ -152,3 +154,4 @@ fun OkHttpClient.sse(
         }
     }
 }.cancellable()
+

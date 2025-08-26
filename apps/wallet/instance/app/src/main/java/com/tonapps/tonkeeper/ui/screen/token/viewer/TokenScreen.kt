@@ -47,7 +47,7 @@ class TokenScreen(wallet: WalletEntity) :
 
     private val args: TokenArgs by lazy { TokenArgs(requireArguments()) }
 
-    override val viewModel: TokenViewModel by walletViewModel { parametersOf(args.address) }
+    override val viewModel: TokenViewModel by walletViewModel { parametersOf(args.address, args.rawUsde) }
 
     private val tokenAdapter = TokenAdapter {
         viewModel.setChartPeriod(it)
@@ -62,7 +62,7 @@ class TokenScreen(wallet: WalletEntity) :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.simpleTrackEvent("token_open", viewModel.installId)
+        analytics?.simpleTrackEvent("token_open")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -181,10 +181,11 @@ class TokenScreen(wallet: WalletEntity) :
             wallet: WalletEntity,
             address: String,
             name: String,
-            symbol: String
+            symbol: String,
+            rawUsde: Boolean = false,
         ): TokenScreen {
             val fragment = TokenScreen(wallet)
-            fragment.setArgs(TokenArgs(address, name, symbol))
+            fragment.setArgs(TokenArgs(address, name, symbol, rawUsde))
             return fragment
         }
     }

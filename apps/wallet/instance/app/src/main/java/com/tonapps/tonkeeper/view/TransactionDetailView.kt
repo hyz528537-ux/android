@@ -73,8 +73,8 @@ class TransactionDetailView @JvmOverloads constructor(
         inflate(context, R.layout.view_transaction_detail, this)
         setPaddingHorizontal(context.getDimensionPixelSize(uikit.R.dimen.offsetMedium))
         setPaddingVertical(context.getDimensionPixelSize(uikit.R.dimen.offsetMedium))
-        orientation = HORIZONTAL
         minimumHeight = context.getDimensionPixelSize(uikit.R.dimen.itemHeight)
+        orientation = HORIZONTAL
 
         titleView = findViewById(R.id.title)
         subtitleView = findViewById(R.id.subtitle)

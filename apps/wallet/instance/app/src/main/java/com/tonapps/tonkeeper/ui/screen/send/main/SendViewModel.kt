@@ -4,9 +4,10 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.tonapps.blockchain.ton.TonAddressTags
 import com.tonapps.blockchain.ton.contract.WalletFeature
 import com.tonapps.blockchain.ton.extensions.equalsAddress
-import com.tonapps.blockchain.ton.extensions.isTestnetAddress
+import com.tonapps.blockchain.ton.extensions.isValidTonAddress
 import com.tonapps.blockchain.tron.TronTransfer
 import com.tonapps.blockchain.tron.isValidTronAddress
 import com.tonapps.extensions.MutableEffectFlow
@@ -114,6 +115,7 @@ class SendViewModel(
     private val transactionManager: TransactionManager,
     private val signUseCase: SignUseCase,
     private val purchaseRepository: PurchaseRepository,
+    private val analytics: AnalyticsHelper
 ) : BaseWalletVM(app) {
 
     private val isNft: Boolean
@@ -121,6 +123,12 @@ class SendViewModel(
 
     val installId: String
         get() = settingsRepository.installId
+
+    val isTronDisabled: Boolean
+        get() = api.config.flags.disableTron
+
+    val isBatteryDisabled: Boolean
+        get() = api.config.flags.disableBattery
 
     data class UserInput(
         val address: String = "",
@@ -169,22 +177,20 @@ class SendViewModel(
             userInputAddressFlow,
             tronAvailableFlow,
             selectedTokenFlow
-        ) { address, isTronAvailable, selectedToken ->
-            if (address.isEmpty()) {
+        ) { userInput, isTronAvailable, selectedToken ->
+            if (userInput.isEmpty()) {
                 SendDestination.Empty
-            } else if (isTronAvailable && address.isValidTronAddress()) {
+            } else if (isTronAvailable && userInput.isValidTronAddress()) {
                 if (selectedToken.isTrc20) {
-                    SendDestination.TronAccount(address)
+                    SendDestination.TronAccount(userInput)
                 } else {
                     SendDestination.TokenError(
                         addressBlockchain = Blockchain.TRON,
                         selectedToken = selectedToken.token
                     )
                 }
-            } else if (wallet.testnet != address.isTestnetAddress()) {
-                SendDestination.NotFound
             } else {
-                val destination = getDestinationAccount(address, wallet.testnet)
+                val destination = getDestinationAccount(userInput)
 
                 if (destination is SendDestination.TonAccount && selectedToken.isTrc20) {
                     SendDestination.TokenError(
@@ -296,7 +302,6 @@ class SendViewModel(
         val remainingFormat = CurrencyFormatter.format(
             currency = token.symbol,
             value = remainingToken,
-            customScale = 2,
             roundingMode = RoundingMode.DOWN,
             replaceSymbol = false
         )
@@ -307,7 +312,6 @@ class SendViewModel(
             convertedFormat = CurrencyFormatter.format(
                 currency = convertedCode,
                 value = converted,
-                customScale = 2,
                 roundingMode = RoundingMode.DOWN,
                 replaceSymbol = false
             ),
@@ -362,12 +366,11 @@ class SendViewModel(
             value = amount,
             converted = rates.convert(token.address, amount),
             format = CurrencyFormatter.format(
-                token.symbol, amount, token.decimals, RoundingMode.UP, false
+                token.symbol, amount, RoundingMode.UP, false
             ),
             convertedFormat = CurrencyFormatter.format(
                 currency.code,
                 rates.convert(token.address, amount),
-                token.decimals,
                 RoundingMode.UP,
             ),
         )
@@ -431,13 +434,12 @@ class SendViewModel(
             builder.setBounceable(true)
             builder.setAmount(Coins.ZERO)
             builder.setMax(false)
+        } else if (!transaction.token.isTon) {
+            builder.setMax(transaction.amount.value == token.balance.value)
+            builder.setBounceable(true)
+            builder.setAmount(transaction.amount.value)
         } else {
-            val isDirectTransferType = userInputFlow.value.type == SendScreen.Companion.Type.Direct
-            if (isDirectTransferType) {
-                builder.setMax(false)
-            } else {
-                builder.setMax(transaction.isRealMax(token.balance.value))
-            }
+            builder.setMax(transaction.amount.value == getTONBalance())
             builder.setAmount(transaction.amount.value)
             builder.setBounceable(transaction.destination.isBounce)
         }
@@ -464,13 +466,10 @@ class SendViewModel(
         SendTransaction.Amount(
             value = value,
             converted = rates.convert(token.address, value),
-            format = CurrencyFormatter.format(
-                token.symbol, value, token.decimals, RoundingMode.UP, false
-            ),
+            format = CurrencyFormatter.formatFull(token.symbol, value, token.decimals),
             convertedFormat = CurrencyFormatter.format(
                 currency.code,
                 rates.convert(token.address, value),
-                token.decimals,
                 RoundingMode.UP,
             ),
         )
@@ -542,22 +541,36 @@ class SendViewModel(
         }
     }
 
+    suspend fun isNeedMemoAddress(targetAddress: String): Boolean = withContext(Dispatchers.IO) {
+       api.resolveAccount(targetAddress, wallet.testnet)?.memoRequired == true
+    }
+
     private fun applyAmount(token: TokenEntity, amountNano: Long?) {
         amountNano?.let {
             _uiInputAmountFlow.tryEmit(Coins.of(it, token.decimals))
         }
     }
 
-    private suspend fun getDestinationAccount(
-        address: String, testnet: Boolean
-    ) = withContext(Dispatchers.IO) {
-        val accountDeferred = async { api.resolveAccount(address, testnet) }
-        val publicKeyDeferred = async { api.safeGetPublicKey(address, testnet) }
+    private suspend fun getDestinationAccount(userInput: String) = withContext(Dispatchers.IO) {
+        val tonAddressTags = TonAddressTags.of(userInput)
+        if (tonAddressTags.userFriendly && tonAddressTags.isTestnet != wallet.testnet) {
+            return@withContext SendDestination.NotFound
+        }
+
+        val accountDeferred = async { api.resolveAccount(userInput, wallet.testnet) }
+        val publicKeyDeferred = async { api.safeGetPublicKey(userInput, wallet.testnet) }
 
         val account = accountDeferred.await() ?: return@withContext SendDestination.NotFound
         val publicKey = publicKeyDeferred.await()
 
-        SendDestination.TonAccount(address, publicKey, account, wallet.testnet)
+        SendDestination.TonAccount(
+            userInput = userInput,
+            isUserInputAddress = userInput.isValidTonAddress(),
+            publicKey = publicKey,
+            account = account,
+            testnet = wallet.testnet,
+            tonAddressTags = tonAddressTags
+        )
     }
 
     private fun getFee(): Fee {
@@ -665,7 +678,7 @@ class SendViewModel(
             else -> BatteryTransaction.UNKNOWN
         }
         val batteryBalance = getBatteryBalance()
-        val batteryEnabled = !api.config.batteryDisabled && settingsRepository.batteryIsEnabledTx(
+        val batteryEnabled = !isBatteryDisabled && settingsRepository.batteryIsEnabledTx(
             wallet.accountId, txType
         )
         val required = when (type) {
@@ -894,7 +907,7 @@ class SendViewModel(
         excessesAddress: AddrStd,
         tonProofToken: String,
     ): SendFee.Battery? {
-        if (api.config.isBatteryDisabled) {
+        if (api.config.batterySendDisabled) {
             return null
         }
 
@@ -947,6 +960,11 @@ class SendViewModel(
         tokenAddress: String,
     ): SendFee.Gasless? {
         try {
+            if (api.config.flags.disableGasless) {
+                Log.d("SendViewModel", "Gasless fee calculation disabled by config")
+                return null
+            }
+
             val message = transfer.signForEstimation(
                 internalMessage = true,
                 jettonAmount = if (transfer.max) {
@@ -1005,7 +1023,7 @@ class SendViewModel(
         transfer: TransferEntity,
     ): SendFee.Ton {
         val message = transfer.signForEstimation(
-            internalMessage = false, jettonTransferAmount = TransferEntity.BASE_FORWARD_AMOUNT
+            internalMessage = false, jettonTransferAmount = TransferEntity.ONE_TON
         )
         // Emulate with higher balance to calculate fair amount to send
         val emulated = api.emulate(
@@ -1059,15 +1077,14 @@ class SendViewModel(
                 format = if (fee is SendFee.TokenFee) {
                     CurrencyFormatter.format(
                         fee.amount.token.symbol,
-                        fee.amount.value,
-                        fee.amount.token.decimals
+                        fee.amount.value
                     )
                 } else "",
                 convertedFormat = if (fee is SendFee.TokenFee) {
                     val rates = ratesRepository.getRates(currency, fee.amount.token.address)
                     val converted = rates.convert(fee.amount.token.address, fee.amount.value)
                     CurrencyFormatter.format(
-                        currency.code, converted, currency.decimals
+                        currency.code, converted
                     )
                 } else "",
                 showToggle = showToggle,
@@ -1163,7 +1180,6 @@ class SendViewModel(
             is SendFee.Gasless -> PreferredFeeMethod.GASLESS
         }
         settingsRepository.setPreferredFeeMethod(wallet.id, preferredMethod)
-        settingsRepository.paymentMethodViewed = true
         viewModelScope.launch(Dispatchers.IO) {
             transferFlow.firstOrNull()?.let { transfer ->
                 _feeFlow.tryEmit(fee)
@@ -1324,7 +1340,7 @@ class SendViewModel(
             tronAddress = transfer.from,
             tonProofToken = tonProofToken,
         )
-        AnalyticsHelper.simpleTrackEvent("send_success", settingsRepository.installId)
+        analytics.simpleTrackEvent("send_success")
         getBatteryBalance()
     }.catch {
         FirebaseCrashlytics.getInstance().recordException(it)
@@ -1353,7 +1369,7 @@ class SendViewModel(
     private fun Flow<Triple<Cell, WalletEntity, Boolean>>.sendTransfer() {
         this.map { (boc, wallet, withBattery) ->
             send(boc, wallet, withBattery)
-            AnalyticsHelper.simpleTrackEvent("send_success", settingsRepository.installId)
+            analytics.simpleTrackEvent("send_success")
         }.catch {
             FirebaseCrashlytics.getInstance().recordException(it)
             _uiEventFlow.tryEmit(SendEvent.Failed(it))

@@ -16,51 +16,40 @@
 package io.batteryapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param txid 
- * @param fromAccount 
- * @param toAccount 
- * @param amount 
- * @param isPending 
- * @param isFailed 
- * @param batteryCharges 
- * @param timestamp 
- * @param trongridResult 
- */
 
+@Serializable
 
 data class TronTransactionsListTransactionsInner (
 
-    @Json(name = "txid")
+    @SerialName(value = "txid")
     val txid: kotlin.String,
 
-    @Json(name = "from_account")
+    @SerialName(value = "from_account")
     val fromAccount: kotlin.String,
 
-    @Json(name = "to_account")
+    @SerialName(value = "to_account")
     val toAccount: kotlin.String,
 
-    @Json(name = "amount")
+    @SerialName(value = "amount")
     val amount: kotlin.String,
 
-    @Json(name = "is_pending")
+    @SerialName(value = "is_pending")
     val isPending: kotlin.Boolean,
 
-    @Json(name = "is_failed")
+    @SerialName(value = "is_failed")
     val isFailed: kotlin.Boolean,
 
-    @Json(name = "battery_charges")
+    @SerialName(value = "battery_charges")
     val batteryCharges: kotlin.Int,
 
-    @Json(name = "timestamp")
+    @SerialName(value = "timestamp")
     val timestamp: kotlin.Long,
 
-    @Json(name = "trongrid_result")
+    @SerialName(value = "trongrid_result")
     val trongridResult: kotlin.Int? = null
 
 ) {

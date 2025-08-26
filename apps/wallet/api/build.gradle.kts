@@ -2,6 +2,7 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize")
+    kotlin("plugin.serialization")
 }
 
 android {
@@ -23,16 +24,16 @@ android {
 }
 
 dependencies {
-    implementation(Dependence.Koin.core)
-    implementation(Dependence.KotlinX.guava)
-    implementation(project(Dependence.Module.tonApi))
-    implementation(project(Dependence.Lib.network))
-    implementation(project(Dependence.Lib.blockchain))
-    implementation(project(Dependence.Lib.extensions))
-    implementation(project(Dependence.Lib.icu))
-    implementation(Dependence.GooglePlay.cronet)
-    implementation(Dependence.Squareup.okhttp)
-    implementation(Dependence.Squareup.sse)
-    implementation(Dependence.Squareup.moshi)
-    implementation(Dependence.Squareup.moshiAdapters)
+    implementation(libs.kotlinX.serialization.core)
+    implementation(libs.kotlinX.serialization.json)
+    implementation(libs.kotlinX.coroutines.guava)
+    implementation(libs.koin.core)
+    implementation(project(ProjectModules.Module.tonApi))
+    implementation(project(ProjectModules.Lib.network))
+    implementation(project(ProjectModules.Lib.blockchain))
+    implementation(project(ProjectModules.Lib.extensions))
+    implementation(project(ProjectModules.Lib.icu))
+    implementation(libs.google.play.cronet)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.sse)
 }

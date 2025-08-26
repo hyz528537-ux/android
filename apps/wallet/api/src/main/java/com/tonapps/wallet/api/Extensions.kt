@@ -1,35 +1,15 @@
 package com.tonapps.wallet.api
 
 import android.os.SystemClock
-import io.tonapi.infrastructure.Serializer
-import com.squareup.moshi.adapter
-import io.tonapi.infrastructure.ClientException
 import android.util.Log
-import android.widget.Toast
-import com.google.firebase.crashlytics.BuildConfig
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.network.OkHttpError
-import io.tonapi.infrastructure.ClientError
-import io.tonapi.infrastructure.Response
-import io.tonapi.infrastructure.ServerError
-import kotlinx.coroutines.delay
+import io.infrastructure.ClientError
+import io.infrastructure.ClientException
+import io.infrastructure.ServerError
 import kotlinx.coroutines.CancellationException
 import kotlinx.io.IOException
 import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-
-@OptIn(ExperimentalStdlibApi::class)
-inline fun <reified T> toJSON(obj: T?): String {
-    if (obj == null) {
-        return ""
-    }
-    return Serializer.moshi.adapter<T>().toJson(obj)
-}
-
-@OptIn(ExperimentalStdlibApi::class)
-inline fun <reified T> fromJSON(json: String): T {
-    return Serializer.moshi.adapter<T>().fromJson(json)!!
-}
 
 fun <R> withRetry(
     times: Int = 5,
@@ -44,14 +24,15 @@ fun <R> withRetry(
         } catch (e: CancellationException) {
             throw e
         } catch (e: SocketTimeoutException) {
+            Log.e("RetryLogNew", "SocketTimeoutException occurred: ${e.message}", e)
             SystemClock.sleep(delay + 100)
             return null
         } catch (e: IOException) {
-            Log.e("WithRetryLog", "IOException: ${e.message}", e)
+            Log.e("RetryLogNew", "IOException occurred: ${e.message}", e)
             SystemClock.sleep(delay + 100)
             return null
         } catch (e: Throwable) {
-            Log.e("WithRetryLog", "Error: ${e.message}", e)
+            Log.e("RetryLogNew", "Error occurred: ${e.message}", e)
             val statusCode = e.getHttpStatusCode()
             if (statusCode == 429 || statusCode == 401 || statusCode == 502 || statusCode == 520) {
                 SystemClock.sleep(delay + 100)

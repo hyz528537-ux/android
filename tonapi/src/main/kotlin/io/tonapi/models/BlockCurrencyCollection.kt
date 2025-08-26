@@ -17,24 +17,28 @@ package io.tonapi.models
 
 import io.tonapi.models.BlockCurrencyCollectionOtherInner
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param grams 
- * @param other 
- */
 
+@Serializable
 
 data class BlockCurrencyCollection (
 
-    @Json(name = "grams")
+    @SerialName(value = "grams")
     val grams: kotlin.Long,
 
-    @Json(name = "other")
+    @SerialName(value = "other")
     val other: kotlin.collections.List<BlockCurrencyCollectionOtherInner>
 
-)
+) {
+
+
+}
 

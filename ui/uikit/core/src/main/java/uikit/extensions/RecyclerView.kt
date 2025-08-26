@@ -1,5 +1,7 @@
 package uikit.extensions
 
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -45,5 +47,22 @@ fun RecyclerView.hideKeyboardWhenScroll() {
             }
         }
     })
+}
+
+fun RecyclerView.smartScrollTo(position: Int) {
+    val layoutManager = layoutManager as? LinearLayoutManager ?: return
+    val firstVisible = layoutManager.findFirstVisibleItemPosition()
+    val lastVisible = layoutManager.findLastVisibleItemPosition()
+
+    if (position in firstVisible..lastVisible) {
+        return
+    }
+    if (position < firstVisible) {
+        val scrollTo = maxOf(0, position - 3)
+        layoutManager.scrollToPositionWithOffset(scrollTo, 0)
+    } else {
+        val scrollTo = maxOf(0, position - 3)
+        layoutManager.scrollToPositionWithOffset(scrollTo, 0)
+    }
 }
 

@@ -9,7 +9,6 @@ import com.tonapps.blockchain.ton.contract.WalletVersion
 import com.tonapps.blockchain.ton.extensions.toAccountId
 import com.tonapps.extensions.appVersionCode
 import com.tonapps.tonkeeper.Environment
-import com.tonapps.tonkeeper.RemoteConfig
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.FirebaseHelper
 import com.tonapps.tonkeeper.core.entities.AssetsEntity
@@ -29,6 +28,7 @@ import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.backup.BackupRepository
+import com.tonapps.wallet.data.battery.BatteryRepository
 import com.tonapps.wallet.data.core.SearchEngine
 import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.passcode.PasscodeManager
@@ -60,8 +60,9 @@ class SettingsViewModel(
     private val passcodeManager: PasscodeManager,
     private val rnLegacy: RNLegacy,
     private val environment: Environment,
-    private val remoteConfig: RemoteConfig,
     private val tokenRepository: TokenRepository,
+    private val batteryRepository: BatteryRepository,
+    private val analytics: AnalyticsHelper
 ) : BaseWalletVM(application) {
 
     private val safeMode: Boolean = settingsRepository.isSafeModeEnabled(api)
@@ -113,7 +114,7 @@ class SettingsViewModel(
     }
 
     fun signOut(callback: () -> Unit) {
-        AnalyticsHelper.simpleTrackEvent("delete_wallet", settingsRepository.installId)
+        analytics.simpleTrackEvent("delete_wallet")
         viewModelScope.launch(Dispatchers.IO) {
             tonConnectManager.clear(wallet)
             PushToggleWorker.run(context, wallet, PushManager.State.Delete)
@@ -169,7 +170,6 @@ class SettingsViewModel(
                 sortAddresses.add(index, TokenEntity.TRON_USDT.address)
             } else {
                 sortAddresses.add(1, TokenEntity.TRON_USDT.address)
-                settingsRepository.setTokenPinned(wallet.id, TokenEntity.TRC20_USDT , true)
             }
 
             val tronPrefs = settingsRepository.getTokenPrefs(wallet.id, TokenEntity.TRC20_USDT)
@@ -179,6 +179,7 @@ class SettingsViewModel(
             FirebaseHelper.trc20Enabled(!isHidden)
 
             if (!isHidden) {
+                settingsRepository.setTokenPinned(wallet.id, TokenEntity.TRC20_USDT , true)
                 settingsRepository.setTokensSort(wallet.id, sortAddresses)
             }
         }
@@ -229,28 +230,39 @@ class SettingsViewModel(
 
         uiItems.add(Item.Space)
 
-        if (wallet.hasPrivateKey && !wallet.testnet && !remoteConfig.isTronDisabled) {
+        if (wallet.hasPrivateKey && !wallet.testnet && !api.config.flags.disableTron) {
             val tronUsdtEnabled = settingsRepository.getTronUsdtEnabled(displayWallet.id)
             uiItems.add(Item.TronToggle(enabled = tronUsdtEnabled))
             uiItems.add(Item.Space)
         }
 
-        uiItems.add(Item.Notifications(ListCell.Position.FIRST))
+        if (environment.isGooglePlayServicesAvailable) {
+            uiItems.add(Item.Notifications(ListCell.Position.FIRST))
+        }
+
+        var secondCellPosition = if (environment.isGooglePlayServicesAvailable) {
+            ListCell.Position.MIDDLE
+        } else {
+            ListCell.Position.FIRST
+        }
 
         if (wallet.hasPrivateKey) {
             if (!hasW5) {
-                uiItems.add(Item.W5(ListCell.Position.MIDDLE))
+                uiItems.add(Item.W5(secondCellPosition))
+                secondCellPosition = ListCell.Position.MIDDLE
             }
             if (!hasV4R2) {
-                uiItems.add(Item.V4R2(ListCell.Position.MIDDLE))
+                uiItems.add(Item.V4R2(secondCellPosition))
+                secondCellPosition = ListCell.Position.MIDDLE
             }
         }
         if (!wallet.testnet) {
-            uiItems.add(Item.Currency(currency.code, ListCell.Position.MIDDLE))
+            uiItems.add(Item.Currency(currency.code, secondCellPosition))
+            secondCellPosition = ListCell.Position.MIDDLE
         }
 
         if (wallet.isTonConnectSupported) {
-            uiItems.add(Item.SearchEngine(searchEngine, ListCell.Position.MIDDLE))
+            uiItems.add(Item.SearchEngine(searchEngine, secondCellPosition))
             uiItems.add(Item.ConnectedApps(ListCell.Position.MIDDLE))
         }
 
@@ -258,7 +270,8 @@ class SettingsViewModel(
             getString(Localization.system)
         }.capitalized, ListCell.Position.MIDDLE))
 
-        if (wallet.hasPrivateKey && !api.config.batteryDisabled) {
+        val batteryCharges = getBatteryCharges()
+        if (wallet.hasPrivateKey && (!api.config.flags.disableBattery || batteryCharges > 0)) {
             uiItems.add(Item.Battery(ListCell.Position.MIDDLE))
         }
         if (WidgetManager.isRequestPinAppWidgetSupported) {
@@ -293,5 +306,11 @@ class SettingsViewModel(
         val builder = api.config.directSupportUrl.toUri().buildUpon()
         builder.appendQueryParameter("start", startParams)
         return builder.toString()
+    }
+
+    private suspend fun getBatteryCharges(): Int = withContext(Dispatchers.IO) {
+        accountRepository.requestTonProofToken(wallet)?.let {
+            batteryRepository.getCharges(it, wallet.publicKey, wallet.testnet, true)
+        } ?: 0
     }
 }

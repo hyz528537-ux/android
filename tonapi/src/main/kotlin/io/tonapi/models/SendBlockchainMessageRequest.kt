@@ -16,36 +16,31 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param boc 
- * @param batch 
- */
 
+@Serializable
 
 data class SendBlockchainMessageRequest (
 
-    @Json(name = "boc")
+    @SerialName(value = "boc")
     val boc: kotlin.String? = null,
 
-    @Json(name = "batch")
+    @SerialName(value = "batch")
     val batch: kotlin.collections.List<kotlin.String>? = null,
 
-    @Json(name = "message")
-    val version: kotlin.String? = null,
+    @SerialName(value = "meta")
+    val meta: kotlin.collections.Map<kotlin.String, kotlin.String>? = null
 
-    @Json(name = "platform")
-    val platform: kotlin.String? = null,
+) {
 
-    @Json(name = "source")
-    val source: kotlin.String? = null,
 
-    @Json(name = "confirmation_time")
-    val confirmationTime: kotlin.Double? = null
-
-)
+}
 

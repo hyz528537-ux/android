@@ -26,7 +26,7 @@ abstract class CoreAPI(private val context: Context) {
 
     val defaultHttpClient = baseOkHttpClientBuilder(
         cronetEngine = { cronetEngine },
-        timeoutSeconds = 15,
+        timeoutSeconds = 30,
         interceptors = listOf(
             UserAgentInterceptor(userAgent),
         )
@@ -34,7 +34,7 @@ abstract class CoreAPI(private val context: Context) {
 
     val seeHttpClient = baseOkHttpClientBuilder(
         cronetEngine = { null },
-        timeoutSeconds = 30,
+        timeoutSeconds = 60,
         interceptors = listOf(
             UserAgentInterceptor(userAgent),
         )
@@ -71,7 +71,7 @@ abstract class CoreAPI(private val context: Context) {
 
         private fun baseOkHttpClientBuilder(
             cronetEngine: () -> CronetEngine?,
-            timeoutSeconds: Long = 5,
+            timeoutSeconds: Long = 30,
             interceptors: List<Interceptor> = emptyList()
         ): OkHttpClient.Builder {
             val builder = OkHttpClient().newBuilder()

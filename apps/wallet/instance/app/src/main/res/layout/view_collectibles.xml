@@ -27,6 +27,16 @@
             android:scaleType="centerInside"
             android:src="@drawable/ic_sale_badge_16"/>
 
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/fire_badge"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_margin="8dp"
+            android:layout_gravity="end|bottom"
+            android:scaleType="centerInside"
+            android:tint="?attr/accentRedColor"
+            android:src="@drawable/ic_fire_badge_16"/>
+
     </uikit.widget.SquareFrameLayout>
 
     <androidx.appcompat.widget.AppCompatTextView

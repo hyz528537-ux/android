@@ -17,48 +17,46 @@ package io.tonapi.models
 
 import io.tonapi.models.ComputeSkipReason
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param skipped 
- * @param skipReason 
- * @param success 
- * @param gasFees 
- * @param gasUsed 
- * @param vmSteps 
- * @param exitCode 
- * @param exitCodeDescription 
- */
 
+@Serializable
 
 data class ComputePhase (
 
-    @Json(name = "skipped")
+    @SerialName(value = "skipped")
     val skipped: kotlin.Boolean,
 
-    @Json(name = "skip_reason")
+    @Contextual @SerialName(value = "skip_reason")
     val skipReason: ComputeSkipReason? = null,
 
-    @Json(name = "success")
+    @SerialName(value = "success")
     val success: kotlin.Boolean? = null,
 
-    @Json(name = "gas_fees")
+    @SerialName(value = "gas_fees")
     val gasFees: kotlin.Long? = null,
 
-    @Json(name = "gas_used")
+    @SerialName(value = "gas_used")
     val gasUsed: kotlin.Long? = null,
 
-    @Json(name = "vm_steps")
+    @SerialName(value = "vm_steps")
     val vmSteps: kotlin.Int? = null,
 
-    @Json(name = "exit_code")
+    @SerialName(value = "exit_code")
     val exitCode: kotlin.Int? = null,
 
-    @Json(name = "exit_code_description")
+    @SerialName(value = "exit_code_description")
     val exitCodeDescription: kotlin.String? = null
 
-)
+) {
+
+
+}
 

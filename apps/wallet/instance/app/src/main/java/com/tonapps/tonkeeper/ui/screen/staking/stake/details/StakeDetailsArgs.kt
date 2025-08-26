@@ -32,6 +32,9 @@ data class StakeDetailsArgs(
     val apy: BigDecimal
         get() = pool.apy
 
+    val bonusApy: BigDecimal?
+        get() = pool.bonusApy
+
     val minStake: Coins
         get() = pool.minStake
 

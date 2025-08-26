@@ -16,32 +16,33 @@
 package io.tonapi.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import io.tonapi.models.AccountStaking
 import io.tonapi.models.GetStakingPoolHistory200Response
 import io.tonapi.models.GetStakingPoolInfo200Response
 import io.tonapi.models.GetStakingPools200Response
-import io.tonapi.models.StatusDefaultResponse
+import io.tonapi.models.InlineObject
 
-import com.squareup.moshi.Json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-import io.tonapi.infrastructure.ApiClient
-import io.tonapi.infrastructure.ApiResponse
-import io.tonapi.infrastructure.ClientException
-import io.tonapi.infrastructure.ClientError
-import io.tonapi.infrastructure.ServerException
-import io.tonapi.infrastructure.ServerError
-import io.tonapi.infrastructure.MultiValueMap
-import io.tonapi.infrastructure.PartConfig
-import io.tonapi.infrastructure.RequestConfig
-import io.tonapi.infrastructure.RequestMethod
-import io.tonapi.infrastructure.ResponseType
-import io.tonapi.infrastructure.Success
-import io.tonapi.infrastructure.toMultiValue
+import io.infrastructure.ApiClient
+import io.infrastructure.ApiResponse
+import io.infrastructure.ClientException
+import io.infrastructure.ClientError
+import io.infrastructure.ServerException
+import io.infrastructure.ServerError
+import io.infrastructure.MultiValueMap
+import io.infrastructure.PartConfig
+import io.infrastructure.RequestConfig
+import io.infrastructure.RequestMethod
+import io.infrastructure.ResponseType
+import io.infrastructure.Success
+import io.infrastructure.toMultiValue
 
-class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class StakingApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -49,17 +50,6 @@ class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * All pools where account participates
-     * @param accountId account ID
-     * @return AccountStaking
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getAccountNominatorsPools(accountId: kotlin.String) : AccountStaking {
@@ -80,14 +70,6 @@ class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * All pools where account participates
-     * @param accountId account ID
-     * @return ApiResponse<AccountStaking?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getAccountNominatorsPoolsWithHttpInfo(accountId: kotlin.String) : ApiResponse<AccountStaking?> {
@@ -98,12 +80,6 @@ class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * To obtain the request config of the operation getAccountNominatorsPools
-     *
-     * @param accountId account ID
-     * @return RequestConfig
-     */
     fun getAccountNominatorsPoolsRequestConfig(accountId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -120,17 +96,6 @@ class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * 
-     * Pool history
-     * @param accountId account ID
-     * @return GetStakingPoolHistory200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getStakingPoolHistory(accountId: kotlin.String) : GetStakingPoolHistory200Response {
@@ -151,14 +116,6 @@ class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Pool history
-     * @param accountId account ID
-     * @return ApiResponse<GetStakingPoolHistory200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getStakingPoolHistoryWithHttpInfo(accountId: kotlin.String) : ApiResponse<GetStakingPoolHistory200Response?> {
@@ -169,12 +126,6 @@ class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * To obtain the request config of the operation getStakingPoolHistory
-     *
-     * @param accountId account ID
-     * @return RequestConfig
-     */
     fun getStakingPoolHistoryRequestConfig(accountId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -191,18 +142,6 @@ class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * 
-     * Stacking pool info
-     * @param accountId account ID
-     * @param acceptLanguage  (optional, default to "en")
-     * @return GetStakingPoolInfo200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getStakingPoolInfo(accountId: kotlin.String, acceptLanguage: kotlin.String? = "en") : GetStakingPoolInfo200Response {
@@ -223,15 +162,6 @@ class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Stacking pool info
-     * @param accountId account ID
-     * @param acceptLanguage  (optional, default to "en")
-     * @return ApiResponse<GetStakingPoolInfo200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getStakingPoolInfoWithHttpInfo(accountId: kotlin.String, acceptLanguage: kotlin.String?) : ApiResponse<GetStakingPoolInfo200Response?> {
@@ -242,13 +172,6 @@ class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * To obtain the request config of the operation getStakingPoolInfo
-     *
-     * @param accountId account ID
-     * @param acceptLanguage  (optional, default to "en")
-     * @return RequestConfig
-     */
     fun getStakingPoolInfoRequestConfig(accountId: kotlin.String, acceptLanguage: kotlin.String?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -266,19 +189,6 @@ class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * 
-     * All pools available in network
-     * @param availableFor account ID (optional)
-     * @param includeUnverified return also pools not from white list - just compatible by interfaces (maybe dangerous!) (optional)
-     * @param acceptLanguage  (optional, default to "en")
-     * @return GetStakingPools200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getStakingPools(availableFor: kotlin.String? = null, includeUnverified: kotlin.Boolean? = null, acceptLanguage: kotlin.String? = "en") : GetStakingPools200Response {
@@ -299,16 +209,6 @@ class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * All pools available in network
-     * @param availableFor account ID (optional)
-     * @param includeUnverified return also pools not from white list - just compatible by interfaces (maybe dangerous!) (optional)
-     * @param acceptLanguage  (optional, default to "en")
-     * @return ApiResponse<GetStakingPools200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getStakingPoolsWithHttpInfo(availableFor: kotlin.String?, includeUnverified: kotlin.Boolean?, acceptLanguage: kotlin.String?) : ApiResponse<GetStakingPools200Response?> {
@@ -319,14 +219,6 @@ class StakingApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * To obtain the request config of the operation getStakingPools
-     *
-     * @param availableFor account ID (optional)
-     * @param includeUnverified return also pools not from white list - just compatible by interfaces (maybe dangerous!) (optional)
-     * @param acceptLanguage  (optional, default to "en")
-     * @return RequestConfig
-     */
     fun getStakingPoolsRequestConfig(availableFor: kotlin.String?, includeUnverified: kotlin.Boolean?, acceptLanguage: kotlin.String?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()

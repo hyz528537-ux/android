@@ -3,24 +3,20 @@ package com.tonapps.tonkeeper.ui.screen.swap
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebResourceRequest
-import android.webkit.WebSettings
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.perf.ktx.performance
 import com.tonapps.extensions.appVersionName
 import com.tonapps.extensions.locale
-import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.helper.BrowserHelper
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.base.WalletContextScreen
 import com.tonapps.tonkeeper.ui.screen.send.transaction.SendTransactionScreen
+import com.tonapps.tonkeeper.ui.screen.swap.omniston.OmnistonScreen
 import com.tonapps.tonkeeperx.R
+import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.core.entity.SignRequestEntity
 import com.tonapps.wallet.data.settings.BatteryTransaction
@@ -32,6 +28,12 @@ import uikit.extensions.applyNavBottomPadding
 import uikit.extensions.getDimensionPixelSize
 import uikit.widget.webview.WebViewFixed
 import uikit.widget.webview.bridge.BridgeWebView
+import androidx.core.view.isGone
+import com.google.firebase.Firebase
+import com.google.firebase.perf.performance
+import com.tonapps.blockchain.ton.extensions.equalsAddress
+import com.tonapps.wallet.data.core.currency.WalletCurrency
+import org.ton.contract.wallet.WalletMessage
 
 class SwapScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_swap, wallet), BaseFragment.BottomSheet {
 
@@ -75,7 +77,7 @@ class SwapScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_sw
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.simpleTrackEvent("swap_open", settingsRepository.installId)
+        analytics?.swapOpen(args.uri, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -104,7 +106,7 @@ class SwapScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_sw
     }
 
     private fun hideCloseView() {
-        if (closeView.visibility == View.GONE) {
+        if (closeView.isGone) {
             return
         }
         closeView.postDelayed({
@@ -128,11 +130,11 @@ class SwapScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_sw
     private suspend fun sing(
         request: SignRequestEntity
     ): String {
-        AnalyticsHelper.simpleTrackEvent("swap_click", settingsRepository.installId)
+        analytics?.simpleTrackEvent("swap_click")
         return try {
             val boc = SendTransactionScreen.run(requireContext(), wallet, request, BatteryTransaction.SWAP)
             if (boc.isNotBlank()) {
-                AnalyticsHelper.simpleTrackEvent("swap_success", settingsRepository.installId)
+                analytics?.simpleTrackEvent("swap_success")
             }
             boc
         } catch (e: Throwable) {
@@ -148,16 +150,37 @@ class SwapScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_sw
 
     companion object {
 
+        fun bestToToken(fromToken: String): WalletCurrency {
+            if (fromToken.equalsAddress(WalletCurrency.USDE_TON_ETHENA_ADDRESS)) {
+                return WalletCurrency.USDT_TON
+            } else if (fromToken.equalsAddress(WalletCurrency.TS_USDE_TON_ETHENA_ADDRESS)) {
+                return WalletCurrency.USDE_TON_ETHENA
+            }
+            return WalletCurrency.TON
+        }
+
         fun newInstance(
             wallet: WalletEntity,
+            fromToken: WalletCurrency = WalletCurrency.TON,
+            toToken: WalletCurrency? = null,
+            nativeSwap: Boolean,
             uri: Uri,
-            address: String,
-            fromToken: String,
-            toToken: String? = null
-        ): SwapScreen {
-            val fragment = SwapScreen(wallet)
-            fragment.setArgs(SwapArgs(uri, address, fromToken, toToken))
-            return fragment
+        ): BaseFragment {
+            if (nativeSwap) {
+                return OmnistonScreen.newInstance(
+                    wallet = wallet,
+                    fromToken = fromToken,
+                    toToken = toToken ?: bestToToken(fromToken.address)
+                )
+            }
+            val screen = SwapScreen(wallet)
+            screen.setArgs(SwapArgs(
+                uri = uri,
+                address = wallet.address,
+                fromToken = fromToken.address,
+                toToken = (toToken ?: bestToToken(fromToken.address)).address
+            ))
+            return screen
         }
     }
 }

@@ -16,33 +16,35 @@
 package io.tonapi.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import io.tonapi.models.Event
+import io.tonapi.models.GetAccountsRequest
+import io.tonapi.models.InlineObject
 import io.tonapi.models.JettonHolders
 import io.tonapi.models.JettonInfo
 import io.tonapi.models.JettonTransferPayload
 import io.tonapi.models.Jettons
-import io.tonapi.models.StatusDefaultResponse
 
-import com.squareup.moshi.Json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-import io.tonapi.infrastructure.ApiClient
-import io.tonapi.infrastructure.ApiResponse
-import io.tonapi.infrastructure.ClientException
-import io.tonapi.infrastructure.ClientError
-import io.tonapi.infrastructure.ServerException
-import io.tonapi.infrastructure.ServerError
-import io.tonapi.infrastructure.MultiValueMap
-import io.tonapi.infrastructure.PartConfig
-import io.tonapi.infrastructure.RequestConfig
-import io.tonapi.infrastructure.RequestMethod
-import io.tonapi.infrastructure.ResponseType
-import io.tonapi.infrastructure.Success
-import io.tonapi.infrastructure.toMultiValue
+import io.infrastructure.ApiClient
+import io.infrastructure.ApiResponse
+import io.infrastructure.ClientException
+import io.infrastructure.ClientError
+import io.infrastructure.ServerException
+import io.infrastructure.ServerError
+import io.infrastructure.MultiValueMap
+import io.infrastructure.PartConfig
+import io.infrastructure.RequestConfig
+import io.infrastructure.RequestMethod
+import io.infrastructure.ResponseType
+import io.infrastructure.Success
+import io.infrastructure.toMultiValue
 
-class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class JettonsApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -50,19 +52,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Get jetton&#39;s holders
-     * @param accountId account ID
-     * @param limit  (optional, default to 1000)
-     * @param offset  (optional, default to 0)
-     * @return JettonHolders
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getJettonHolders(accountId: kotlin.String, limit: kotlin.Int? = 1000, offset: kotlin.Int? = 0) : JettonHolders {
@@ -83,16 +72,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Get jetton&#39;s holders
-     * @param accountId account ID
-     * @param limit  (optional, default to 1000)
-     * @param offset  (optional, default to 0)
-     * @return ApiResponse<JettonHolders?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getJettonHoldersWithHttpInfo(accountId: kotlin.String, limit: kotlin.Int?, offset: kotlin.Int?) : ApiResponse<JettonHolders?> {
@@ -103,14 +82,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * To obtain the request config of the operation getJettonHolders
-     *
-     * @param accountId account ID
-     * @param limit  (optional, default to 1000)
-     * @param offset  (optional, default to 0)
-     * @return RequestConfig
-     */
     fun getJettonHoldersRequestConfig(accountId: kotlin.String, limit: kotlin.Int?, offset: kotlin.Int?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -135,17 +106,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * 
-     * Get jetton metadata by jetton master address
-     * @param accountId account ID
-     * @return JettonInfo
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getJettonInfo(accountId: kotlin.String) : JettonInfo {
@@ -166,14 +126,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Get jetton metadata by jetton master address
-     * @param accountId account ID
-     * @return ApiResponse<JettonInfo?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getJettonInfoWithHttpInfo(accountId: kotlin.String) : ApiResponse<JettonInfo?> {
@@ -184,12 +136,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * To obtain the request config of the operation getJettonInfo
-     *
-     * @param accountId account ID
-     * @return RequestConfig
-     */
     fun getJettonInfoRequestConfig(accountId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -206,18 +152,53 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * 
-     * Get jetton&#39;s custom payload and state init required for transfer
-     * @param accountId account ID
-     * @param jettonId jetton ID
-     * @return JettonTransferPayload
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun getJettonInfosByAddresses(getAccountsRequest: GetAccountsRequest? = null) : Jettons {
+        val localVarResponse = getJettonInfosByAddressesWithHttpInfo(getAccountsRequest = getAccountsRequest)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as Jettons
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun getJettonInfosByAddressesWithHttpInfo(getAccountsRequest: GetAccountsRequest?) : ApiResponse<Jettons?> {
+        val localVariableConfig = getJettonInfosByAddressesRequestConfig(getAccountsRequest = getAccountsRequest)
+
+        return request<GetAccountsRequest, Jettons>(
+            localVariableConfig
+        )
+    }
+
+    fun getJettonInfosByAddressesRequestConfig(getAccountsRequest: GetAccountsRequest?) : RequestConfig<GetAccountsRequest> {
+        val localVariableBody = getAccountsRequest
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/v2/jettons/_bulk",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = false,
+            body = localVariableBody
+        )
+    }
+
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getJettonTransferPayload(accountId: kotlin.String, jettonId: kotlin.String) : JettonTransferPayload {
@@ -238,15 +219,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Get jetton&#39;s custom payload and state init required for transfer
-     * @param accountId account ID
-     * @param jettonId jetton ID
-     * @return ApiResponse<JettonTransferPayload?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getJettonTransferPayloadWithHttpInfo(accountId: kotlin.String, jettonId: kotlin.String) : ApiResponse<JettonTransferPayload?> {
@@ -257,13 +229,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * To obtain the request config of the operation getJettonTransferPayload
-     *
-     * @param accountId account ID
-     * @param jettonId jetton ID
-     * @return RequestConfig
-     */
     fun getJettonTransferPayloadRequestConfig(accountId: kotlin.String, jettonId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -280,18 +245,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * 
-     * Get a list of all indexed jetton masters in the blockchain.
-     * @param limit  (optional, default to 100)
-     * @param offset  (optional, default to 0)
-     * @return Jettons
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getJettons(limit: kotlin.Int? = 100, offset: kotlin.Int? = 0) : Jettons {
@@ -312,15 +265,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Get a list of all indexed jetton masters in the blockchain.
-     * @param limit  (optional, default to 100)
-     * @param offset  (optional, default to 0)
-     * @return ApiResponse<Jettons?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getJettonsWithHttpInfo(limit: kotlin.Int?, offset: kotlin.Int?) : ApiResponse<Jettons?> {
@@ -331,13 +275,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * To obtain the request config of the operation getJettons
-     *
-     * @param limit  (optional, default to 100)
-     * @param offset  (optional, default to 0)
-     * @return RequestConfig
-     */
     fun getJettonsRequestConfig(limit: kotlin.Int?, offset: kotlin.Int?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -362,18 +299,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * 
-     * Get only jetton transfers in the event
-     * @param eventId event ID or transaction hash in hex (without 0x) or base64url format
-     * @param acceptLanguage  (optional, default to "en")
-     * @return Event
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getJettonsEvents(eventId: kotlin.String, acceptLanguage: kotlin.String? = "en") : Event {
@@ -394,15 +319,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Get only jetton transfers in the event
-     * @param eventId event ID or transaction hash in hex (without 0x) or base64url format
-     * @param acceptLanguage  (optional, default to "en")
-     * @return ApiResponse<Event?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getJettonsEventsWithHttpInfo(eventId: kotlin.String, acceptLanguage: kotlin.String?) : ApiResponse<Event?> {
@@ -413,13 +329,6 @@ class JettonsApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * To obtain the request config of the operation getJettonsEvents
-     *
-     * @param eventId event ID or transaction hash in hex (without 0x) or base64url format
-     * @param acceptLanguage  (optional, default to "en")
-     * @return RequestConfig
-     */
     fun getJettonsEventsRequestConfig(eventId: kotlin.String, acceptLanguage: kotlin.String?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()

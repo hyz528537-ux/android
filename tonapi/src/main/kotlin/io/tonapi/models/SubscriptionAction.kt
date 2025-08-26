@@ -17,36 +17,37 @@ package io.tonapi.models
 
 import io.tonapi.models.AccountAddress
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param subscriber 
- * @param subscription 
- * @param beneficiary 
- * @param amount 
- * @param initial 
- */
 
+@Serializable
 
 data class SubscriptionAction (
 
-    @Json(name = "subscriber")
+    @SerialName(value = "subscriber")
     val subscriber: AccountAddress,
 
-    @Json(name = "subscription")
+    @SerialName(value = "subscription")
     val subscription: kotlin.String,
 
-    @Json(name = "beneficiary")
+    @SerialName(value = "beneficiary")
     val beneficiary: AccountAddress,
 
-    @Json(name = "amount")
+    @SerialName(value = "amount")
     val amount: kotlin.Long,
 
-    @Json(name = "initial")
+    @SerialName(value = "initial")
     val initial: kotlin.Boolean
 
-)
+) {
+
+
+}
 

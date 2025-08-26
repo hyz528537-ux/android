@@ -14,10 +14,6 @@ data class TonTransaction(
     val max: Boolean
 ) {
 
-    fun isRealMax(balance: Coins): Boolean {
-        return amount.value >= balance
-    }
-
     data class Amount(
         val value: Coins,
         val converted: Coins,

@@ -8,15 +8,15 @@ android {
 }
 
 dependencies {
-    api(platform(Dependence.Firebase.bom))
-    api(Dependence.Firebase.crashlytics)
+    api(platform(libs.firebase.bom))
+    api(libs.firebase.crashlytics)
 
-    implementation(Dependence.AndroidX.biometric)
-    implementation(Dependence.TON.crypto)
+    implementation(libs.androidX.biometric)
+    implementation(libs.ton.crypto)
 
-    implementation(project(Dependence.Lib.sqlite))
-    implementation(project(Dependence.Lib.security))
-    implementation(project(Dependence.Lib.extensions))
+    implementation(project(ProjectModules.Lib.sqlite))
+    implementation(project(ProjectModules.Lib.security))
+    implementation(project(ProjectModules.Lib.extensions))
 }
 
 

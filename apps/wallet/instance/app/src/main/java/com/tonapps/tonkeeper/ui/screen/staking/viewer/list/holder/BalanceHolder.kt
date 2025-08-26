@@ -22,7 +22,7 @@ class BalanceHolder(
     override fun onBind(item: Item.Balance) {
         balanceView.text = if (item.hiddenBalance) HIDDEN_BALANCE else item.balanceFormat.withCustomSymbol(context)
         fiatView.text = if (item.hiddenBalance) HIDDEN_BALANCE else item.fiatFormat.withCustomSymbol(context)
-        iconView.setLocalRes(StakingPool.getIcon(item.poolImplementation))
+        item.iconRes?.let { iconView.setLocalRes(it) }
         currencyIconView.setImageResource(item.currencyIcon)
     }
 

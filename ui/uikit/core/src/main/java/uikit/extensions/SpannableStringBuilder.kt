@@ -1,6 +1,7 @@
 package uikit.extensions
 
 import android.content.Context
+import android.graphics.Color
 import android.text.SpannableStringBuilder
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
@@ -14,6 +15,7 @@ import com.tonapps.uikit.color.accentRedColor
 import com.tonapps.uikit.color.backgroundContentTintColor
 import com.tonapps.uikit.color.textSecondaryColor
 import uikit.span.BadgeSpan
+import uikit.span.ClickableSpanCompat
 import uikit.span.EllipsisSpan
 
 inline fun SpannableStringBuilder.badge(
@@ -81,4 +83,9 @@ inline fun SpannableStringBuilder.ellipsis(
     builderAction: SpannableStringBuilder.() -> Unit
 ): SpannableStringBuilder = inSpans(EllipsisSpan(maxWidth, ellipsis), builderAction = builderAction)
 
+inline fun SpannableStringBuilder.clickable(
+    color: Int = Color.TRANSPARENT,
+    noinline onClick: () -> Unit,
+    builderAction: SpannableStringBuilder.() -> Unit
+): SpannableStringBuilder = inSpans(ClickableSpanCompat(color, onClick), builderAction = builderAction)
 

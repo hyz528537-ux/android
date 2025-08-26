@@ -7,10 +7,12 @@ import com.tonapps.wallet.data.core.BlobDataSource
 import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.rates.entity.RateEntity
 import com.tonapps.wallet.data.rates.entity.RatesEntity
+import java.util.concurrent.TimeUnit
 
 internal class BlobDataSource(context: Context): BlobDataSource<RatesEntity>(
     context = context,
-    path = "rates"
+    path = "rates",
+    timeout = TimeUnit.HOURS.toMillis(12)
 ) {
 
     override fun onUnmarshall(bytes: ByteArray) = bytes.toParcel<RatesEntity>()

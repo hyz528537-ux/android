@@ -93,7 +93,11 @@ internal class Bridge(private val api: API) {
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             val encryptedMessage = AppConnectEntity.encryptMessage(clientId.hex(), keyPair.privateKey, unencryptedMessage.toByteArray())
-            api.tonconnectSend(hex(keyPair.publicKey), clientId, encryptedMessage.encodeBase64())
+            api.tonconnectSend(
+                publicKeyHex = hex(keyPair.publicKey),
+                clientId = clientId,
+                body = encryptedMessage.encodeBase64()
+            )
             true
         } catch (e: Throwable) {
             DevSettings.tonConnectLog("Failed to send message to $clientId: ${e.bestMessage}")

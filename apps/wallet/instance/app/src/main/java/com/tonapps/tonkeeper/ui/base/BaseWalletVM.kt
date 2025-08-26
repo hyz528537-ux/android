@@ -60,13 +60,9 @@ abstract class BaseWalletVM(
         holderRef = WeakReference(holder)
     }
 
-    fun <T> Flow<T>.launch() {
-        this.launchIn(viewModelScope)
-    }
+    fun <T> Flow<T>.launch() = this.launchIn(viewModelScope)
 
-    fun <T> Flow<T>.collectFlow(action: suspend (T) -> Unit) {
-        this.onEach { action(it) }.launch()
-    }
+    fun <T> Flow<T>.collectFlow(action: suspend (T) -> Unit) = this.onEach { action(it) }.launch()
 
     fun detachHolder() {
         holderRef?.clear()

@@ -55,6 +55,9 @@ data class BalanceEntity(
     val customPayloadApiUri: String?
         get() = token.customPayloadApiUri
 
+    val blockchain: Blockchain
+        get() = token.blockchain
+
     constructor(jettonBalance: JettonBalance) : this(
         token = TokenEntity(jettonBalance.jetton, jettonBalance.extensions, jettonBalance.lock),
         value = Coins.of(BigDecimal(jettonBalance.balance).movePointLeft(jettonBalance.jetton.decimals), jettonBalance.jetton.decimals),

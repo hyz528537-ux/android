@@ -3,10 +3,10 @@
     xmlns:fresco="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="76dp"
-    android:orientation="horizontal"
-    android:paddingHorizontal="@dimen/offsetMedium"
     android:clipChildren="false"
-    android:clipToPadding="false">
+    android:clipToPadding="false"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/offsetMedium">
 
     <FrameLayout
         android:layout_width="44dp"
@@ -63,6 +63,7 @@
     </androidx.appcompat.widget.LinearLayoutCompat>
 
     <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/balance_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -91,5 +92,17 @@
             android:textColor="?attr/textSecondaryColor" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <Button
+        android:id="@+id/button_open"
+        style="@style/Widget.App.Button.Small.Tertiary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingVertical="0dp"
+        android:text="@string/open"
+        android:textAppearance="@style/TextAppearance.Label2"
+        android:textColor="?attr/textPrimaryColor"
+        android:visibility="gone" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

@@ -16,23 +16,24 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param type 
- * @param origin 
- */
 
+@Serializable
 
 data class Refund (
 
-    @Json(name = "type")
-    val type: String,
+    @SerialName(value = "type")
+    val type: Refund.Type,
 
-    @Json(name = "origin")
+    @SerialName(value = "origin")
     val origin: kotlin.String
 
 ) {
@@ -40,13 +41,29 @@ data class Refund (
     /**
      * 
      *
-     * Values: dNSPeriodTon,dNSPeriodTg,getGems
+     * Values: DNSPeriodTon,DNSPeriodTg,GetGems.unknown
      */
-    @JsonClass(generateAdapter = false)
+    @Serializable(with = TypeSerializer::class)
     enum class Type(val value: kotlin.String) {
-        @Json(name = "DNS.ton") dNSPeriodTon("DNS.ton"),
-        @Json(name = "DNS.tg") dNSPeriodTg("DNS.tg"),
-        @Json(name = "GetGems") getGems("GetGems");
+        @SerialName(value = "DNS.ton") DNSPeriodTon("DNS.ton"),
+        @SerialName(value = "DNS.tg") DNSPeriodTg("DNS.tg"),
+        @SerialName(value = "GetGems") GetGems("GetGems"),
+        @SerialName(value = "unknown") unknown("unknown");
     }
+
+    internal object TypeSerializer : KSerializer<Type> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): Type {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return Type.entries.firstOrNull { it.value == value }
+                ?: Type.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: Type) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
+    }
+
 }
 

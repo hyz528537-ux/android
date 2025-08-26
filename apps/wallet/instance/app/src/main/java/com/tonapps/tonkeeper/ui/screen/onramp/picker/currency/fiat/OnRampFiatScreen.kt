@@ -17,6 +17,9 @@ class OnRampFiatScreen: CurrencyPickerScreen(), QueryReceiver {
             return array?.toList() ?: emptyList()
         }
 
+    override val extras: List<String>
+        get() = arguments?.getStringArrayList(ARG_EXTRAS) ?: emptyList()
+
     override fun onSelected(currency: WalletCurrency) {
         mainViewModel.setCurrency(currency)
     }
@@ -28,10 +31,15 @@ class OnRampFiatScreen: CurrencyPickerScreen(), QueryReceiver {
     companion object {
 
         private const val ARG_CURRENCIES = "currencies"
+        private const val ARG_EXTRAS = "extras"
 
-        fun newInstance(currencies: List<WalletCurrency>): OnRampFiatScreen {
+        fun newInstance(currencies: List<WalletCurrency>, extras: List<String>): OnRampFiatScreen {
+            if (extras.isNotEmpty() && extras.size != currencies.size) {
+                throw IllegalArgumentException("Extras size must match currencies size")
+            }
             val screen = OnRampFiatScreen()
             screen.putParcelableListArg(ARG_CURRENCIES, currencies)
+            screen.putStringList(ARG_EXTRAS, extras)
             return screen
         }
     }

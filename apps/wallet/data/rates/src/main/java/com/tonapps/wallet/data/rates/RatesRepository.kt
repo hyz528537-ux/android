@@ -1,6 +1,8 @@
 package com.tonapps.wallet.data.rates
 
 import android.content.Context
+import android.util.Log
+import com.google.firebase.annotations.concurrent.Background
 import com.tonapps.icu.Coins
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.entity.TokenEntity
@@ -21,6 +23,14 @@ class RatesRepository(
 
     private val localDataSource = BlobDataSource(context)
 
+    suspend fun updateAll(currency: WalletCurrency, tokens: List<String>) = withContext(Dispatchers.IO) {
+        load(currency, tokens.take(100).toMutableList())
+    }
+
+    suspend fun updateAll(currency: WalletCurrency) = withContext(Dispatchers.IO) {
+        updateAll(currency, localDataSource.get(currency).tokens)
+    }
+
     fun cache(currency: WalletCurrency, tokens: List<String>): RatesEntity {
         return localDataSource.get(currency).filter(tokens)
     }
@@ -36,12 +46,22 @@ class RatesRepository(
         if (!tokens.contains(TokenEntity.USDT.address)) {
             tokens.add(TokenEntity.USDT.address)
         }
-        val rates = api.getRates(currency.code, tokens)?.toMutableMap() ?: return
+        val rates = mutableMapOf<String, TokenRates>()
+        for (chunk in tokens.chunked(100)) {
+            runCatching { fetchRates(currency.code, chunk) }.onSuccess(rates::putAll)
+        }
         val usdtRate = rates[TokenEntity.USDT.address]
         usdtRate?.let {
             rates.put(TokenEntity.TRON_USDT.address, usdtRate)
         }
         insertRates(currency, rates)
+    }
+
+    private fun fetchRates(code: String, tokens: List<String>): Map<String, TokenRates> {
+        if (tokens.size > 100) {
+            throw IllegalArgumentException("Too many tokens requested: ${tokens.size}")
+        }
+        return api.getRates(code, tokens) ?: throw IllegalStateException("Failed to fetch rates for $code with tokens: $tokens")
     }
 
     fun insertRates(currency: WalletCurrency, rates: Map<String, TokenRates>) {
@@ -51,7 +71,8 @@ class RatesRepository(
         val entities = mutableListOf<RateEntity>()
         for (rate in rates) {
             val value = rate.value
-            val bigDecimal = value.prices?.get(currency.code) ?: BigDecimal.ZERO
+            val prices = value.prices?.get(currency.code)?.let(::BigDecimal)
+            val bigDecimal = prices ?: BigDecimal.ZERO
 
             entities.add(RateEntity(
                 tokenCode = rate.key,

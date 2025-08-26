@@ -376,6 +376,10 @@ open class BaseFragment(
         return ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED
     }
 
+    fun hasPermissions(permissions: Array<String>): Boolean {
+        return permissions.all { hasPermission(it) }
+    }
+
     fun getCurrentFocus(): EditText? {
         return requireActivity().currentFocus as? EditText
     }

@@ -16,26 +16,36 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * 
  *
- * Values: noState,badState,noGas
+ * Values: cskip_no_state,cskip_bad_state,cskip_no_gas,cskip_suspended.unknown
  */
-
-@JsonClass(generateAdapter = false)
+@Serializable(with = ComputeSkipReasonSerializer::class)
 enum class ComputeSkipReason(val value: kotlin.String) {
 
-    @Json(name = "cskip_no_state")
-    noState("cskip_no_state"),
+    @SerialName(value = "cskip_no_state")
+    cskip_no_state("cskip_no_state"),
 
-    @Json(name = "cskip_bad_state")
-    badState("cskip_bad_state"),
+    @SerialName(value = "cskip_bad_state")
+    cskip_bad_state("cskip_bad_state"),
 
-    @Json(name = "cskip_no_gas")
-    noGas("cskip_no_gas");
+    @SerialName(value = "cskip_no_gas")
+    cskip_no_gas("cskip_no_gas"),
+
+    @SerialName(value = "cskip_suspended")
+    cskip_suspended("cskip_suspended"),
+
+    @SerialName(value = "unknown")
+    unknown("unknown");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -57,10 +67,24 @@ enum class ComputeSkipReason(val value: kotlin.String) {
          */
         fun decode(data: kotlin.Any?): ComputeSkipReason? = data?.let {
           val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
+          entries.firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()
           }
         }
+    }
+}
+
+internal object ComputeSkipReasonSerializer : KSerializer<ComputeSkipReason> {
+    override val descriptor = kotlin.String.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): ComputeSkipReason {
+        val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+        return ComputeSkipReason.entries.firstOrNull { it.value == value }
+            ?: ComputeSkipReason.unknown
+    }
+
+    override fun serialize(encoder: Encoder, value: ComputeSkipReason) {
+        encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
     }
 }
 

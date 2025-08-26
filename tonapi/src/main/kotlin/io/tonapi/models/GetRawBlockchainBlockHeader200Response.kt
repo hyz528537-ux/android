@@ -17,28 +17,31 @@ package io.tonapi.models
 
 import io.tonapi.models.BlockRaw
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param id 
- * @param mode 
- * @param headerProof 
- */
 
+@Serializable
 
 data class GetRawBlockchainBlockHeader200Response (
 
-    @Json(name = "id")
+    @SerialName(value = "id")
     val id: BlockRaw,
 
-    @Json(name = "mode")
+    @SerialName(value = "mode")
     val mode: kotlin.Int,
 
-    @Json(name = "header_proof")
+    @SerialName(value = "header_proof")
     val headerProof: kotlin.String
 
-)
+) {
+
+
+}
 

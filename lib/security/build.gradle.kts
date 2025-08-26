@@ -7,6 +7,7 @@ plugins {
 android {
     namespace = Build.namespacePrefix("security")
     compileSdk = Build.compileSdkVersion
+    ndkVersion = Build.ndkVersion
 
     defaultConfig {
         minSdk = Build.minSdkVersion
@@ -40,12 +41,12 @@ android {
 }
 
 dependencies {
-    api(platform(Dependence.Firebase.bom))
-    api(Dependence.Firebase.crashlytics)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
 
-    implementation(Dependence.KotlinX.coroutines)
-    implementation(Dependence.AndroidX.security)
-    implementation(project(Dependence.Lib.extensions))
+    implementation(libs.kotlinX.coroutines.android)
+    implementation(libs.androidX.security)
+    implementation(project(ProjectModules.Lib.extensions))
     compileOnly(fileTree("libs") {
         include("*.aar")
     })

@@ -29,7 +29,7 @@ class BatteryScreen(wallet: WalletEntity): BaseHolderWalletScreen<ScreenContext.
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.simpleTrackScreenEvent("battery_open", viewModel.installId, from)
+        analytics?.simpleTrackScreenEvent("battery_open", from)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -8,7 +8,7 @@ object StakingPool {
     enum class Implementation(
         val title: String
     ) {
-        Whales("whales"), TF("tf"), LiquidTF("liquidTF"), Ethena("ethena")
+        Whales("whales"), TF("tf"), LiquidTF("liquidTF")
     }
 
     fun implementation(type: PoolImplementationType): Implementation {
@@ -16,6 +16,7 @@ object StakingPool {
             PoolImplementationType.whales -> Implementation.Whales
             PoolImplementationType.tf -> Implementation.TF
             PoolImplementationType.liquidTF -> Implementation.LiquidTF
+            else -> throw IllegalArgumentException("Unknown PoolImplementationType: $type")
         }
     }
 
@@ -24,7 +25,6 @@ object StakingPool {
             Implementation.Whales -> R.string.stake_whales
             Implementation.TF -> R.string.stake_nominators
             Implementation.LiquidTF -> R.string.stake_tonstakers
-            Implementation.Ethena -> R.string.stake_ethena
         }
     }
 
@@ -33,7 +33,6 @@ object StakingPool {
             Implementation.Whales -> R.drawable.whales
             Implementation.TF -> R.drawable.tf
             Implementation.LiquidTF -> R.drawable.ic_tonstakers
-            Implementation.Ethena -> R.drawable.ethena
         }
     }
 

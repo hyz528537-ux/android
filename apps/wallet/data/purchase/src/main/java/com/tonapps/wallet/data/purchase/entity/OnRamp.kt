@@ -3,10 +3,13 @@ package com.tonapps.wallet.data.purchase.entity
 import android.os.Parcelable
 import android.util.Log
 import com.tonapps.wallet.data.core.currency.WalletCurrency
+import com.tonapps.wallet.data.purchase.OnRampUtils
+import kotlinx.coroutines.flow.map
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.ranges.contains
 
 @Parcelize
 sealed class OnRamp: Parcelable {
@@ -14,6 +17,20 @@ sealed class OnRamp: Parcelable {
     @Serializable
     @Parcelize
     data class SymbolWrapper(val symbol: String): OnRamp()
+
+    @Serializable
+    @Parcelize
+    data class Method(
+        val image: String,
+        val type: String
+    ): OnRamp()
+
+    @Serializable
+    @Parcelize
+    data class PaymentMethodMerchant(
+        val merchant: String,
+        val methods: List<Method>
+    ): OnRamp()
 
     @Serializable
     @Parcelize
@@ -42,7 +59,18 @@ sealed class OnRamp: Parcelable {
         val from: SymbolWrapper,
         val to: SymbolWrapper,
         val merchants: List<SlugWrapper>
-    ): OnRamp()
+    ): OnRamp() {
+
+        @IgnoredOnParcel
+        val min: Double by lazy {
+            merchants.mapNotNull { it.limits?.min }.minOrNull() ?: 0.0
+        }
+
+        @IgnoredOnParcel
+        val max: Double? by lazy {
+            merchants.mapNotNull { it.limits?.max }.maxOrNull()
+        }
+    }
 
     @Serializable
     @Parcelize
@@ -133,12 +161,40 @@ sealed class OnRamp: Parcelable {
             WalletCurrency.sort(list)
         }
 
-        fun isValidPair(from: String, to: String): AllowedPair? {
-            return allowedPairs.find { pair ->
-                (pair.from.symbol.equals(from, true) && pair.to.symbol.equals(to, true))
-                // || (pair.from.symbol.equals(to, true) && pair.to.symbol.equals(from, true))
+        fun resolveNetwork(input: Boolean, currency: WalletCurrency): String? {
+            if (currency.fiat) {
+                return null
             }
+            val assets = assets.filter { asset ->
+                asset.slug.equals(currency.code, true)
+            }
+            val methods = assets.flatMap {
+                if (input) it.inputMethods else it.outputMethods
+            }
+            return OnRampUtils.normalizeType(currency) ?: methods.firstOrNull()?.type
         }
 
+        fun findValidPairs(from: String, to: String): Pairs {
+            val pairs = allowedPairs.filter { pair ->
+                (pair.from.symbol.equals(from, true) && pair.to.symbol.equals(to, true))
+            }
+            val merchantSlugs = pairs.map { it.merchants }.flatten().map { it.slug }
+            val availableMerchants = merchants.filter { merchantSlugs.contains(it.slug) }
+            return Pairs(pairs, availableMerchants)
+        }
+    }
+
+    data class Pairs(
+        val pairs: List<AllowedPair>,
+        val merchants: List<Merchant>
+    ) {
+
+        val pair: AllowedPair? by lazy {
+            pairs.firstOrNull()
+        }
+
+        val min: Double by lazy {
+            pairs.minOfOrNull { it.min } ?: 0.0
+        }
     }
 }

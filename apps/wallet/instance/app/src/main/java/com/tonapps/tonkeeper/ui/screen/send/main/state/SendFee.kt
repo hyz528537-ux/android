@@ -1,10 +1,11 @@
 package com.tonapps.tonkeeper.ui.screen.send.main.state
 
 import com.tonapps.icu.Coins
+import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.core.Fee
+import com.tonapps.tonkeeper.extensions.symbol
 import com.tonapps.wallet.data.core.currency.WalletCurrency
 import org.ton.block.AddrStd
-
 
 sealed class SendFee {
 

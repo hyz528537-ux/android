@@ -30,6 +30,7 @@ import com.tonapps.wallet.api.entity.NotificationEntity
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.account.entities.WalletEntity
+import com.tonapps.wallet.data.collectibles.entities.DnsExpiringEntity
 import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.dapps.entities.AppPushEntity
 import com.tonapps.wallet.data.staking.StakingPool
@@ -55,6 +56,7 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
         const val TYPE_SETUP_LINK = 11
         const val TYPE_STAKED = 12
         const val TYPE_APK_STATUS = 13
+        const val TYPE_RENEW_DOMAINS = 14
 
         fun createFromParcel(parcel: Parcel): Item {
             return when (parcel.readInt()) {
@@ -70,6 +72,7 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
                 TYPE_SETUP_LINK -> SetupLink(parcel)
                 TYPE_STAKED -> Stake(parcel)
                 TYPE_APK_STATUS -> ApkStatus(parcel)
+                TYPE_RENEW_DOMAINS -> RenewDomains(parcel)
                 else -> throw IllegalArgumentException("Unknown type")
             }
         }
@@ -195,6 +198,8 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
         val token: TokenEntity,
         val swapUri: Uri,
         val tronEnabled: Boolean,
+        val isSwapDisabled: Boolean,
+        val isStakingDisabled: Boolean
     ): Item(TYPE_ACTIONS) {
 
         val address: String
@@ -207,6 +212,8 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
             parcel.readParcelableCompat()!!,
             parcel.readParcelableCompat()!!,
             parcel.readParcelableCompat()!!,
+            parcel.readBooleanCompat(),
+            parcel.readBooleanCompat(),
             parcel.readBooleanCompat()
         )
 
@@ -215,6 +222,8 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
             dest.writeParcelable(token, flags)
             dest.writeParcelable(swapUri, flags)
             dest.writeBooleanCompat(tronEnabled)
+            dest.writeBooleanCompat(isSwapDisabled)
+            dest.writeBooleanCompat(isStakingDisabled)
         }
 
         companion object CREATOR : Parcelable.Creator<Actions> {
@@ -253,11 +262,7 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
 
         @IgnoredOnParcel
         val currencyIcon: Int by lazy {
-            if (poolImplementation == StakingPool.Implementation.Ethena) {
-                com.tonapps.wallet.api.R.drawable.ic_udse_ethena_with_bg
-            } else {
-                com.tonapps.wallet.api.R.drawable.ic_ton_with_bg
-            }
+            com.tonapps.wallet.api.R.drawable.ic_ton_with_bg
         }
 
         constructor(parcel: Parcel) : this(
@@ -336,6 +341,9 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
 
         val isUSDT = address == TokenEntity.USDT.address
         val isTRC20 = address == TokenEntity.TRON_USDT.address
+        val isUSDe = address == TokenEntity.USDE.address
+
+        val isStable = isUSDT || isTRC20 || isUSDe
 
         constructor(
             position: ListCell.Position,
@@ -359,7 +367,6 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
                 CurrencyFormatter.formatFiat(
                     currency = currencyCode,
                     value = token.rateNow,
-                    customScale = 2,
                     roundingMode = RoundingMode.UP
                 )
             } else {
@@ -455,6 +462,28 @@ sealed class Item(type: Int): BaseListItem(type), Parcelable {
             override fun createFromParcel(parcel: Parcel) = Skeleton(parcel)
 
             override fun newArray(size: Int): Array<Skeleton?> = arrayOfNulls(size)
+        }
+    }
+
+    data class RenewDomains(
+        val wallet: WalletEntity,
+        val items: List<DnsExpiringEntity>
+    ): Item(TYPE_RENEW_DOMAINS) {
+
+        constructor(parcel: Parcel) : this(
+            parcel.readParcelableCompat()!!,
+            parcel.readArrayCompat(DnsExpiringEntity::class.java)?.toList() ?: emptyList()
+        )
+
+        override fun marshall(dest: Parcel, flags: Int) {
+            dest.writeParcelable(wallet, flags)
+            dest.writeArrayCompat(items.toTypedArray())
+        }
+
+        companion object CREATOR : Parcelable.Creator<Push> {
+            override fun createFromParcel(parcel: Parcel) = Push(parcel)
+
+            override fun newArray(size: Int): Array<Push?> = arrayOfNulls(size)
         }
     }
 

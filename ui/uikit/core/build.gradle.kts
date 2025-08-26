@@ -17,21 +17,21 @@ android {
 }
 
 dependencies {
-    api(project(Dependence.UIKit.color))
-    api(project(Dependence.UIKit.icon))
-    api(project(Dependence.UIKit.list))
-    api(project(Dependence.Module.shimmer))
+    api(project(ProjectModules.UIKit.color))
+    api(project(ProjectModules.UIKit.icon))
+    api(project(ProjectModules.UIKit.list))
+    api(project(ProjectModules.Module.shimmer))
 
-    implementation(Dependence.KotlinX.coroutines)
-    implementation(Dependence.AndroidX.core)
-    implementation(Dependence.AndroidX.webkit)
-    implementation(Dependence.AndroidX.activity)
-    implementation(Dependence.AndroidX.fragment)
-    implementation(Dependence.AndroidX.appCompat)
-    implementation(Dependence.AndroidX.splashscreen)
-    implementation(Dependence.UI.flexbox)
-    implementation(Dependence.UI.material)
-    implementation(Dependence.fresco) {
+    implementation(libs.kotlinX.coroutines.android)
+    implementation(libs.androidX.core)
+    implementation(libs.androidX.webkit)
+    implementation(libs.androidX.activity)
+    implementation(libs.androidX.fragment)
+    implementation(libs.androidX.appCompat)
+    implementation(libs.androidX.splashscreen)
+    implementation(libs.flexbox)
+    implementation(libs.material)
+    implementation(libs.fresco) {
         exclude(group = "com.facebook.soloader", module = "soloader")
         exclude(group = "com.facebook.fresco", module = "soloader")
         exclude(group = "com.facebook.fresco", module = "nativeimagefilters")
@@ -40,11 +40,11 @@ dependencies {
         exclude(group = "com.facebook.fresco", module = "imagepipeline-native")
     }
 
-    implementation(platform(Dependence.AndroidX.Compose.bom))
-    implementation(Dependence.AndroidX.Compose.foundation)
-    implementation(Dependence.AndroidX.Compose.foundationLayout)
-    implementation(Dependence.AndroidX.Compose.ui)
-    implementation(Dependence.AndroidX.Compose.material3)
-    implementation(Dependence.AndroidX.Compose.preview)
-    debugImplementation(Dependence.AndroidX.Compose.debugTooling)
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.foundationLayout)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.preview)
+    debugImplementation(libs.compose.debugTooling)
 }

@@ -1,6 +1,6 @@
 package com.tonapps.tonkeeper.ui.screen.send.main.state
 
-import com.tonapps.blockchain.ton.extensions.isTestnetAddress
+import com.tonapps.blockchain.ton.TonAddressTags
 import com.tonapps.blockchain.ton.extensions.isValidTonAddress
 import com.tonapps.wallet.api.entity.Blockchain
 import com.tonapps.wallet.api.entity.TokenEntity
@@ -18,7 +18,8 @@ sealed class SendDestination {
     ) : SendDestination()
 
     data class TonAccount(
-        val query: String,
+        val userInput: String,
+        val isUserInputAddress: Boolean,
         val publicKey: PublicKeyEd25519,
         val address: AddrStd,
         val memoRequired: Boolean,
@@ -26,32 +27,32 @@ sealed class SendDestination {
         val isWallet: Boolean,
         val name: String?,
         val isScam: Boolean,
-        val isBounce: Boolean,
         val existing: Boolean,
-        val testnet: Boolean
+        val testnet: Boolean,
+        val tonAddressTags: TonAddressTags,
+        val isBounce: Boolean,
     ) : SendDestination() {
 
         companion object {
-            private fun isBounce(query: String, account: io.tonapi.models.Account): Boolean {
-                if (account.status != AccountStatus.active && (query.startsWith("EQ") || query.isTestnetAddress())) {
+
+            private fun isBounce(
+                tonAddressTags: TonAddressTags,
+                isUserInputAddress: Boolean,
+                account: io.tonapi.models.Account
+            ): Boolean {
+                if (account.status != AccountStatus.active && (!tonAddressTags.isBounceable || tonAddressTags.isTestnet == true)) {
                     return false
                 }
-                val bounce = query.startsWith("EQ") || !query.startsWith("U")
-                if (!query.isValidTonAddress()) {
+                if (!isUserInputAddress) {
                     return !account.isWallet
                 }
-                return bounce
+                return tonAddressTags.isBounceable
             }
         }
 
-        val displayName: String?
-            get() {
-                return if (query.isValidTonAddress()) {
-                    name
-                } else {
-                    query.lowercase()
-                }
-            }
+        val displayName: String? by lazy {
+            if (isUserInputAddress) name else userInput.lowercase()
+        }
 
         val displayAddress: String
             get() {
@@ -63,12 +64,15 @@ sealed class SendDestination {
             }
 
         constructor(
-            query: String,
+            userInput: String,
+            isUserInputAddress: Boolean,
             publicKey: PublicKeyEd25519,
             account: io.tonapi.models.Account,
-            testnet: Boolean
+            testnet: Boolean,
+            tonAddressTags: TonAddressTags
         ) : this(
-            query = query,
+            userInput = userInput,
+            isUserInputAddress = isUserInputAddress,
             publicKey = publicKey,
             address = AddrStd(account.address),
             memoRequired = account.memoRequired ?: false,
@@ -76,9 +80,10 @@ sealed class SendDestination {
             isWallet = account.isWallet,
             name = account.name,
             isScam = account.isScam ?: false,
-            isBounce = isBounce(query, account),
             existing = (account.status == AccountStatus.active || account.status == AccountStatus.frozen),
-            testnet = testnet
+            testnet = testnet,
+            tonAddressTags = tonAddressTags,
+            isBounce = isBounce(tonAddressTags, isUserInputAddress, account)
         )
     }
 

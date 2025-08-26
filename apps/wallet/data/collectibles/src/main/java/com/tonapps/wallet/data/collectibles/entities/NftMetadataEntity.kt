@@ -3,6 +3,7 @@ package com.tonapps.wallet.data.collectibles.entities
 import android.os.Parcelable
 import android.util.Base64
 import android.util.Log
+import io.JsonAny
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
@@ -43,12 +44,18 @@ data class NftMetadataEntity(
         "https://c.tonapi.io/json?url=$encoded"
     }
 
-    constructor(map: Map<String, Any>) : this(
-        strings = map.filter { it.value is String }.mapValues { it.value as String } as HashMap<String, String>,
-        buttons = map["buttons"]?.let { buttons ->
-            (buttons as List<Map<String, String>>).map {
-                Button(it)
+    constructor(map: Map<String, JsonAny>) : this(
+        strings = HashMap(map.mapNotNull { (key, value) ->
+            value.asString()?.let { key to it }
+        }.toMap()),
+
+        buttons = map["buttons"]?.asArray()?.mapNotNull { buttonElement ->
+            buttonElement.asObject()?.let { buttonMap ->
+                val stringMap = buttonMap.mapNotNull { (key, value) ->
+                    value.asString()?.let { key to it }
+                }.toMap()
+                Button(stringMap)
             }
-        } ?: arrayListOf()
+        } ?: emptyList()
     )
 }

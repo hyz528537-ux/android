@@ -23,14 +23,14 @@ android {
 }
 
 dependencies {
-    api(Dependence.TON.tvm)
-    api(Dependence.TON.crypto)
-    api(Dependence.TON.tlb)
-    api(Dependence.TON.blockTlb)
-    api(Dependence.TON.tonapiTl)
-    api(Dependence.TON.contract)
-    implementation(Dependence.AndroidX.core)
-    implementation(Dependence.KotlinX.coroutines)
-    implementation(Dependence.LedgerHQ.bleManager)
-    implementation(project(Dependence.Lib.blockchain))
+    api(libs.ton.tvm)
+    api(libs.ton.crypto)
+    api(libs.ton.tlb)
+    api(libs.ton.blockTlb)
+    api(libs.ton.tonapiTl)
+    api(libs.ton.contract)
+    implementation(libs.androidX.core)
+    implementation(libs.kotlinX.coroutines.android)
+    implementation(libs.bleManager)
+    implementation(project(ProjectModules.Lib.blockchain))
 }

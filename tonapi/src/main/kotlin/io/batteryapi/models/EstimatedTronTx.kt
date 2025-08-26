@@ -15,33 +15,31 @@
 
 package io.batteryapi.models
 
+import io.batteryapi.models.EstimatedTronTxInstantFee
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param energyCharges 
- * @param bandwidthCharges 
- * @param activationCharges 
- * @param totalCharges 
- */
 
+@Serializable
 
 data class EstimatedTronTx (
 
-    @Json(name = "energy_charges")
+    @SerialName(value = "energy_charges")
     val energyCharges: kotlin.Int,
 
-    @Json(name = "bandwidth_charges")
+    @SerialName(value = "bandwidth_charges")
     val bandwidthCharges: kotlin.Int,
 
-    @Json(name = "activation_charges")
+    @SerialName(value = "activation_charges")
     val activationCharges: kotlin.Int,
 
-    @Json(name = "total_charges")
-    val totalCharges: kotlin.Int
+    @SerialName(value = "total_charges")
+    val totalCharges: kotlin.Int,
+
+    @SerialName(value = "instant_fee")
+    val instantFee: EstimatedTronTxInstantFee
 
 ) {
 

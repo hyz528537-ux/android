@@ -124,7 +124,7 @@ class TonConnectScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_t
 
         setDefaultState()
 
-        AnalyticsHelper.tcRequest(viewModel.installId, args.app.url.toString())
+        analytics?.tcRequest(args.app.url.toString())
     }
 
     private fun connect(wallet: WalletEntity) {
@@ -157,7 +157,7 @@ class TonConnectScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_t
         proof: TONProof.Result? = null,
         proofError: BridgeError? = null,
     ) {
-        AnalyticsHelper.tcConnect(viewModel.installId, args.app.url.toString(), pushCheckBoxView.checked)
+        analytics?.tcConnect(args.app.url.toString(), pushCheckBoxView.checked)
         setResponse(TonConnectResponse(
             notifications = pushCheckBoxView.checked,
             proof = proof,
@@ -170,7 +170,7 @@ class TonConnectScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_t
         if (response.wallet.isTonConnectSupported) {
             setSuccessState()
             setResult(contract.createResult(response), false)
-            postDelayed(2000) {
+            postDelayed(1600) {
                 returnToApp()
                 finish()
             }
@@ -199,7 +199,7 @@ class TonConnectScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_t
     private fun setFailedState() {
         setTaskState()
         taskView.state = ProcessTaskView.State.FAILED
-        postDelayed(5000) { setDefaultState() }
+        postDelayed(3000) { setDefaultState() }
     }
 
     private fun setDefaultState() {

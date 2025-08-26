@@ -7,6 +7,11 @@ import android.widget.FrameLayout
 import androidx.annotation.DrawableRes
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.marginBottom
+import androidx.core.view.marginLeft
+import androidx.core.view.marginRight
+import androidx.core.view.marginTop
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -71,6 +76,10 @@ abstract class BaseListWalletScreen<C: ScreenContext>(
         collectFlow(listView.topScrolled, headerView::setDivider)
     }
 
+    fun setNestedScrollingEnabled(enabled: Boolean) {
+        listView.isNestedScrollingEnabled = enabled
+    }
+
     fun addViewHeader(view: View, params: FrameLayout.LayoutParams? = null) {
         headerContainer.addView(view, params)
     }
@@ -114,6 +123,12 @@ abstract class BaseListWalletScreen<C: ScreenContext>(
         listView.updatePadding(left, top, right, bottom)
     }
 
+    fun setBottomMargin(margin: Int) {
+        listView.updateLayoutParams<FrameLayout.LayoutParams> {
+            bottomMargin = margin
+        }
+    }
+
     fun setActionIcon(@DrawableRes resId: Int, onClick: (view: View) -> Unit) {
         headerView.setAction(resId)
         headerView.doOnActionClick = onClick
@@ -134,6 +149,17 @@ abstract class BaseListWalletScreen<C: ScreenContext>(
 
     fun scrollToTop() {
         listView.scrollToPosition(0)
+    }
+
+    fun applyListMargin(
+        left: Int = listView.marginLeft,
+        top: Int = listView.marginTop,
+        right: Int = listView.marginRight,
+        bottom: Int = listView.marginBottom
+    ) {
+        listView.updateLayoutParams<FrameLayout.LayoutParams> {
+            setMargins(left, top, right, bottom)
+        }
     }
 
 }

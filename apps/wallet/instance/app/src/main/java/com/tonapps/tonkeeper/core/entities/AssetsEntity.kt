@@ -2,6 +2,7 @@ package com.tonapps.tonkeeper.core.entities
 
 import com.tonapps.icu.Coins
 import com.tonapps.wallet.api.entity.BalanceEntity
+import com.tonapps.wallet.api.entity.Blockchain
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.core.currency.WalletCurrency
@@ -48,6 +49,18 @@ sealed class AssetsEntity(
 
         val address: String
             get() = token.address
+
+        val decimals: Int
+            get() = token.decimals
+
+        val balance: Coins
+            get() = token.balance.value
+
+        val symbol: String
+            get() = token.symbol
+
+        val blockchain: Blockchain
+            get() = token.balance.token.blockchain
 
         constructor(token: TokenEntity): this(
             AccountTokenEntity.createEmpty(token, "")

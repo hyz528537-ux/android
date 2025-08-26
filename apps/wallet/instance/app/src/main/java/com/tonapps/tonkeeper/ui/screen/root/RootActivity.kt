@@ -75,7 +75,11 @@ import uikit.extensions.findFragment
 import uikit.extensions.runAnimation
 import uikit.extensions.withAlpha
 import androidx.core.net.toUri
+import com.tonapps.blockchain.ton.TonSendMode
 import com.tonapps.blockchain.ton.extensions.equalsAddress
+import com.tonapps.tonkeeper.koin.analytics
+import uikit.extensions.gestureNavigationEnabled
+import uikit.extensions.navigationMode
 
 class RootActivity : BaseWalletActivity() {
 
@@ -115,6 +119,7 @@ class RootActivity : BaseWalletActivity() {
         handleIntent(intent)
 
         lockView = findViewById(R.id.lock)
+        lockView.setOnClickListener {  }
         lockPasscodeView = findViewById(R.id.lock_passcode)
         lockPasscodeView.doOnCheck = {
             passcodeManager.lockscreenCheck(this, it)
@@ -245,10 +250,16 @@ class RootActivity : BaseWalletActivity() {
         }
     }
 
-    private fun setAppearanceLight(light: Boolean) {
+    fun setAppearanceLight(light: Boolean) {
+        val isLightTheme = settingsRepository.isLightTheme
+        var lightNavigationBars = light
+        if (isLightTheme && !gestureNavigationEnabled) {
+            lightNavigationBars = true
+        }
+
         with(windowInsetsController) {
             isAppearanceLightStatusBars = light
-            isAppearanceLightNavigationBars = light
+            isAppearanceLightNavigationBars = lightNavigationBars
         }
     }
 
@@ -303,7 +314,7 @@ class RootActivity : BaseWalletActivity() {
                     title = uri.host ?: "unknown",
                     url = uri,
                     iconUrl = "",
-                    source = "shortcut",
+                    source = "push",
                 )
             )
         }, DAppScreen::class.java)
@@ -318,7 +329,7 @@ class RootActivity : BaseWalletActivity() {
         message: RawMessageEntity
     ): com.tonapps.icu.Coins {
         try {
-            val transfer = message.getDefaultWalletTransfer()
+            val transfer = message.getDefaultWalletTransfer(TonSendMode.PAY_GAS_SEPARATELY.value + TonSendMode.IGNORE_ERRORS.value)
 
             val emulated = emulationUseCase(
                 message = accountRepository.messageBody(wallet, currentTimeSeconds() + 10 * 60, listOf(transfer)),
@@ -507,7 +518,7 @@ class RootActivity : BaseWalletActivity() {
         if (0 >= DevSettings.firstLaunchDate) {
             DevSettings.firstLaunchDeeplink = uri?.toString() ?: ""
         } else if (uri?.hasRefer() == true || uri?.hasUtmSource() == true) {
-            AnalyticsHelper.openRefDeeplink(settingsRepository.installId, uri.toString())
+            analytics?.openRefDeeplink(uri.toString())
         }
         val extras = intent.extras
         val dappDeepLink = extras?.getStringValue("dapp_deeplink")?.toUriOrNull()

@@ -16,37 +16,38 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param usedCells 
- * @param usedBits 
- * @param usedPublicCells 
- * @param lastPaid time of the last payment
- * @param duePayment 
- */
 
+@Serializable
 
 data class AccountStorageInfo (
 
-    @Json(name = "used_cells")
+    @SerialName(value = "used_cells")
     val usedCells: kotlin.Long,
 
-    @Json(name = "used_bits")
+    @SerialName(value = "used_bits")
     val usedBits: kotlin.Long,
 
-    @Json(name = "used_public_cells")
+    @SerialName(value = "used_public_cells")
     val usedPublicCells: kotlin.Long,
 
     /* time of the last payment */
-    @Json(name = "last_paid")
+    @SerialName(value = "last_paid")
     val lastPaid: kotlin.Long,
 
-    @Json(name = "due_payment")
+    @SerialName(value = "due_payment")
     val duePayment: kotlin.Long
 
-)
+) {
+
+
+}
 

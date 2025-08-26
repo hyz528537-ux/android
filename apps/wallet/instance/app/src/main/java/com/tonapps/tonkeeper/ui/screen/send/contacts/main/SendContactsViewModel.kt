@@ -3,10 +3,8 @@ package com.tonapps.tonkeeper.ui.screen.send.contacts.main
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.viewModelScope
-import com.tonapps.blockchain.ton.extensions.equalsAddress
 import com.tonapps.blockchain.ton.extensions.toRawAddress
 import com.tonapps.extensions.filterList
-import com.tonapps.tonkeeper.RemoteConfig
 import com.tonapps.tonkeeper.core.entities.WalletExtendedEntity
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.send.contacts.main.list.Item
@@ -15,25 +13,20 @@ import com.tonapps.wallet.api.API
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.account.entities.WalletEntity
+import com.tonapps.wallet.data.battery.BatteryRepository
 import com.tonapps.wallet.data.contacts.ContactsRepository
 import com.tonapps.wallet.data.contacts.entities.ContactEntity
 import com.tonapps.wallet.data.events.EventsRepository
 import com.tonapps.wallet.data.settings.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.internal.filterList
 
 class SendContactsViewModel(
     app: Application,
@@ -42,7 +35,7 @@ class SendContactsViewModel(
     private val settingsRepository: SettingsRepository,
     private val contactsRepository: ContactsRepository,
     private val eventsRepository: EventsRepository,
-    private val remoteConfig: RemoteConfig,
+    private val batteryRepository: BatteryRepository,
 ) : BaseWalletVM(app) {
 
     private val _myWalletsFlow = MutableStateFlow<List<Item.MyWallet>>(emptyList())
@@ -85,6 +78,9 @@ class SendContactsViewModel(
         uiItems.toList()
     }
 
+    private val tronEnabled: Boolean
+        get() = settingsRepository.getTronUsdtEnabled(wallet.id)
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             _myWalletsFlow.value = getMyWallets()
@@ -115,13 +111,12 @@ class SendContactsViewModel(
     }
 
     private val tronLatestTransactionsFlow = flow {
-        val tronEnabled = settingsRepository.getTronUsdtEnabled(wallet.id)
         if (!tronEnabled) {
             emit(emptyList())
             return@flow
         }
 
-        val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && !remoteConfig.isTronDisabled) {
+        val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && tronEnabled) {
             accountRepository.getTronAddress(wallet.id)
         } else null
         val tonProofToken = accountRepository.requestTonProofToken(wallet)
@@ -152,18 +147,21 @@ class SendContactsViewModel(
             accountId = wallet.accountId,
             testnet = wallet.testnet
         ),
-        latestTronContactsFlow,
+        latestTronContactsFlow
     ) { _, recipients, tronContacts ->
+        val gasProxyAddresses = batteryRepository.getConfig(wallet.testnet).gasProxy
         val tonContacts = recipients.filter {
             !contactsRepository.isHidden(it.account.address.toRawAddress(), wallet.testnet)
         }.mapIndexed { index, recipient ->
             val position = ListCell.getPosition(recipients.size, index)
             Item.LatestContact(position, recipient.account, recipient.timestamp, wallet.testnet)
+        }.filter {
+            it.address !in gasProxyAddresses
         }
 
-        Log.d("SendContactsViewModel", "tronContacts: $tronContacts")
-
-        val contacts = (tonContacts + tronContacts).sortedByDescending { it.timestamp }.take(6)
+        val contacts = (tonContacts + tronContacts).sortedByDescending {
+            it.timestamp
+        }.take(6)
 
         contacts.mapIndexed { index, item ->
             item.copy(

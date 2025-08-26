@@ -17,6 +17,7 @@ import com.tonapps.extensions.writeEnum
 import com.tonapps.tonkeeper.core.history.ActionOutStatus
 import com.tonapps.tonkeeper.core.history.ActionType
 import com.tonapps.tonkeeper.helper.DateHelper
+import com.tonapps.tonkeeper.ui.screen.send.main.state.SendFee
 import com.tonapps.uikit.list.BaseListItem
 import com.tonapps.uikit.list.ListCell
 import com.tonapps.wallet.api.entity.Blockchain
@@ -291,6 +292,8 @@ sealed class HistoryItem(
         val comment: Comment? = null,
         val value: CharSequence,
         val value2: CharSequence = "",
+        val valueFullFormatted: CharSequence = "",
+        val valueFullFormatted2: CharSequence? = null,
         val currency: CharSequence? = null,
         val nft: NftEntity? = null,
         val tokenAddress: String? = null,
@@ -318,6 +321,7 @@ sealed class HistoryItem(
         val spamState: SpamTransactionState = SpamTransactionState.UNKNOWN,
         val actionOutStatus: ActionOutStatus,
         val showNetwork: Boolean = false,
+        val sendFee: SendFee? = null
     ): HistoryItem(TYPE_ACTION) {
 
         val account: Account?
@@ -384,6 +388,8 @@ sealed class HistoryItem(
             comment = parcel.readParcelableCompat(),
             value = parcel.readCharSequenceCompat()!!,
             value2 = parcel.readCharSequenceCompat()!!,
+            valueFullFormatted = parcel.readCharSequenceCompat()!!,
+            valueFullFormatted2 = parcel.readCharSequenceCompat(),
             currency = parcel.readCharSequenceCompat(),
             nft = parcel.readParcelableCompat(),
             tokenCode = parcel.readString(),
@@ -421,6 +427,8 @@ sealed class HistoryItem(
             dest.writeParcelable(comment, flags)
             dest.writeCharSequenceCompat(value)
             dest.writeCharSequenceCompat(value2)
+            dest.writeCharSequenceCompat(valueFullFormatted)
+            dest.writeCharSequenceCompat(valueFullFormatted2)
             dest.writeCharSequenceCompat(currency)
             dest.writeParcelable(nft, flags)
             dest.writeString(tokenCode)

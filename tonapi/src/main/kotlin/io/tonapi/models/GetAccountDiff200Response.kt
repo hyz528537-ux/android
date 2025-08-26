@@ -16,20 +16,25 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param balanceChange 
- */
 
+@Serializable
 
 data class GetAccountDiff200Response (
 
-    @Json(name = "balance_change")
+    @SerialName(value = "balance_change")
     val balanceChange: kotlin.Long
 
-)
+) {
+
+
+}
 

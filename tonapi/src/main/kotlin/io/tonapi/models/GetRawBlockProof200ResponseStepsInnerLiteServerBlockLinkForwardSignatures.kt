@@ -17,28 +17,31 @@ package io.tonapi.models
 
 import io.tonapi.models.GetRawBlockProof200ResponseStepsInnerLiteServerBlockLinkForwardSignaturesSignaturesInner
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param validatorSetHash 
- * @param catchainSeqno 
- * @param signatures 
- */
 
+@Serializable
 
 data class GetRawBlockProof200ResponseStepsInnerLiteServerBlockLinkForwardSignatures (
 
-    @Json(name = "validator_set_hash")
+    @SerialName(value = "validator_set_hash")
     val validatorSetHash: kotlin.Long,
 
-    @Json(name = "catchain_seqno")
+    @SerialName(value = "catchain_seqno")
     val catchainSeqno: kotlin.Int,
 
-    @Json(name = "signatures")
+    @SerialName(value = "signatures")
     val signatures: kotlin.collections.List<GetRawBlockProof200ResponseStepsInnerLiteServerBlockLinkForwardSignaturesSignaturesInner>
 
-)
+) {
+
+
+}
 

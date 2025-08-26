@@ -23,6 +23,7 @@ import com.tonapps.wallet.data.browser.entities.BrowserAppEntity
 import com.tonapps.wallet.localization.Localization
 import uikit.navigation.Navigation
 import androidx.core.net.toUri
+import com.tonapps.tonkeeper.koin.analytics
 
 object BrowserHelper {
 
@@ -33,10 +34,9 @@ object BrowserHelper {
             } else if (useTG) {
                 openTG(context, url)
             }
-            AnalyticsHelper.trackEventClickDApp(
+            context.analytics?.trackEventClickDApp(
                 url = url.toString(),
                 name = name,
-                installId = context.installId,
                 source = source,
                 country = country
             )
@@ -121,6 +121,17 @@ object BrowserHelper {
             val intent = Intent(Intent.ACTION_VIEW, uri)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.setPackage("org.telegram.messenger")
+            activity.startActivity(intent)
+        } catch (e: Throwable) {
+            external(activity, uri)
+        }
+    }
+
+    fun openX(activity: Activity, uri: Uri) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.setPackage("com.twitter.android")
             activity.startActivity(intent)
         } catch (e: Throwable) {
             external(activity, uri)

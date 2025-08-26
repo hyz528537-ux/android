@@ -89,8 +89,8 @@ class StakeWithdrawViewModel(
 
     val amountFormatFlow = amountFlow.map { amount ->
         val fiat = ratesRepository.getTONRates(currency).convertTON(amount)
-        val amountFormat = CurrencyFormatter.format(TokenEntity.TON.symbol, amount, TokenEntity.TON.decimals)
-        val fiatFormat = CurrencyFormatter.formatFiat(currency.code, fiat, currency.decimals, replaceSymbol = false)
+        val amountFormat = CurrencyFormatter.format(TokenEntity.TON.symbol, amount)
+        val fiatFormat = CurrencyFormatter.formatFiat(currency.code, fiat, replaceSymbol = false)
         Pair(amountFormat, fiatFormat)
     }.flowOn(Dispatchers.IO)
 
@@ -121,8 +121,8 @@ class StakeWithdrawViewModel(
         val rates = ratesRepository.getTONRates(currency)
         val fee = StakingPool.getTotalFee(extra.value, stake.pool.implementation)
 
-        val amount = CurrencyFormatter.format(TokenEntity.TON.symbol, fee, TokenEntity.TON.decimals)
-        val fiat = CurrencyFormatter.format(currency.code, rates.convertTON(fee), currency.decimals, replaceSymbol = false)
+        val amount = CurrencyFormatter.format(TokenEntity.TON.symbol, fee)
+        val fiat = CurrencyFormatter.format(currency.code, rates.convertTON(fee), replaceSymbol = false)
         Pair(amount, fiat)
     }.flowOn(Dispatchers.IO)
 

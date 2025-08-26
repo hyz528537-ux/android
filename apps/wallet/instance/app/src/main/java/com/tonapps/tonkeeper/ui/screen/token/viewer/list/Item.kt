@@ -3,15 +3,17 @@ package com.tonapps.tonkeeper.ui.screen.token.viewer.list
 import android.net.Uri
 import com.tonapps.icu.Coins
 import com.tonapps.tonkeeper.core.entities.WalletPurchaseMethodEntity
+import com.tonapps.tonkeeper.extensions.asCurrency
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.list.BaseListItem
+import com.tonapps.uikit.list.ListCell
 import com.tonapps.wallet.api.entity.Blockchain
 import com.tonapps.wallet.api.entity.ChartEntity
+import com.tonapps.wallet.api.entity.EthenaEntity
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.core.currency.WalletCurrency
-import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.settings.ChartPeriod
 
 sealed class Item(type: Int): BaseListItem(type) {
@@ -22,6 +24,10 @@ sealed class Item(type: Int): BaseListItem(type) {
         const val TYPE_CHART = 2
         const val TYPE_W5_BANNER = 3
         const val TYPE_BATTERY_BANNER = 4
+        const val TYPE_ABOUT_ETHENA = 6
+        const val TYPE_SPACE = 7
+        const val TYPE_ETHENA_BALANCE = 8
+        const val TYPE_ETHENA_METHOD = 9
     }
 
     data class Balance(
@@ -43,8 +49,8 @@ sealed class Item(type: Int): BaseListItem(type) {
         val wallet: WalletEntity,
         val swapUri: Uri,
         val swapMethod: WalletPurchaseMethodEntity?,
+        val swapEnabled: Boolean,
         val token: TokenEntity,
-        val stakeApp: AppEntity?
     ): Item(TYPE_ACTIONS) {
 
         val walletAddress: String
@@ -56,24 +62,24 @@ sealed class Item(type: Int): BaseListItem(type) {
         val walletType: Wallet.Type
             get() = wallet.type
 
-        val stake: Boolean
-            get() = stakeApp != null
+        val currency: WalletCurrency
+            get() = token.asCurrency
 
         val send: Boolean
             get() = !wallet.isWatchOnly && token.isTransferable
 
         val swap: Boolean
             get() = if (token.isTrc20) {
-                wallet.hasPrivateKey && swapMethod != null
+                swapEnabled && wallet.hasPrivateKey && swapMethod != null
             } else {
-                token.verified && !wallet.isWatchOnly
+                swapEnabled && token.verified && !wallet.isWatchOnly
             }
 
         val maxColumnCount: Int
-            get() = if (swap && stake) {
-                4
-            } else {
+            get() = if (swap) {
                 3
+            } else {
+                2
             }
     }
 
@@ -97,4 +103,55 @@ sealed class Item(type: Int): BaseListItem(type) {
         val wallet: WalletEntity,
         val token: TokenEntity
     ): Item(TYPE_BATTERY_BANNER)
+
+    data class AboutEthena(
+        val description: String,
+        val url: String,
+    ): Item(TYPE_ABOUT_ETHENA)
+
+    data object Space: Item(TYPE_SPACE)
+
+    data class EthenaBalance(
+        val position: ListCell.Position,
+        val wallet: WalletEntity,
+        val staked: Boolean,
+        val methodType: EthenaEntity.Method.Type? = null,
+        val balance: Coins,
+        val balanceFormat: CharSequence,
+        val fiatFormat: CharSequence,
+        val showApy: Boolean = true,
+        val title: CharSequence? = null,
+        val apyText: CharSequence? = null,
+        val fiatRate: CharSequence? = null,
+        val rateDiff24h: String? = null,
+        val verified: Boolean = false,
+        val hiddenBalance: Boolean,
+    ): Item(TYPE_ETHENA_BALANCE) {
+        val iconRes: Int?
+            get() {
+                return when (methodType) {
+                    EthenaEntity.Method.Type.STONFI -> R.drawable.ethena
+                    EthenaEntity.Method.Type.AFFLUENT -> R.drawable.affluent
+                    null -> null
+                }
+            }
+    }
+
+    data class EthenaMethod(
+        val position: ListCell.Position,
+        val wallet: WalletEntity,
+        val methodType: EthenaEntity.Method.Type? = null,
+        val url: String,
+        val name: String,
+        val apy: CharSequence,
+    ): Item(TYPE_ETHENA_METHOD) {
+        val iconRes: Int?
+            get() {
+                return when (methodType) {
+                    EthenaEntity.Method.Type.STONFI -> R.drawable.stonfi
+                    EthenaEntity.Method.Type.AFFLUENT -> R.drawable.affluent
+                    null -> null
+                }
+            }
+    }
 }

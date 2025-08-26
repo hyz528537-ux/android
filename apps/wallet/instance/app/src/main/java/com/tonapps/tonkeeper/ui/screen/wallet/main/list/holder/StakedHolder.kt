@@ -1,6 +1,5 @@
 package com.tonapps.tonkeeper.ui.screen.wallet.main.list.holder
 
-import android.text.SpannableStringBuilder
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatImageView
@@ -22,9 +21,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import uikit.extensions.badgeGreen
 import uikit.extensions.drawable
-import uikit.extensions.withGreenBadge
 import uikit.widget.FrescoView
 import kotlin.time.Duration.Companion.seconds
 
@@ -46,14 +43,8 @@ class StakedHolder(parent: ViewGroup): Holder<Item.Stake>(parent, R.layout.view_
 
     override fun onBind(item: Item.Stake) {
         stopTicker()
-        val titleBuilder = SpannableStringBuilder(getString(Localization.staked))
-        if (item.poolImplementation == StakingPool.Implementation.Ethena) {
-            titleBuilder.append(" ")
-            titleBuilder.badgeGreen(context) {
-                append("APY ${item.apy.toPlainString()}%")
-            }
-        }
-        titleView.text = titleBuilder
+
+        titleView.text = getString(Localization.staked)
 
         currencyIconView.setImageResource(item.currencyIcon)
 
@@ -74,7 +65,7 @@ class StakedHolder(parent: ViewGroup): Holder<Item.Stake>(parent, R.layout.view_
         }
 
         itemView.setOnClickListener {
-            navigation?.add(StakeViewerScreen.newInstance(item.wallet, item.poolAddress, item.poolName))
+            navigation?.add(StakeViewerScreen.newInstance(wallet = item.wallet, address = item.poolAddress, name = item.poolName))
         }
 
         messageView.setOnClickListener(null)

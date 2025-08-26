@@ -10,7 +10,6 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -18,24 +17,23 @@ import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.firebase.Firebase
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.crashlytics.crashlytics
 import com.google.firebase.crashlytics.setCustomKeys
-import com.google.firebase.ktx.Firebase
 import com.tonapps.blockchain.ton.extensions.equalsAddress
-import com.tonapps.blockchain.ton.extensions.isValidTonDomain
 import com.tonapps.blockchain.ton.extensions.toAccountId
 import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.extensions.bestMessage
 import com.tonapps.extensions.currentTimeSeconds
 import com.tonapps.extensions.getStringValue
-import com.tonapps.extensions.locale
 import com.tonapps.extensions.setLocales
 import com.tonapps.extensions.toUriOrNull
 import com.tonapps.ledger.ton.LedgerConnectData
 import com.tonapps.tonkeeper.App
 import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.api.getCurrencyCodeByCountry
+import com.tonapps.tonkeeper.billing.BillingManager
 import com.tonapps.tonkeeper.client.safemode.SafeModeClient
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.DevSettings
@@ -68,10 +66,10 @@ import com.tonapps.tonkeeper.ui.screen.browser.confirm.DAppConfirmScreen
 import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppScreen
 import com.tonapps.tonkeeper.ui.screen.browser.safe.DAppSafeScreen
 import com.tonapps.tonkeeper.ui.screen.camera.CameraScreen
+import com.tonapps.tonkeeper.ui.screen.dns.renew.DNSRenewScreen
 import com.tonapps.tonkeeper.ui.screen.init.list.AccountItem
 import com.tonapps.tonkeeper.ui.screen.name.edit.EditNameScreen
 import com.tonapps.tonkeeper.ui.screen.onramp.main.OnRampScreen
-import com.tonapps.tonkeeper.ui.screen.purchase.PurchaseScreen
 import com.tonapps.tonkeeper.ui.screen.qr.QRScreen
 import com.tonapps.tonkeeper.ui.screen.send.main.SendScreen
 import com.tonapps.tonkeeper.ui.screen.send.transaction.SendTransactionScreen
@@ -89,17 +87,16 @@ import com.tonapps.tonkeeper.ui.screen.wallet.manage.TokensManageScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.picker.PickerScreen
 import com.tonapps.tonkeeperx.R
 import com.tonapps.wallet.api.API
-import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.browser.BrowserRepository
 import com.tonapps.wallet.data.core.entity.SignRequestEntity
 import com.tonapps.wallet.data.dapps.DAppsRepository
 import com.tonapps.wallet.data.dapps.entities.AppConnectEntity
-import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.passcode.LockScreen
 import com.tonapps.wallet.data.passcode.PasscodeManager
 import com.tonapps.wallet.data.purchase.PurchaseRepository
+import com.tonapps.wallet.data.rates.RatesRepository
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.data.token.TokenRepository
 import com.tonapps.wallet.localization.Localization
@@ -119,7 +116,6 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import uikit.extensions.activity
 import java.util.concurrent.CancellationException
 import kotlin.math.abs
@@ -141,6 +137,9 @@ class RootViewModel(
     private val referrerClientHelper: ReferrerClientHelper,
     private val dAppsRepository: DAppsRepository,
     private val safeModeClient: SafeModeClient,
+    private val ratesRepository: RatesRepository,
+    private val analyticsHelper: AnalyticsHelper,
+    private val billingManager: BillingManager,
     savedStateHandle: SavedStateHandle,
 ): BaseWalletVM(app) {
 
@@ -185,7 +184,7 @@ class RootViewModel(
         if (0 >= DevSettings.firstLaunchDate) {
             val referrer = referrerClientHelper.getInstallReferrer()
             val deeplink = DevSettings.firstLaunchDeeplink.ifBlank { null }
-            AnalyticsHelper.firstLaunch(settingsRepository.installId, referrer, deeplink)
+            analyticsHelper.firstLaunch(referrer, deeplink)
             DevSettings.firstLaunchDate = currentTimeSeconds()
         }
     }
@@ -216,6 +215,16 @@ class RootViewModel(
     }
 
     init {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                environment.setCountryFromStore(billingManager.getCountry())
+            } catch (_: Throwable) {
+                Log.d("RootViewModel", "Failed to get country from billing manager")
+            }
+            api.setCountry(deviceCountry = environment.country, storeCountry = environment.storeCountry)
+            api.initConfig()
+        }
+
         pushManager.clearNotifications()
 
         settingsRepository.languageFlow.collectFlow {
@@ -240,7 +249,14 @@ class RootViewModel(
         }.flowOn(Dispatchers.IO).launchIn(viewModelScope)
 
         viewModelScope.launch(Dispatchers.IO) {
-            settingsRepository.firebaseToken = FirebasePush.requestToken()
+            val firebaseToken = FirebasePush.requestToken()
+            settingsRepository.firebaseToken = firebaseToken
+            ratesRepository.updateAll(settingsRepository.currency)
+            if (firebaseToken.isNullOrBlank()) {
+                Log.e("TonkeeperFirebasePush", "Failed to get Firebase push token")
+            } else {
+                Log.d("TonkeeperFirebasePush", "Firebase push token: $firebaseToken")
+            }
         }
 
         selectedWalletFlow.collectFlow { wallet ->
@@ -249,7 +265,7 @@ class RootViewModel(
         }
 
         api.configFlow.filter { !it.empty }.take(1).collectFlow { config ->
-            AnalyticsHelper.setConfig(context, config)
+            analyticsHelper.setConfig(context, config)
             sendFirstLaunchEvent()
         }
 
@@ -261,12 +277,6 @@ class RootViewModel(
                 showStories(config.stories)
             }
         }.launch()
-
-        settingsRepository.countryFlow.take(1).filter { it.isBlank() }.map {
-            api.resolveCountry()
-        }.filterNotNull().onEach {
-            settingsRepository.country = it
-        }.flowOn(Dispatchers.IO).launchIn(viewModelScope)
 
         viewModelScope.launch(Dispatchers.IO) {
             if (environment.isGooglePlayServicesAvailable) {
@@ -502,8 +512,7 @@ class RootViewModel(
                 processDAppPush(bundle)
             } else {
                 val deeplink = bundle.getString("deeplink")?.toUriOrNull() ?: return@collectFlow
-                AnalyticsHelper.trackPushClick(
-                    installId = installId,
+                analyticsHelper.trackPushClick(
                     pushId = pushId ?: pushType,
                     payload = deeplink.toString(),
                 )
@@ -534,6 +543,9 @@ class RootViewModel(
 
     private suspend fun processDeepLinkPush(uri: Uri, bundle: Bundle) {
         val wallet = deeplinkResolveWallet(bundle) ?: return
+        if (accountRepository.getSelectedWallet()?.id != wallet.id) {
+            accountRepository.setSelectedWallet(wallet.id)
+        }
         val deeplink = DeepLink(uri, false, null)
         processDeepLink(wallet, deeplink, null)
     }
@@ -591,7 +603,9 @@ class RootViewModel(
         fromPackageName: String?
     ) {
         val route = deeplink.route
-        if (route is DeepLinkRoute.TonConnect) {
+        if (route is DeepLinkRoute.DnsRenew) {
+            openScreen(DNSRenewScreen.newInstance(wallet, emptyList()))
+        } else if (route is DeepLinkRoute.TonConnect) {
             if (!wallet.isTonConnectSupported && accountRepository.getWallets().count { it.isTonConnectSupported } == 0) {
                 openScreen(AddWalletScreen.newInstance(true))
                 return
@@ -604,9 +618,9 @@ class RootViewModel(
         } else if (route is DeepLinkRoute.Send && !wallet.isWatchOnly) {
             openScreen(SendScreen.newInstance(wallet, type = SendScreen.Companion.Type.Default))
         } else if (route is DeepLinkRoute.Staking && !wallet.isWatchOnly) {
-            openScreen(StakingScreen.newInstance(wallet))
+            openScreen(StakingScreen.newInstance(wallet, from = "deeplink"))
         } else if (route is DeepLinkRoute.StakingPool) {
-            openScreen(StakeViewerScreen.newInstance(wallet, route.poolAddress, ""))
+            openScreen(StakeViewerScreen.newInstance(wallet, address = route.poolAddress, name = ""))
         } else if (route is DeepLinkRoute.AccountEvent) {
             if (route.address == null) {
                 showTransaction(route.eventId)

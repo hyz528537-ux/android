@@ -50,10 +50,14 @@ import uikit.base.BaseFragment
 import uikit.dialog.modal.ModalDialog
 import uikit.extensions.dp
 import uikit.extensions.drawable
+import uikit.extensions.getViews
 import uikit.extensions.reject
 import uikit.extensions.setColor
 import uikit.navigation.Navigation.Companion.navigation
+import uikit.widget.ColumnLayout
 import uikit.widget.FrescoView
+import androidx.core.view.isVisible
+import androidx.core.net.toUri
 
 
 class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragment.Modal {
@@ -110,7 +114,7 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
     private lateinit var feeView: TransactionDetailView
     private lateinit var commentView: TransactionDetailView
     private lateinit var accountNameView: TransactionDetailView
-    private lateinit var accountAddressView: TransactionDetailView
+    private lateinit var accountAddressView: ColumnLayout
     private lateinit var explorerButton: AppCompatTextView
     private lateinit var unverifiedView: View
     private lateinit var failedView: View
@@ -176,6 +180,14 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
         }
     }
 
+    private fun accountAddressTitle(): AppCompatTextView {
+        return accountAddressView.getChildAt(0) as AppCompatTextView
+    }
+
+    private fun accountAddressValue(): AppCompatTextView {
+        return accountAddressView.getChildAt(1) as AppCompatTextView
+    }
+
     private fun initArgs(actionArgs: HistoryItem.Event) {
         spamView.visibility = if (isScam) View.VISIBLE else View.GONE
         feeView.title =
@@ -206,11 +218,11 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
                     Blockchain.TRON -> Localization.trc20
                     else -> Localization.ton
                 }
-                actionArgs.value.withCustomSymbol(requireContext())
+                actionArgs.valueFullFormatted.withCustomSymbol(requireContext())
                     .plus(" ")
                     .plus(getString(networkRes))
             } else {
-                actionArgs.value.withCustomSymbol(requireContext())
+                actionArgs.valueFullFormatted.withCustomSymbol(requireContext())
             }
             if (actionArgs.refund != null) {
                 feeView.setData(
@@ -262,11 +274,11 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
             iconSwapView.visibility = View.GONE
         } else if (actionArgs.isSwap) {
             iconView.visibility = View.GONE
-            iconSwap1View.setImageURI(Uri.parse(actionArgs.coinIconUrl), this)
-            iconSwap2View.setImageURI(Uri.parse(actionArgs.coinIconUrl2), this)
+            iconSwap1View.setImageURI(actionArgs.coinIconUrl.toUri(), this)
+            iconSwap2View.setImageURI(actionArgs.coinIconUrl2.toUri(), this)
             amount2View.visibility = View.VISIBLE
-            amount2View.text = actionArgs.value2.withCustomSymbol(requireContext())
-            accountAddressView.title = getString(Localization.recipient_address)
+            amount2View.text = actionArgs.valueFullFormatted2?.withCustomSymbol(requireContext())
+            accountAddressTitle().text = getString(Localization.recipient_address)
         } else if (actionArgs.hasNft) {
             iconSwapView.visibility = View.GONE
             val nft = actionArgs.nft!!
@@ -283,7 +295,7 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
             amount2View.setTextColor(requireContext().textPrimaryColor)
         } else if (actionArgs.coinIconUrl.isNotBlank()) {
             iconSwapView.visibility = View.GONE
-            iconView.setImageURI(Uri.parse(actionArgs.coinIconUrl), null)
+            iconView.setImageURI(actionArgs.coinIconUrl.toUri(), null)
 
             if (actionArgs.showNetwork) {
                 val networkIconRes = when (actionArgs.blockchain) {
@@ -476,13 +488,13 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
             applyAccountWithName(out, address!!, name!!)
         } else if (address != null) {
             accountAddressView.visibility = View.VISIBLE
-            accountAddressView.title = getAccountTitle(out)
+            accountAddressTitle().text = getAccountTitle(out)
             /*val shortAddress = if (blockchain == Blockchain.TRON) {
                 address.shortTron
             } else {
                 address.shortAddress
             }*/
-            accountAddressView.setData(address, "")
+            accountAddressValue().text = address
             accountAddressView.setOnClickListener {
                 context?.copyWithToast(address)
             }
@@ -500,12 +512,12 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
         }
 
         accountAddressView.visibility = View.VISIBLE
-        accountAddressView.title = getString(
+        accountAddressTitle().text = getString(
             if (out) {
                 Localization.recipient_address
             } else Localization.sender_address
         )
-        accountAddressView.setData(address, "")
+        accountAddressValue().text = address
         accountAddressView.setOnClickListener {
             context?.copyWithToast(address)
         }
@@ -520,16 +532,15 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
     }
 
     private fun updateDataView() {
-        val visibleViews = mutableListOf<TransactionDetailView>()
-        for (i in 0 until dataView.childCount) {
-            val child = dataView.getChildAt(i)
-            if (child is TransactionDetailView && child.visibility == View.VISIBLE) {
-                visibleViews.add(child)
-            }
-        }
+        val visibleViews = dataView.getViews().filter { it.isVisible }
 
         for (i in 0 until visibleViews.size) {
-            visibleViews[i].position = ListCell.getPosition(visibleViews.size, i)
+            val view = visibleViews[i]
+            if (view is TransactionDetailView) {
+                view.position = ListCell.getPosition(visibleViews.size, i)
+            } else {
+                view.background = ListCell.getPosition(visibleViews.size, i).drawable(requireContext())
+            }
         }
     }
 

@@ -8,8 +8,8 @@ android {
 }
 
 dependencies {
-    implementation(project(Dependence.Lib.sqlite))
-    implementation(project(Dependence.Lib.extensions))
-    implementation(project(Dependence.Wallet.Data.rn))
+    implementation(project(ProjectModules.Lib.sqlite))
+    implementation(project(ProjectModules.Lib.extensions))
+    implementation(project(ProjectModules.Wallet.Data.rn))
 }
 

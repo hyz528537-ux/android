@@ -1,10 +1,10 @@
 package com.tonapps.wallet.data.core.entity
 
 import android.os.Parcelable
-import android.util.Log
+import com.tonapps.blockchain.ton.TonAddressTags
+import com.tonapps.blockchain.ton.extensions.base64
 import com.tonapps.blockchain.ton.extensions.cellFromBase64
 import com.tonapps.blockchain.ton.extensions.isValidTonAddress
-import com.tonapps.extensions.optStringCompat
 import com.tonapps.extensions.optStringCompatJS
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
@@ -29,6 +29,11 @@ data class RawMessageEntity(
     @IgnoredOnParcel
     val address: AddrStd by lazy {
         AddrStd.parse(addressValue)
+    }
+
+    @IgnoredOnParcel
+    val addressTags: TonAddressTags by lazy {
+        TonAddressTags.of(addressValue)
     }
 
     @IgnoredOnParcel
@@ -69,6 +74,24 @@ data class RawMessageEntity(
     }
 
     companion object {
+
+        fun of(address: String, amount: Long, payload: String?) = RawMessageEntity(
+            addressValue = address,
+            amount = amount,
+            stateInitValue = null,
+            payloadValue = payload,
+        )
+
+        fun of(
+            amount: Long,
+            address: String,
+            payload: Cell?
+        ) = RawMessageEntity(
+            addressValue = address,
+            amount = amount,
+            stateInitValue = null,
+            payloadValue = payload?.base64()
+        )
 
         private fun parseAmount(value: Any): Long {
             if (value is Long) {

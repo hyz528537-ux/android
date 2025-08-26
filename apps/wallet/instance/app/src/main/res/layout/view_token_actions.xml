@@ -14,22 +14,15 @@
             android:id="@+id/send"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:icon="@drawable/ic_arrow_up_28"
+            android:icon="@drawable/ic_arrow_up_outline_28"
             android:title="@string/send"/>
 
         <uikit.widget.IconButtonView
             android:id="@+id/receive"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:icon="@drawable/ic_arrow_down_28"
+            android:icon="@drawable/ic_arrow_down_outline_28"
             android:title="@string/receive"/>
-
-        <uikit.widget.IconButtonView
-            android:id="@+id/stake"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:icon="@drawable/ic_staking_outline_28"
-            android:title="@string/stake"/>
 
         <uikit.widget.IconButtonView
             android:id="@+id/swap"

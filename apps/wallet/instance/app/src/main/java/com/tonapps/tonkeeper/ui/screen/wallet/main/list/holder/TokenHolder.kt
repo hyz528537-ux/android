@@ -1,7 +1,6 @@
 package com.tonapps.tonkeeper.ui.screen.wallet.main.list.holder
 
 import android.net.Uri
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatTextView
@@ -28,13 +27,15 @@ class TokenHolder(parent: ViewGroup): Holder<Item.Token>(parent, R.layout.view_c
     private val networkIconView = findViewById<FrescoView>(R.id.network_icon)
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val rateView = findViewById<AppCompatTextView>(R.id.rate)
+    private val balanceContainerView = findViewById<View>(R.id.balance_container)
     private val balanceView = findViewById<AppCompatTextView>(R.id.balance)
     private val balanceFiatView = findViewById<AppCompatTextView>(R.id.balance_currency)
+    private val openButtonView = findViewById<View>(R.id.button_open)
 
     override fun onBind(item: Item.Token) {
         itemView.background = item.position.drawable(context)
         itemView.setOnClickListener {
-            navigation?.add(TokenScreen.newInstance(item.wallet, item.address, item.name, item.symbol))
+            openToken(item)
         }
         if (item.blacklist) {
             titleView.text = getString(Localization.fake)
@@ -72,6 +73,17 @@ class TokenHolder(parent: ViewGroup): Holder<Item.Token>(parent, R.layout.view_c
             }
             setRate(item.rate, item.rateDiff24h, item.verified)
         }
+
+        if (item.isUSDe && item.balance.isZero) {
+            balanceContainerView.visibility = View.GONE
+            openButtonView.visibility = View.VISIBLE
+            openButtonView.setOnClickListener {
+                openToken(item)
+            }
+        } else {
+            balanceContainerView.visibility = View.VISIBLE
+            openButtonView.visibility = View.GONE
+        }
     }
 
     private fun setNetworkIcon(blockchain: Blockchain) {
@@ -102,6 +114,10 @@ class TokenHolder(parent: ViewGroup): Holder<Item.Token>(parent, R.layout.view_c
             rateView.setText(Localization.unverified_token)
             rateView.setTextColor(context.accentOrangeColor)
         }
+    }
+
+    private fun openToken(item: Item.Token) {
+        navigation?.add(TokenScreen.newInstance(item.wallet, item.address, item.name, item.symbol))
     }
 
 }

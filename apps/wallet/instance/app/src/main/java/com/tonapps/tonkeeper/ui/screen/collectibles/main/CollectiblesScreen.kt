@@ -73,11 +73,14 @@ class CollectiblesScreen(wallet: WalletEntity): MainScreen.Child(R.layout.fragme
                     headerView.setSubtitle(Localization.updating)
                 }
                 is UiListState.Empty -> {
-                    removeActionIcons()
+                    if (viewModel.hasNfts) {
+                        applyActionIcons()
+                    } else {
+                        removeActionIcons()
+                    }
                     refreshView.isRefreshing = false
                     setEmptyState()
                     headerView.setSubtitle(null)
-                    headerView.setAction(0)
                 }
                 is UiListState.Items -> {
                     applyActionIcons()

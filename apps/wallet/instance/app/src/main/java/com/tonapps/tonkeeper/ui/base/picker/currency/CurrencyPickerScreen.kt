@@ -14,8 +14,10 @@ abstract class CurrencyPickerScreen: BasePickerScreen() {
 
     open val currencies = emptyList<WalletCurrency>()
 
+    open val extras: List<String> = emptyList()
+
     override val viewModel: CurrencyPickerViewModel by viewModel {
-        parametersOf(currencies)
+        parametersOf(currencies, extras)
     }
 
     override val adapter = Adapter { item ->

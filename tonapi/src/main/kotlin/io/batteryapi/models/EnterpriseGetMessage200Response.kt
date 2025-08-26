@@ -16,35 +16,28 @@
 package io.batteryapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param status 
- * @param paymentTxHash 
- * @param committedTxHash 
- * @param finalCost 
- * @param failedReason 
- */
 
+@Serializable
 
 data class EnterpriseGetMessage200Response (
 
-    @Json(name = "status")
+    @SerialName(value = "status")
     val status: EnterpriseGetMessage200Response.Status,
 
-    @Json(name = "payment_tx_hash")
+    @SerialName(value = "payment_tx_hash")
     val paymentTxHash: kotlin.String? = null,
 
-    @Json(name = "committed_tx_hash")
+    @SerialName(value = "committed_tx_hash")
     val committedTxHash: kotlin.String? = null,
 
-    @Json(name = "final_cost")
+    @SerialName(value = "final_cost")
     val finalCost: kotlin.String? = null,
 
-    @Json(name = "failed_reason")
+    @SerialName(value = "failed_reason")
     val failedReason: kotlin.String? = null
 
 ) {
@@ -54,11 +47,11 @@ data class EnterpriseGetMessage200Response (
      *
      * Values: pending,completed,failed
      */
-    @JsonClass(generateAdapter = false)
+    @Serializable
     enum class Status(val value: kotlin.String) {
-        @Json(name = "pending") pending("pending"),
-        @Json(name = "completed") completed("completed"),
-        @Json(name = "failed") failed("failed");
+        @SerialName(value = "pending") pending("pending"),
+        @SerialName(value = "completed") completed("completed"),
+        @SerialName(value = "failed") failed("failed");
     }
 
 }

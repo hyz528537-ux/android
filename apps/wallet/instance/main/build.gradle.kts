@@ -22,10 +22,10 @@ android {
     defaultConfig {
         applicationId = "com.ton_keeper"
         minSdk = Build.minSdkVersion
-        targetSdk = 35
+        targetSdk = Build.compileSdkVersion
         versionCode = 600
 
-        versionName = "5.1.6" // Format is "major.minor.patch" (e.g. "1.0.0") and only numbers are allowed
+        versionName = "5.4" // Format is "major.minor.patch" (e.g. "1.0.0") and only numbers are allowed
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -102,7 +102,7 @@ baselineProfile {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
-    implementation(project(Dependence.Wallet.app))
+    implementation(project(ProjectModules.Wallet.app))
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test:core:1.6.1")

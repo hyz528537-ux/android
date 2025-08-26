@@ -17,19 +17,16 @@ package io.batteryapi.models
 
 import io.batteryapi.models.CreatePromoCampaign200ResponseParticipantsInner
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param participants 
- */
 
+@Serializable
 
 data class CreatePromoCampaign200Response (
 
-    @Json(name = "participants")
+    @SerialName(value = "participants")
     val participants: kotlin.collections.List<CreatePromoCampaign200ResponseParticipantsInner>
 
 ) {

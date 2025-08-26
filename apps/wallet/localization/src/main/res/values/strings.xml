@@ -6,6 +6,7 @@
     <string name="w5beta" translatable="false">W5 Beta</string>
     <string name="fake" translatable="false">FAKE</string>
     <string name="beta" translatable="false">Beta</string>
+    <string name="slippage" translatable="false">Slippage</string>
     <string name="ok" translatable="false">OK</string>
     <string name="usb" translatable="false">USB</string>
     <string name="sign_data" translatable="false">Sign data</string>
@@ -75,6 +76,7 @@
     <string name="payment_method_not_found">Payment method not available</string>
     <string name="app_not_found">App not found</string>
     <string name="name">Name</string>
+    <string name="purchase">Purchase</string>
     <string name="new_contact">New Address</string>
     <string name="contact_delete_dialog">Are you sure you want to delete “%1$s” from your Address Book?</string>
     <string name="add_to_contact">Add to Address Book</string>
@@ -96,6 +98,7 @@
         <item quantity="many">%1$d NFTs</item>
         <item quantity="other">%1$d NFTs</item>
     </plurals>
+    <string name="exchange_rate">Exchange rate</string>
     <string name="address_prefix">Address:</string>
     <string name="your_address">Your address:</string>
     <string name="safe_mode_tokens_footer">Safe mode is enabled. Only verified tokens are available. <annotation colorAttr="textAccentColor">Settings</annotation></string>
@@ -103,6 +106,13 @@
     <string name="safe_mode_tonconnect_title">Connections are available only to verified apps</string>
     <string name="safe_mode_tonconnect_description">You can change this in your wallet’s Security Settings.</string>
 
+    <string name="renew_dns_title">Expiring domains</string>
+    <string name="renew_dns_expires">Expires in %1$d days</string>
+    <string name="wallet_renew_dns">You have %1$d expiring domains. Renew all until %2$s.</string>
+    <string name="renew_dns_until">Renew all until %1$s</string>
+    <string name="renew_signel_dns_until">Renew until %1$s</string>
+    <string name="renew_dns_all">Renew all</string>
+    <string name="renew_dns_done">Domain extended for 1 year</string>
     <string name="staking_unstake_cycle">Unstake request will be processed after the end of the validation cycle in %1$s</string>
 
     <string name="send_transaction_scroll">Check all details to confirm</string>
@@ -172,8 +182,9 @@
     <string name="liquid_staking">Liquid Staking</string>
     <string name="other">Other</string>
     <string name="minimum_amount">Minimum %1$s</string>
+    <string name="min_amount">Min. amount: %1$s</string>
     <string name="stake_ethena_description">The tsUSDe token represents USDe held through Ethena, a decentralized staking service. tsUSDe automatically accrues staking rewards, with minimal lock up.</string>
-    <string name="stake_ethena_disclaimer">This is the estimated annual return based on the past week’s average protocol rewards and the average amount of staked USDe. The return is annualized with weekly compounding. <annotation colorAttr="textSecondaryColor">Past performance does not guarantee future results.</annotation> Staking and rewards are provided by Ethena, a third-party service, and are subject to their <annotation colorAttr="textAccentColor">terms</annotation>.</string>
+    <string name="stake_ethena_disclaimer">This is the estimated annual return based on the past week’s average protocol rewards and the average amount of staked USDe. The return is annualized with weekly compounding. <annotation colorAttr="textSecondaryColor">Past performance does not guarantee future results.</annotation>\n\nStaking services and related rewards are provided by Ethena, an independent third-party service. Subject to their <annotation colorAttr="textAccentColor">terms of service</annotation>.</string>
     <string name="stake_tonstakers_description">When you stake TON in a Tonstakers pool, you receive a token called tsTON that represents your share in the pool. As the pool accumulates profits, your tsTON represents larger amount of TON.</string>
     <string name="edit">Edit</string>
     <string name="pinned">Pinned</string>
@@ -278,6 +289,9 @@
     <string name="unsubscribed">Unsubscribed</string>
     <string name="subscribed">Subscribed</string>
     <string name="received">Received</string>
+    <string name="dns_onsale_error_title">Domain is on sale at the marketplace now</string>
+    <string name="dns_onsale_error_desc">For renew domain, you should remove it from sale first.</string>
+    <string name="on_sale">ON SALE</string>
     <string name="nft_transfer">NFT Transfer</string>
     <string name="nft_disabled_transfer">NFT is on sale at the marketplace now. For transfer, you should remove it from sale first.</string>
     <string name="continue_action">Continue</string>
@@ -302,6 +316,8 @@
     <string name="yesterday">Yesterday</string>
     <string name="collectibles">Collectibles</string>
     <string name="purchases">Purchases</string>
+    <string name="choose_token">Choose Token</string>
+    <string name="enter_amount">Enter Amount</string>
     <string name="call_contract">Call contract</string>
     <string name="contract_address">Contract address</string>
     <string name="about_collection">About collection</string>
@@ -321,7 +337,7 @@
     <string name="new_wallet">New wallet</string>
     <string name="buy_toncoin">Buy Toncoin</string>
     <string name="buy_ton">Buy TON</string>
-    <string name="buy_or_sell_dot">Buy · Sell</string>
+    <string name="buy_or_sell_dot">Buy &amp; Sell Crypto</string>
     <string name="buy_or_sell">Buy or sell</string>
     <string name="fiat_open_description">You are opening an external app not operated by Tonkeeper.</string>
     <string name="buy">Buy</string>
@@ -496,6 +512,7 @@
     <string name="logout_confirmation">I have a backup copy of the recovery phrase for %1$s</string>
     <string name="last_updated">Updated %1$s</string>
     <string name="back_up_now">Back up</string>
+    <string name="confirm_swap">Confirm Swap</string>
     <string name="max">Max</string>
     <string name="confirm_and_send">Confirm and send</string>
     <string name="confirm_action">Confirm Action</string>
@@ -624,7 +641,6 @@
         <item quantity="many">≈ %1$s token transfers</item>
         <item quantity="other">≈ %1$s token transfers</item>
     </plurals>
-    <string name="will_be_paid_with_battery">Will be paid with Battery</string>
     <string name="battery_settings_title">Battery Settings</string>
     <string name="battery_settings_subtitle">Selected transactions will be paid by Tonkeeper Battery.</string>
     <string name="battery_recharge_title">Recharge</string>
@@ -638,7 +654,6 @@
     <string name="promocode_hint">Promo Code</string>
     <string name="refund">Refund</string>
     <string name="gasless_switch_label">Tap to pay in %1$s</string>
-    <string name="change_fee_method">Change Payment Method</string>
     <string name="recharge_battery">Recharge Battery</string>
     <string name="or">or</string>
     <string name="battery_large_pack">Large</string>
@@ -676,4 +691,14 @@
     <string name="support_title">Need help?</string>
     <string name="support_subtitle">Ask us on Telegram — we’ll do our best to help.</string>
     <string name="ask_question">Ask a Question</string>
+    <string name="about_usde">About USDe</string>
+    <string name="empty_history">No transactions</string>
+    <string name="staked_usde">Staked USDe</string>
+    <string name="learn_more">Learn more</string>
+    <string name="charging_unavailable">Battery charging is unavailable</string>
+    <string name="ethena_operated_by">Operated by %1$s</string>
+    <string name="deposit_and_stake">Deposit &amp; Stake</string>
+    <string name="ethena" translatable="false">Ethena</string>
+    <string name="ethena_check_eligibility">Check Eligibility</string>
+    <string name="about_ethena">About Ethena</string>
 </resources>

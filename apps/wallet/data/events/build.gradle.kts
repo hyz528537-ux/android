@@ -8,14 +8,14 @@ android {
 }
 
 dependencies {
-    implementation(project(Dependence.Module.tonApi))
-    implementation(project(Dependence.Wallet.Data.core))
-    implementation(project(Dependence.Wallet.Data.rates))
-    implementation(project(Dependence.Wallet.Data.collectibles))
-    implementation(project(Dependence.Wallet.api))
-    implementation(project(Dependence.Lib.blockchain))
-    implementation(project(Dependence.Lib.extensions))
-    implementation(project(Dependence.Lib.icu))
-    implementation(project(Dependence.Lib.security))
-    implementation(project(Dependence.Lib.sqlite))
+    implementation(project(ProjectModules.Module.tonApi))
+    implementation(project(ProjectModules.Wallet.Data.core))
+    implementation(project(ProjectModules.Wallet.Data.rates))
+    implementation(project(ProjectModules.Wallet.Data.collectibles))
+    implementation(project(ProjectModules.Wallet.api))
+    implementation(project(ProjectModules.Lib.blockchain))
+    implementation(project(ProjectModules.Lib.extensions))
+    implementation(project(ProjectModules.Lib.icu))
+    implementation(project(ProjectModules.Lib.security))
+    implementation(project(ProjectModules.Lib.sqlite))
 }

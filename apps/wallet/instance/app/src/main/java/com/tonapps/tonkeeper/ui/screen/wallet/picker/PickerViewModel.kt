@@ -34,7 +34,8 @@ class PickerViewModel(
     private val from: String,
     private val accountRepository: AccountRepository,
     private val settingsRepository: SettingsRepository,
-    private val assetsManager: AssetsManager
+    private val assetsManager: AssetsManager,
+    private val analytics: AnalyticsHelper
 ): BaseWalletVM(app) {
 
     private val hiddenBalances = settingsRepository.hiddenBalances
@@ -91,7 +92,7 @@ class PickerViewModel(
         }
 
         uiItemsFlow.take(1).filterList { it is Item.Wallet }.map { it as List<Item.Wallet> }.onEach { wallets ->
-            AnalyticsHelper.simpleTrackEvent("wallet_click", settingsRepository.installId, hashMapOf(
+            analytics.simpleTrackEvent("wallet_click", hashMapOf(
                 "wallet_count" to wallets.size,
                 "wallet_type_list" to wallets.map { it.wallet.version.name }.distinct().joinToString(",")
             ))

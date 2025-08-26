@@ -48,8 +48,10 @@ data class AppEntity(
 
     companion object {
 
+        val ETHENA_BASE_URL = "https://ethena.ston.fi".toUri()
+
         val ethena = AppEntity(
-            url = "https://ethena.ston.fi/".toUri(),
+            url = ETHENA_BASE_URL,
             name = "ethena.ston.fi",
             iconUrl = "https://static.ston.fi/logo/external-logo.jpg",
             empty = false

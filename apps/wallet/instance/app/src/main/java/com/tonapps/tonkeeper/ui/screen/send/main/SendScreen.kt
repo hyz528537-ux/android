@@ -6,16 +6,16 @@ import android.text.SpannableString
 import android.text.method.LinkMovementMethod
 import android.text.style.ForegroundColorSpan
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.lifecycleScope
 import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.extensions.getUserMessage
 import com.tonapps.extensions.isPositive
-import com.tonapps.extensions.short4
 import com.tonapps.extensions.shortTron
 import com.tonapps.extensions.uri
 import com.tonapps.icu.CurrencyFormatter
@@ -28,7 +28,6 @@ import com.tonapps.tonkeeper.extensions.copyToClipboard
 import com.tonapps.tonkeeper.extensions.getTitle
 import com.tonapps.tonkeeper.extensions.hideKeyboard
 import com.tonapps.tonkeeper.helper.BrowserHelper
-import com.tonapps.tonkeeper.koin.settingsRepository
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.popup.ActionSheet
 import com.tonapps.tonkeeper.ui.base.WalletContextScreen
@@ -53,7 +52,6 @@ import com.tonapps.uikit.color.fieldActiveBorderColor
 import com.tonapps.uikit.color.fieldErrorBorderColor
 import com.tonapps.uikit.color.textAccentColor
 import com.tonapps.uikit.color.textSecondaryColor
-import com.tonapps.uikit.color.textTertiaryColor
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.wallet.api.entity.Blockchain
 import com.tonapps.wallet.api.entity.TokenEntity
@@ -62,8 +60,10 @@ import com.tonapps.wallet.data.collectibles.entities.NftEntity
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.localization.Localization
 import com.tonapps.wallet.localization.Plurals
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.launch
 import org.koin.core.parameter.parametersOf
 import org.ton.cell.Cell
 import uikit.base.BaseFragment
@@ -77,6 +77,7 @@ import uikit.extensions.getDimensionPixelSize
 import uikit.extensions.hideKeyboard
 import uikit.extensions.setEndDrawable
 import uikit.span.ClickableSpanCompat
+import uikit.widget.ColumnLayout
 import uikit.widget.FrescoView
 import uikit.widget.HeaderView
 import uikit.widget.InputView
@@ -128,7 +129,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
     private lateinit var reviewTitleView: AppCompatTextView
     private lateinit var reviewWalletView: TransactionDetailView
     private lateinit var reviewRecipientView: TransactionDetailView
-    private lateinit var reviewRecipientAddressView: TransactionDetailView
+    private lateinit var reviewRecipientAddressView: ColumnLayout
     private lateinit var reviewRecipientAmountView: TransactionDetailView
     private lateinit var reviewRecipientFeeView: TransactionDetailView
     private lateinit var reviewRecipientCommentView: TransactionDetailView
@@ -142,7 +143,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.simpleTrackEvent("send_open", viewModel.installId)
+        analytics?.simpleTrackEvent("send_open")
 
         navigation?.setFragmentResultListener(contractsRequestKey) { bundle ->
             val contact = bundle.getParcelableCompat<SendContact>("contact")
@@ -230,7 +231,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
 
         button = view.findViewById(R.id.button)
         button.setOnClickListener {
-            AnalyticsHelper.simpleTrackEvent("send_click", viewModel.installId)
+            analytics?.simpleTrackEvent("send_click")
             next()
         }
 
@@ -267,7 +268,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
         }
 
         confirmButton.setOnClickListener {
-            AnalyticsHelper.simpleTrackEvent("send_confirm", viewModel.installId)
+            analytics?.simpleTrackEvent("send_confirm")
             signAndSend()
         }
         confirmButton.setText(if (wallet.hasPrivateKey) Localization.confirm else Localization.continue_action)
@@ -334,6 +335,14 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
         )
     }
 
+    override fun onBackPressed(): Boolean {
+        if (!slidesView.isFirst) {
+            slidesView.prev()
+            return false
+        }
+        return super.onBackPressed()
+    }
+
     private fun applyTokenError(
         error: SendDestination.TokenError,
         swapMethod: WalletPurchaseMethodEntity?
@@ -363,7 +372,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
 
         val isUsdt = error.selectedToken.isTrc20 || error.selectedToken.isUsdt
 
-        if (swapMethod != null && isUsdt) {
+        if (swapMethod != null && isUsdt && !viewModel.isTronDisabled) {
             val spannableString = SpannableString("$errorText $swapText")
             val start = spannableString.indexOf(swapTitle)
             spannableString.setSpan(
@@ -439,20 +448,37 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
         targetAddress?.let { addressInput.text = it }
         bin?.let { viewModel.userInputBin(it) }
 
-        if (type == Type.Direct && amountNano.isPositive()) {
-            reviewHeaderView.setIcon(0)
-            reviewHeaderView.setAction(UIKitIcon.ic_close_16)
-            reviewHeaderView.doOnActionClick = { finish() }
-            next()
-            slidesView.next(false)
-            addressInput.hideKeyboard()
+        if (targetAddress != null) {
+            lifecycleScope.launch(Dispatchers.Main) {
+                if (viewModel.isNeedMemoAddress(targetAddress)) {
+                    showReviewState()
+                    commentInput.focus()
+                } else if (type == Type.Direct && amountNano.isPositive()) {
+                    showDirectState()
+                }
+            }
+        } else if (type == Type.Direct && amountNano.isPositive()) {
+            showDirectState()
         } else {
-            reviewHeaderView.setAction(0)
-            reviewHeaderView.setIcon(UIKitIcon.ic_chevron_left_16)
-            reviewHeaderView.doOnCloseClick = { showCreate() }
-            showCreate()
-            addressInput.focus()
+            showReviewState()
         }
+    }
+
+    fun showDirectState() {
+        reviewHeaderView.setIcon(0)
+        reviewHeaderView.setAction(UIKitIcon.ic_close_16)
+        reviewHeaderView.doOnActionClick = { finish() }
+        next()
+        slidesView.next(false)
+        addressInput.hideKeyboard()
+    }
+
+    fun showReviewState() {
+        reviewHeaderView.setAction(0)
+        reviewHeaderView.setIcon(UIKitIcon.ic_chevron_left_16)
+        reviewHeaderView.doOnCloseClick = { showCreate() }
+        showCreate()
+        addressInput.focus()
     }
 
     private fun applyCommentEncryptState(enabled: Boolean) {
@@ -608,23 +634,42 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
             amount.convertedFormat.withCustomSymbol(requireContext())
     }
 
+    private fun reviewRecipientAddressTitle(): AppCompatTextView {
+        return reviewRecipientAddressView.getChildAt(0) as AppCompatTextView
+    }
+
+    private fun reviewRecipientAddressValue(): AppCompatTextView {
+        return reviewRecipientAddressView.getChildAt(1) as AppCompatTextView
+    }
+
     private fun applyTransactionAccount(destination: SendDestination) {
         if (destination is SendDestination.TonAccount) {
             if (destination.displayName == null) {
+                reviewRecipientView.visibility = View.GONE
+                reviewRecipientView.orientation = LinearLayoutCompat.VERTICAL
                 reviewRecipientView.value = destination.displayAddress
                 reviewRecipientView.setOnClickListener {
                     requireContext().copyToClipboard(destination.displayAddress)
                 }
 
-                reviewRecipientAddressView.visibility = View.GONE
+                reviewRecipientAddressView.visibility = View.VISIBLE
+                reviewRecipientAddressTitle().setText(Localization.recipient)
+                reviewRecipientAddressValue().text = destination.displayAddress
+                reviewRecipientAddressView.setOnClickListener {
+                    requireContext().copyToClipboard(
+                        destination.displayAddress
+                    )
+                }
             } else {
+                reviewRecipientView.orientation = LinearLayoutCompat.HORIZONTAL
                 reviewRecipientView.value = destination.displayName
                 reviewRecipientView.setOnClickListener {
                     requireContext().copyToClipboard(destination.displayName!!)
                 }
 
                 reviewRecipientAddressView.visibility = View.VISIBLE
-                reviewRecipientAddressView.value = destination.displayAddress
+                reviewRecipientAddressTitle().setText(Localization.recipient_address)
+                reviewRecipientAddressValue().text = destination.displayAddress
                 reviewRecipientAddressView.setOnClickListener {
                     requireContext().copyToClipboard(
                         destination.displayAddress
@@ -709,20 +754,15 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
             }
 
             if (event.showToggle) {
-                val paymentMethodViewed =
-                    requireContext().settingsRepository?.paymentMethodViewed ?: false
-                reviewRecipientFeeView.subtitle = getString(Localization.change_fee_method)
+                reviewRecipientFeeView.subtitle = getString(Localization.edit_full)
                 reviewRecipientFeeView.setOnClickListener {
                     showFeeMethods(event.fee, reviewRecipientFeeView)
                 }
                 reviewRecipientFeeView.subtitleView.expandTouchArea(8.dp)
                 reviewRecipientFeeView.subtitleView.isEnabled = true
-                reviewRecipientFeeView.subtitleView.setTextColor(if (paymentMethodViewed) requireContext().textSecondaryColor else requireContext().textAccentColor)
+                reviewRecipientFeeView.subtitleView.setTextColor(requireContext().textAccentColor)
                 reviewRecipientFeeView.subtitleView.setEndDrawable(
-                    getDrawable(
-                        UIKitIcon.ic_chevron_right_12,
-                        if (paymentMethodViewed) requireContext().textSecondaryColor else requireContext().textAccentColor
-                    )
+                    getDrawable(UIKitIcon.ic_chevron_right_12, requireContext().textAccentColor)
                 )
 
             } else {
@@ -814,8 +854,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
                 is SendFee.TokenFee -> {
                     val formattedAmount = CurrencyFormatter.format(
                         fee.amount.token.symbol,
-                        fee.amount.value,
-                        2
+                        fee.amount.value
                     )
                     val formattedFiat = CurrencyFormatter.formatFiat(
                         fee.fiatCurrency.code,

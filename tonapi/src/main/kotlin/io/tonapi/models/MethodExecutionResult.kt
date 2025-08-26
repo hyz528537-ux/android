@@ -17,33 +17,35 @@ package io.tonapi.models
 
 import io.tonapi.models.TvmStackRecord
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param success 
- * @param exitCode tvm exit code
- * @param stack 
- * @param decoded 
- */
 
+@Serializable
 
 data class MethodExecutionResult (
 
-    @Json(name = "success")
+    @SerialName(value = "success")
     val success: kotlin.Boolean,
 
     /* tvm exit code */
-    @Json(name = "exit_code")
+    @SerialName(value = "exit_code")
     val exitCode: kotlin.Int,
 
-    @Json(name = "stack")
+    @SerialName(value = "stack")
     val stack: kotlin.collections.List<TvmStackRecord>,
 
-    @Json(name = "decoded")
+    @Contextual @SerialName(value = "decoded")
     val decoded: kotlin.Any? = null
 
-)
+) {
+
+
+}
 

@@ -8,7 +8,7 @@ enum class PreferredFeeMethod(val id: Int) {
 
     companion object {
         fun fromId(id: Int): PreferredFeeMethod {
-            return values().find { it.id == id }
+            return entries.find { it.id == id }
                 ?: throw IllegalArgumentException("Invalid PreferredFeeMethod id: $id")
         }
     }

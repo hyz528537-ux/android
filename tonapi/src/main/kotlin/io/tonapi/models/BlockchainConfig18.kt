@@ -17,20 +17,25 @@ package io.tonapi.models
 
 import io.tonapi.models.BlockchainConfig18StoragePricesInner
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * The prices for data storage.
- *
- * @param storagePrices 
- */
 
+@Serializable
 
 data class BlockchainConfig18 (
 
-    @Json(name = "storage_prices")
+    @SerialName(value = "storage_prices")
     val storagePrices: kotlin.collections.List<BlockchainConfig18StoragePricesInner>
 
-)
+) {
+
+
+}
 

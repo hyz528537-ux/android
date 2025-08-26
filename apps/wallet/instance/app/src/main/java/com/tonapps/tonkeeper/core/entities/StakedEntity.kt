@@ -28,9 +28,6 @@ data class StakedEntity(
     val isTonstakers: Boolean
         get() = pool.isTonstakers
 
-    val isEthena: Boolean
-        get() = pool.isEthena
-
     val maxApy: Boolean
         get() = pool.maxApy
 
@@ -48,32 +45,7 @@ data class StakedEntity(
             val list = mutableListOf<StakedEntity>()
             val activePools = getActivePools(staking, tokens)
             for (pool in activePools) {
-                if (pool.implementation == StakingPool.Implementation.Ethena) {
-                    val isEthenaAlready = list.any { it.isEthena }
-                    if (isEthenaAlready) {
-                        continue
-                    }
-                    val liquidJettonMaster = pool.liquidJettonMaster ?: continue
-                    val token = tokens.find { it.address.equalsAddress(liquidJettonMaster) } ?: continue
-                    val tokenBalance = token.balance.value
-                    val rates = ratesRepository.getRates(WalletCurrency.USD, token.address)
-                    val balance = rates.convert(token.address, tokenBalance)
-                    val apy = api.getEthenaStakingAPY(wallet.address)
-                    list.add(StakedEntity(
-                        pool = pool.copy(
-                            apy = apy
-                        ),
-                        balance = balance,
-                        fiatBalance = token.fiat,
-                        readyWithdraw = Coins.ZERO,
-                        fiatReadyWithdraw = Coins.ZERO,
-                        liquidToken = token.balance.copy(),
-                        pendingDeposit = Coins.ZERO,
-                        pendingWithdraw = Coins.ZERO,
-                        cycleStart = pool.cycleStart,
-                        cycleEnd = pool.cycleEnd,
-                    ))
-                } else if (pool.implementation == StakingPool.Implementation.LiquidTF) {
+                if (pool.implementation == StakingPool.Implementation.LiquidTF) {
                     val isTonstakersAlready = list.any { it.isTonstakers }
                     if (isTonstakersAlready) {
                         continue
@@ -126,11 +98,6 @@ data class StakedEntity(
             val pools = mutableListOf<PoolEntity>()
             for (token in tokens.filter { staking.poolsJettonAddresses.contains(it.address) }) {
                 staking.findPoolByTokenAddress(token.address)?.let { pools.add(it) }
-            }
-
-            val tsUSDeEthena = tokens.find { it.address.equalsAddress(PoolEntity.ethenaTokenAddress) }
-            if (tsUSDeEthena != null) {
-                pools.add(PoolEntity.ethena)
             }
 
             for (info in staking.info) {

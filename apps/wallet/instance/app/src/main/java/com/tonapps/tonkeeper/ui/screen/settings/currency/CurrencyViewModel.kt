@@ -38,7 +38,7 @@ class CurrencyViewModel(
     }
 
     private fun buildUiItems(selectedCurrency: WalletCurrency): List<Item> {
-        val currencies = WalletCurrency.ALL
+        val currencies = WalletCurrency.ALL + listOf(WalletCurrency.TON_KEY, WalletCurrency.BTC_KEY)
         val items = mutableListOf<Item>()
         for ((index, currency) in currencies.withIndex()) {
             val titleRes = getNameResIdForCurrency(currency)

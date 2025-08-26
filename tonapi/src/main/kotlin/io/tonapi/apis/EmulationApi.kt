@@ -16,35 +16,36 @@
 package io.tonapi.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import io.tonapi.models.AccountEvent
-import io.tonapi.models.DecodeMessageRequest
 import io.tonapi.models.DecodedMessage
 import io.tonapi.models.EmulateMessageToWalletRequest
 import io.tonapi.models.Event
+import io.tonapi.models.GaslessEstimateRequestMessagesInner
+import io.tonapi.models.InlineObject
 import io.tonapi.models.MessageConsequences
-import io.tonapi.models.StatusDefaultResponse
 import io.tonapi.models.Trace
 
-import com.squareup.moshi.Json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-import io.tonapi.infrastructure.ApiClient
-import io.tonapi.infrastructure.ApiResponse
-import io.tonapi.infrastructure.ClientException
-import io.tonapi.infrastructure.ClientError
-import io.tonapi.infrastructure.ServerException
-import io.tonapi.infrastructure.ServerError
-import io.tonapi.infrastructure.MultiValueMap
-import io.tonapi.infrastructure.PartConfig
-import io.tonapi.infrastructure.RequestConfig
-import io.tonapi.infrastructure.RequestMethod
-import io.tonapi.infrastructure.ResponseType
-import io.tonapi.infrastructure.Success
-import io.tonapi.infrastructure.toMultiValue
+import io.infrastructure.ApiClient
+import io.infrastructure.ApiResponse
+import io.infrastructure.ClientException
+import io.infrastructure.ClientError
+import io.infrastructure.ServerException
+import io.infrastructure.ServerError
+import io.infrastructure.MultiValueMap
+import io.infrastructure.PartConfig
+import io.infrastructure.RequestConfig
+import io.infrastructure.RequestMethod
+import io.infrastructure.ResponseType
+import io.infrastructure.Success
+import io.infrastructure.toMultiValue
 
-class EmulationApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class EmulationApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -52,21 +53,10 @@ class EmulationApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClie
         }
     }
 
-    /**
-     * 
-     * Decode a given message. Only external incoming messages can be decoded currently.
-     * @param decodeMessageRequest bag-of-cells serialized to hex
-     * @return DecodedMessage
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun decodeMessage(decodeMessageRequest: DecodeMessageRequest) : DecodedMessage {
-        val localVarResponse = decodeMessageWithHttpInfo(decodeMessageRequest = decodeMessageRequest)
+    fun decodeMessage(gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner) : DecodedMessage {
+        val localVarResponse = decodeMessageWithHttpInfo(gaslessEstimateRequestMessagesInner = gaslessEstimateRequestMessagesInner)
 
         return when (localVarResponse.responseType) {
             ResponseType.Success -> (localVarResponse as Success<*>).data as DecodedMessage
@@ -83,32 +73,18 @@ class EmulationApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClie
         }
     }
 
-    /**
-     * 
-     * Decode a given message. Only external incoming messages can be decoded currently.
-     * @param decodeMessageRequest bag-of-cells serialized to hex
-     * @return ApiResponse<DecodedMessage?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun decodeMessageWithHttpInfo(decodeMessageRequest: DecodeMessageRequest) : ApiResponse<DecodedMessage?> {
-        val localVariableConfig = decodeMessageRequestConfig(decodeMessageRequest = decodeMessageRequest)
+    fun decodeMessageWithHttpInfo(gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner) : ApiResponse<DecodedMessage?> {
+        val localVariableConfig = decodeMessageRequestConfig(gaslessEstimateRequestMessagesInner = gaslessEstimateRequestMessagesInner)
 
-        return request<DecodeMessageRequest, DecodedMessage>(
+        return request<GaslessEstimateRequestMessagesInner, DecodedMessage>(
             localVariableConfig
         )
     }
 
-    /**
-     * To obtain the request config of the operation decodeMessage
-     *
-     * @param decodeMessageRequest bag-of-cells serialized to hex
-     * @return RequestConfig
-     */
-    fun decodeMessageRequestConfig(decodeMessageRequest: DecodeMessageRequest) : RequestConfig<DecodeMessageRequest> {
-        val localVariableBody = decodeMessageRequest
+    fun decodeMessageRequestConfig(gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner) : RequestConfig<GaslessEstimateRequestMessagesInner> {
+        val localVariableBody = gaslessEstimateRequestMessagesInner
         val localVariableQuery: MultiValueMap = mutableMapOf()
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         localVariableHeaders["Content-Type"] = "application/json"
@@ -124,24 +100,10 @@ class EmulationApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClie
         )
     }
 
-    /**
-     * 
-     * Emulate sending message to blockchain
-     * @param accountId account ID
-     * @param decodeMessageRequest bag-of-cells serialized to hex
-     * @param acceptLanguage  (optional, default to "en")
-     * @param ignoreSignatureCheck  (optional)
-     * @return AccountEvent
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun emulateMessageToAccountEvent(accountId: kotlin.String, decodeMessageRequest: DecodeMessageRequest, acceptLanguage: kotlin.String? = "en", ignoreSignatureCheck: kotlin.Boolean? = null) : AccountEvent {
-        val localVarResponse = emulateMessageToAccountEventWithHttpInfo(accountId = accountId, decodeMessageRequest = decodeMessageRequest, acceptLanguage = acceptLanguage, ignoreSignatureCheck = ignoreSignatureCheck)
+    fun emulateMessageToAccountEvent(accountId: kotlin.String, gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner, acceptLanguage: kotlin.String? = "en", ignoreSignatureCheck: kotlin.Boolean? = null) : AccountEvent {
+        val localVarResponse = emulateMessageToAccountEventWithHttpInfo(accountId = accountId, gaslessEstimateRequestMessagesInner = gaslessEstimateRequestMessagesInner, acceptLanguage = acceptLanguage, ignoreSignatureCheck = ignoreSignatureCheck)
 
         return when (localVarResponse.responseType) {
             ResponseType.Success -> (localVarResponse as Success<*>).data as AccountEvent
@@ -158,38 +120,18 @@ class EmulationApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClie
         }
     }
 
-    /**
-     * 
-     * Emulate sending message to blockchain
-     * @param accountId account ID
-     * @param decodeMessageRequest bag-of-cells serialized to hex
-     * @param acceptLanguage  (optional, default to "en")
-     * @param ignoreSignatureCheck  (optional)
-     * @return ApiResponse<AccountEvent?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun emulateMessageToAccountEventWithHttpInfo(accountId: kotlin.String, decodeMessageRequest: DecodeMessageRequest, acceptLanguage: kotlin.String?, ignoreSignatureCheck: kotlin.Boolean?) : ApiResponse<AccountEvent?> {
-        val localVariableConfig = emulateMessageToAccountEventRequestConfig(accountId = accountId, decodeMessageRequest = decodeMessageRequest, acceptLanguage = acceptLanguage, ignoreSignatureCheck = ignoreSignatureCheck)
+    fun emulateMessageToAccountEventWithHttpInfo(accountId: kotlin.String, gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner, acceptLanguage: kotlin.String?, ignoreSignatureCheck: kotlin.Boolean?) : ApiResponse<AccountEvent?> {
+        val localVariableConfig = emulateMessageToAccountEventRequestConfig(accountId = accountId, gaslessEstimateRequestMessagesInner = gaslessEstimateRequestMessagesInner, acceptLanguage = acceptLanguage, ignoreSignatureCheck = ignoreSignatureCheck)
 
-        return request<DecodeMessageRequest, AccountEvent>(
+        return request<GaslessEstimateRequestMessagesInner, AccountEvent>(
             localVariableConfig
         )
     }
 
-    /**
-     * To obtain the request config of the operation emulateMessageToAccountEvent
-     *
-     * @param accountId account ID
-     * @param decodeMessageRequest bag-of-cells serialized to hex
-     * @param acceptLanguage  (optional, default to "en")
-     * @param ignoreSignatureCheck  (optional)
-     * @return RequestConfig
-     */
-    fun emulateMessageToAccountEventRequestConfig(accountId: kotlin.String, decodeMessageRequest: DecodeMessageRequest, acceptLanguage: kotlin.String?, ignoreSignatureCheck: kotlin.Boolean?) : RequestConfig<DecodeMessageRequest> {
-        val localVariableBody = decodeMessageRequest
+    fun emulateMessageToAccountEventRequestConfig(accountId: kotlin.String, gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner, acceptLanguage: kotlin.String?, ignoreSignatureCheck: kotlin.Boolean?) : RequestConfig<GaslessEstimateRequestMessagesInner> {
+        val localVariableBody = gaslessEstimateRequestMessagesInner
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
             .apply {
                 if (ignoreSignatureCheck != null) {
@@ -211,23 +153,10 @@ class EmulationApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClie
         )
     }
 
-    /**
-     * 
-     * Emulate sending message to blockchain
-     * @param decodeMessageRequest bag-of-cells serialized to hex
-     * @param acceptLanguage  (optional, default to "en")
-     * @param ignoreSignatureCheck  (optional)
-     * @return Event
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun emulateMessageToEvent(decodeMessageRequest: DecodeMessageRequest, acceptLanguage: kotlin.String? = "en", ignoreSignatureCheck: kotlin.Boolean? = null) : Event {
-        val localVarResponse = emulateMessageToEventWithHttpInfo(decodeMessageRequest = decodeMessageRequest, acceptLanguage = acceptLanguage, ignoreSignatureCheck = ignoreSignatureCheck)
+    fun emulateMessageToEvent(gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner, acceptLanguage: kotlin.String? = "en", ignoreSignatureCheck: kotlin.Boolean? = null) : Event {
+        val localVarResponse = emulateMessageToEventWithHttpInfo(gaslessEstimateRequestMessagesInner = gaslessEstimateRequestMessagesInner, acceptLanguage = acceptLanguage, ignoreSignatureCheck = ignoreSignatureCheck)
 
         return when (localVarResponse.responseType) {
             ResponseType.Success -> (localVarResponse as Success<*>).data as Event
@@ -244,36 +173,18 @@ class EmulationApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClie
         }
     }
 
-    /**
-     * 
-     * Emulate sending message to blockchain
-     * @param decodeMessageRequest bag-of-cells serialized to hex
-     * @param acceptLanguage  (optional, default to "en")
-     * @param ignoreSignatureCheck  (optional)
-     * @return ApiResponse<Event?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun emulateMessageToEventWithHttpInfo(decodeMessageRequest: DecodeMessageRequest, acceptLanguage: kotlin.String?, ignoreSignatureCheck: kotlin.Boolean?) : ApiResponse<Event?> {
-        val localVariableConfig = emulateMessageToEventRequestConfig(decodeMessageRequest = decodeMessageRequest, acceptLanguage = acceptLanguage, ignoreSignatureCheck = ignoreSignatureCheck)
+    fun emulateMessageToEventWithHttpInfo(gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner, acceptLanguage: kotlin.String?, ignoreSignatureCheck: kotlin.Boolean?) : ApiResponse<Event?> {
+        val localVariableConfig = emulateMessageToEventRequestConfig(gaslessEstimateRequestMessagesInner = gaslessEstimateRequestMessagesInner, acceptLanguage = acceptLanguage, ignoreSignatureCheck = ignoreSignatureCheck)
 
-        return request<DecodeMessageRequest, Event>(
+        return request<GaslessEstimateRequestMessagesInner, Event>(
             localVariableConfig
         )
     }
 
-    /**
-     * To obtain the request config of the operation emulateMessageToEvent
-     *
-     * @param decodeMessageRequest bag-of-cells serialized to hex
-     * @param acceptLanguage  (optional, default to "en")
-     * @param ignoreSignatureCheck  (optional)
-     * @return RequestConfig
-     */
-    fun emulateMessageToEventRequestConfig(decodeMessageRequest: DecodeMessageRequest, acceptLanguage: kotlin.String?, ignoreSignatureCheck: kotlin.Boolean?) : RequestConfig<DecodeMessageRequest> {
-        val localVariableBody = decodeMessageRequest
+    fun emulateMessageToEventRequestConfig(gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner, acceptLanguage: kotlin.String?, ignoreSignatureCheck: kotlin.Boolean?) : RequestConfig<GaslessEstimateRequestMessagesInner> {
+        val localVariableBody = gaslessEstimateRequestMessagesInner
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
             .apply {
                 if (ignoreSignatureCheck != null) {
@@ -295,22 +206,10 @@ class EmulationApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClie
         )
     }
 
-    /**
-     * 
-     * Emulate sending message to blockchain
-     * @param decodeMessageRequest bag-of-cells serialized to hex
-     * @param ignoreSignatureCheck  (optional)
-     * @return Trace
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun emulateMessageToTrace(decodeMessageRequest: DecodeMessageRequest, ignoreSignatureCheck: kotlin.Boolean? = null) : Trace {
-        val localVarResponse = emulateMessageToTraceWithHttpInfo(decodeMessageRequest = decodeMessageRequest, ignoreSignatureCheck = ignoreSignatureCheck)
+    fun emulateMessageToTrace(gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner, ignoreSignatureCheck: kotlin.Boolean? = null) : Trace {
+        val localVarResponse = emulateMessageToTraceWithHttpInfo(gaslessEstimateRequestMessagesInner = gaslessEstimateRequestMessagesInner, ignoreSignatureCheck = ignoreSignatureCheck)
 
         return when (localVarResponse.responseType) {
             ResponseType.Success -> (localVarResponse as Success<*>).data as Trace
@@ -327,34 +226,18 @@ class EmulationApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClie
         }
     }
 
-    /**
-     * 
-     * Emulate sending message to blockchain
-     * @param decodeMessageRequest bag-of-cells serialized to hex
-     * @param ignoreSignatureCheck  (optional)
-     * @return ApiResponse<Trace?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun emulateMessageToTraceWithHttpInfo(decodeMessageRequest: DecodeMessageRequest, ignoreSignatureCheck: kotlin.Boolean?) : ApiResponse<Trace?> {
-        val localVariableConfig = emulateMessageToTraceRequestConfig(decodeMessageRequest = decodeMessageRequest, ignoreSignatureCheck = ignoreSignatureCheck)
+    fun emulateMessageToTraceWithHttpInfo(gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner, ignoreSignatureCheck: kotlin.Boolean?) : ApiResponse<Trace?> {
+        val localVariableConfig = emulateMessageToTraceRequestConfig(gaslessEstimateRequestMessagesInner = gaslessEstimateRequestMessagesInner, ignoreSignatureCheck = ignoreSignatureCheck)
 
-        return request<DecodeMessageRequest, Trace>(
+        return request<GaslessEstimateRequestMessagesInner, Trace>(
             localVariableConfig
         )
     }
 
-    /**
-     * To obtain the request config of the operation emulateMessageToTrace
-     *
-     * @param decodeMessageRequest bag-of-cells serialized to hex
-     * @param ignoreSignatureCheck  (optional)
-     * @return RequestConfig
-     */
-    fun emulateMessageToTraceRequestConfig(decodeMessageRequest: DecodeMessageRequest, ignoreSignatureCheck: kotlin.Boolean?) : RequestConfig<DecodeMessageRequest> {
-        val localVariableBody = decodeMessageRequest
+    fun emulateMessageToTraceRequestConfig(gaslessEstimateRequestMessagesInner: GaslessEstimateRequestMessagesInner, ignoreSignatureCheck: kotlin.Boolean?) : RequestConfig<GaslessEstimateRequestMessagesInner> {
+        val localVariableBody = gaslessEstimateRequestMessagesInner
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
             .apply {
                 if (ignoreSignatureCheck != null) {
@@ -375,18 +258,6 @@ class EmulationApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClie
         )
     }
 
-    /**
-     * 
-     * Emulate sending message to blockchain
-     * @param emulateMessageToWalletRequest bag-of-cells serialized to base64/hex and additional parameters to configure emulation
-     * @param acceptLanguage  (optional, default to "en")
-     * @return MessageConsequences
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun emulateMessageToWallet(emulateMessageToWalletRequest: EmulateMessageToWalletRequest, acceptLanguage: kotlin.String? = "en") : MessageConsequences {
@@ -407,15 +278,6 @@ class EmulationApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClie
         }
     }
 
-    /**
-     * 
-     * Emulate sending message to blockchain
-     * @param emulateMessageToWalletRequest bag-of-cells serialized to base64/hex and additional parameters to configure emulation
-     * @param acceptLanguage  (optional, default to "en")
-     * @return ApiResponse<MessageConsequences?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun emulateMessageToWalletWithHttpInfo(emulateMessageToWalletRequest: EmulateMessageToWalletRequest, acceptLanguage: kotlin.String?) : ApiResponse<MessageConsequences?> {
@@ -426,13 +288,6 @@ class EmulationApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClie
         )
     }
 
-    /**
-     * To obtain the request config of the operation emulateMessageToWallet
-     *
-     * @param emulateMessageToWalletRequest bag-of-cells serialized to base64/hex and additional parameters to configure emulation
-     * @param acceptLanguage  (optional, default to "en")
-     * @return RequestConfig
-     */
     fun emulateMessageToWalletRequestConfig(emulateMessageToWalletRequest: EmulateMessageToWalletRequest, acceptLanguage: kotlin.String?) : RequestConfig<EmulateMessageToWalletRequest> {
         val localVariableBody = emulateMessageToWalletRequest
         val localVariableQuery: MultiValueMap = mutableMapOf()

@@ -8,6 +8,7 @@ import com.tonapps.icu.Coins
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
+import androidx.core.net.toUri
 
 @Parcelize
 data class ConfigEntity(
@@ -35,7 +36,6 @@ data class ConfigEntity(
     val batteryHost: String,
     val batteryTestnetHost: String,
     val batteryBeta: Boolean,
-    val batteryDisabled: Boolean,
     val batterySendDisabled: Boolean,
     val batteryMeanFees: String,
     val batteryMeanPriceNft: String,
@@ -59,15 +59,13 @@ data class ConfigEntity(
     val apkDownloadUrl: String?,
     val apkName: AppVersion?,
     val tronApiUrl: String,
+    val enabledStaking: List<String>,
+    val qrScannerExtends: List<QRScannerExtendsEntity>,
 ): Parcelable {
 
     @IgnoredOnParcel
     val swapUri: Uri
-        get() = Uri.parse(stonfiUrl)
-
-    @IgnoredOnParcel
-    val isBatteryDisabled: Boolean
-        get() = batteryDisabled || batterySendDisabled
+        get() = stonfiUrl.toUri()
 
     @IgnoredOnParcel
     val domains: List<String> by lazy {
@@ -79,6 +77,26 @@ data class ConfigEntity(
         val name = apkName ?: return@lazy null
         val url = apkDownloadUrl ?: return@lazy null
         ApkEntity(url, name)
+    }
+
+    @IgnoredOnParcel
+    val meanFees: Coins by lazy {
+        Coins.of(batteryMeanFees)
+    }
+
+    @IgnoredOnParcel
+    val meanFeeNft: Coins by lazy {
+        Coins.of(batteryMeanPriceNft)
+    }
+
+    @IgnoredOnParcel
+    val meanFeeSwap: Coins by lazy {
+        Coins.of(batteryMeanPriceSwap)
+    }
+
+    @IgnoredOnParcel
+    val meanFeeJetton: Coins by lazy {
+        Coins.of(batteryMeanPriceJetton)
     }
 
     constructor(json: JSONObject, debug: Boolean) : this(
@@ -110,7 +128,6 @@ data class ConfigEntity(
         batteryHost = json.optString("batteryHost", "https://battery.tonkeeper.com"),
         batteryTestnetHost = json.optString("batteryTestnetHost", "https://testnet-battery.tonkeeper.com"),
         batteryBeta = json.optBoolean("battery_beta", true),
-        batteryDisabled = json.optBoolean("disable_battery", false),
         batterySendDisabled = json.optBoolean("disable_battery_send", false),
         batteryMeanFees = json.optString("batteryMeanFees", "0.0055"),
         disableBatteryIapModule = json.optBoolean("disable_battery_iap_module", false),
@@ -136,6 +153,12 @@ data class ConfigEntity(
         apkDownloadUrl = json.optString("apk_download_url"),
         apkName = json.optString("apk_name")?.let { AppVersion(it.removePrefix("v")) },
         tronApiUrl = json.optString("tron_api_url", "https://api.trongrid.io"),
+        enabledStaking = json.optJSONArray("enabled_staking")?.let { array ->
+            (0 until array.length()).map { array.getString(it) }
+        } ?: emptyList(),
+        qrScannerExtends = json.optJSONArray("qr_scanner_extends")?.let { array ->
+            QRScannerExtendsEntity.of(array)
+        } ?: emptyList()
     )
 
     constructor() : this(
@@ -163,7 +186,6 @@ data class ConfigEntity(
         batteryHost = "https://battery.tonkeeper.com",
         batteryTestnetHost = "https://testnet-battery.tonkeeper.com",
         batteryBeta = true,
-        batteryDisabled = false,
         batterySendDisabled = false,
         batteryMeanFees = "0.0055",
         disableBatteryIapModule = false,
@@ -187,6 +209,8 @@ data class ConfigEntity(
         apkDownloadUrl = null,
         apkName = null,
         tronApiUrl = "https://api.trongrid.io",
+        enabledStaking = emptyList(),
+        qrScannerExtends = emptyList()
     )
 
     companion object {

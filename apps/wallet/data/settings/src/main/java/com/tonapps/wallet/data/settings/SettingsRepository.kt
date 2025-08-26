@@ -3,6 +3,7 @@ package com.tonapps.wallet.data.settings
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
+import android.icu.util.Currency
 import androidx.core.content.edit
 import androidx.core.os.LocaleListCompat
 import com.tonapps.extensions.MutableEffectFlow
@@ -57,7 +58,6 @@ class SettingsRepository(
         private const val SEARCH_ENGINE_KEY = "search_engine"
         private const val ENCRYPTED_COMMENT_MODAL_KEY = "encrypted_comment_modal"
         private const val BATTERY_VIEWED_KEY = "battery_viewed"
-        private const val PAYMENT_METHOD_VIEWED_KEY = "payment_method_viewed"
         private const val CHART_PERIOD_KEY = "chart_period"
         private const val SAFE_MODE_DISABLED_UNIX_KEY = "safe_mode_disabled_unix"
         private const val SHOW_SAFE_MODE_SETUP_KEY = "show_safe_mode_setup"
@@ -78,6 +78,8 @@ class SettingsRepository(
         _hiddenBalancesFlow.stateIn(scope, SharingStarted.Eagerly, null).filterNotNull()
 
     private val _countryFlow = MutableEffectFlow<String>()
+
+    @Deprecated("Use Environment.countryFlow instead")
     val countryFlow = _countryFlow.stateIn(scope, SharingStarted.Eagerly, null).filterNotNull()
         .map { fixCountryCode(it) }
 
@@ -228,6 +230,7 @@ class SettingsRepository(
             }
         }
 
+    @Deprecated("Use Environment.countryFlow instead")
     var country: String = fixCountryCode(prefs.getString(COUNTRY_KEY, null))
         set(value) {
             if (value != field) {
@@ -252,14 +255,6 @@ class SettingsRepository(
         set(value) {
             if (value != field) {
                 prefs.putBoolean(BATTERY_VIEWED_KEY, value)
-                field = value
-            }
-        }
-
-    var paymentMethodViewed: Boolean = prefs.getBoolean(PAYMENT_METHOD_VIEWED_KEY, false)
-        set(value) {
-            if (value != field) {
-                prefs.putBoolean(PAYMENT_METHOD_VIEWED_KEY, value)
                 field = value
             }
         }
@@ -424,6 +419,17 @@ class SettingsRepository(
             return context.locale
         }
         return language.locale
+    }
+
+    fun getDeviceCurrency(): WalletCurrency {
+        val locale = context.locale
+        val deviceCurrency = Currency.getInstance(locale)
+        return WalletCurrency(
+            code = deviceCurrency.currencyCode,
+            title = deviceCurrency.displayName,
+            alias = deviceCurrency.symbol,
+            chain = WalletCurrency.Chain.FIAT(locale.country)
+        )
     }
 
     suspend fun setTokenHidden(

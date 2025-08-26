@@ -2,9 +2,9 @@ package com.tonapps.tonkeeper.ui.screen.country
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
+import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.extensions.countryEmoji
 import com.tonapps.tonkeeper.extensions.countryName
-import com.tonapps.tonkeeper.extensions.getNormalizeCountryFlow
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.country.list.Item
 import com.tonapps.uikit.flag.getFlagDrawable
@@ -20,14 +20,13 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import uikit.extensions.asCircle
-import uikit.extensions.drawable
 import java.util.Locale
 
 class CountryPickerViewModel(
     app: Application,
     private val settingsRepository: SettingsRepository,
     private val api: API,
+    private val environment: Environment,
 ): BaseWalletVM(app) {
 
     private data class Country(
@@ -54,7 +53,7 @@ class CountryPickerViewModel(
         codes.map { Country(it) }
     }
 
-    private val countryFlow = settingsRepository.getNormalizeCountryFlow(api)
+    private val countryFlow = environment.countryFlow
 
     private val _searchQueryFlow = MutableStateFlow("")
     private val searchQueryFlow = _searchQueryFlow.asSharedFlow()

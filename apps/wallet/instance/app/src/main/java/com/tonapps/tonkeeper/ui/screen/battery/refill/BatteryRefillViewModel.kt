@@ -61,7 +61,11 @@ class BatteryRefillViewModel(
     private val settingsRepository: SettingsRepository,
     private val billingManager: BillingManager,
     private val environment: Environment,
+    private val analytics: AnalyticsHelper,
 ) : BaseWalletVM(app) {
+    
+    private val isBatteryDisabled: Boolean
+        get() = api.config.flags.disableBattery
 
     private val _promoFlow = MutableStateFlow<String?>(null)
     private val promoFlow = _promoFlow.asStateFlow()
@@ -93,7 +97,7 @@ class BatteryRefillViewModel(
         uiItems.add(uiItemBattery(batteryBalance, api.config))
         uiItems.add(Item.Space)
 
-        if (BuildConfig.DEBUG || !api.config.batteryPromoDisable) {
+        if (!api.config.batteryPromoDisable && !isBatteryDisabled) {
             uiItems.add(Item.Promo(promoState, promoCode))
             uiItems.add(Item.Space)
         }
@@ -103,7 +107,7 @@ class BatteryRefillViewModel(
             uiItems.add(Item.Space)
         }
 
-        if (environment.isGooglePlayServicesAvailable && !api.config.disableBatteryIapModule) {
+        if (environment.isGooglePlayServicesAvailable && !api.config.disableBatteryIapModule && !isBatteryDisabled) {
             val tonPriceInUsd =
                 ratesRepository.getTONRates(WalletCurrency.USD).getRate(TokenEntity.TON.address)
 
@@ -123,7 +127,7 @@ class BatteryRefillViewModel(
 
         val rechargeMethodsItems = uiItemsRechargeMethods(wallet)
 
-        if (context.remoteConfig?.isBatteryCryptoRechargeDisable == false && rechargeMethodsItems.isNotEmpty()) {
+        if (!isBatteryDisabled && rechargeMethodsItems.isNotEmpty()) {
             uiItems.addAll(uiItemsRechargeMethods(wallet))
             uiItems.add(Item.Space)
         }
@@ -141,7 +145,7 @@ class BatteryRefillViewModel(
         )
 
         uiItems.add(Item.Space)
-        uiItems.add(Item.RestoreIAP)
+        uiItems.add(Item.RestoreIAP(chargeEnabled = !isBatteryDisabled))
 
         uiItems.toList()
     }.flowOn(Dispatchers.IO)
@@ -350,7 +354,7 @@ class BatteryRefillViewModel(
                 )
                 val promoCode = (_promoStateFlow.value as? PromoState.Applied)?.appliedPromo ?: "null"
                 withContext(Dispatchers.Main) {
-                    AnalyticsHelper.batterySuccess(settingsRepository.installId, "fiat", promoCode, "")
+                    analytics.batterySuccess("fiat", promoCode, "")
                 }
                 billingManager.consumeProduct(purchase.purchaseToken)
             }
@@ -365,7 +369,7 @@ class BatteryRefillViewModel(
     fun makePurchase(productId: String, activity: Activity) {
         promoStateFlow.take(1).collectFlow { promoState ->
             val promoCode = (promoState as? PromoState.Applied)?.appliedPromo ?: "null"
-            AnalyticsHelper.simpleTrackEvent("battery_select", settingsRepository.installId, hashMapOf(
+            analytics.simpleTrackEvent("battery_select", hashMapOf(
                 "size" to productId,
                 "promo" to promoCode,
                 "type" to "fiat"

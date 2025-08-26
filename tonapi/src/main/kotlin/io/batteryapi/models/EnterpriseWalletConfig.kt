@@ -16,20 +16,17 @@
 package io.batteryapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param excessAccount when building a message to transfer an NFT or Jetton, use this address to send excess funds back to Battery Service.
- */
 
+@Serializable
 
 data class EnterpriseWalletConfig (
 
     /* when building a message to transfer an NFT or Jetton, use this address to send excess funds back to Battery Service. */
-    @Json(name = "excess_account")
+    @SerialName(value = "excess_account")
     val excessAccount: kotlin.String
 
 ) {

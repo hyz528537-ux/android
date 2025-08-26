@@ -16,23 +16,19 @@
 package io.batteryapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param boc 
- * @param walletPublicKey 
- */
 
+@Serializable
 
 data class EnterpriseEstimateRequest (
 
-    @Json(name = "boc")
+    @SerialName(value = "boc")
     val boc: kotlin.String,
 
-    @Json(name = "wallet_public_key")
+    @SerialName(value = "wallet_public_key")
     val walletPublicKey: kotlin.String
 
 ) {

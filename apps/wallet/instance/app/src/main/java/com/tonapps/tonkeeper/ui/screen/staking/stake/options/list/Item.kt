@@ -4,6 +4,7 @@ import android.content.Context
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.uikit.list.BaseListItem
 import com.tonapps.uikit.list.ListCell
+import com.tonapps.wallet.data.staking.StakingPool
 import com.tonapps.wallet.data.staking.entities.PoolEntity
 import com.tonapps.wallet.data.staking.entities.PoolInfoEntity
 import com.tonapps.wallet.localization.Localization
@@ -20,14 +21,16 @@ sealed class Item(type: Int): BaseListItem(type) {
             selectedPool: PoolEntity,
         ): List<Item> {
             val items = mutableListOf<Item>()
-            val liquid = pools.filter { it.pools.size == 1 }
-            val other = pools.filter { it.pools.size > 1 }
+            val liquid = pools.filter { it.implementation == StakingPool.Implementation.LiquidTF }
+            val other = pools.filter { it.implementation != StakingPool.Implementation.LiquidTF }
 
-            items.add(Space)
-            items.add(Title(Localization.liquid_staking))
-            items.add(Space)
-            items.addAll(build(liquid, selectedPool))
-            items.add(Space)
+            if (liquid.isNotEmpty()) {
+                items.add(Space)
+                items.add(Title(Localization.liquid_staking))
+                items.add(Space)
+                items.addAll(build(liquid, selectedPool))
+                items.add(Space)
+            }
 
             if (other.isNotEmpty()) {
                 items.add(Space)

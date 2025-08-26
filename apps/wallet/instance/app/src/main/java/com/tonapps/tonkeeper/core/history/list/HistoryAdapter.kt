@@ -1,5 +1,6 @@
 package com.tonapps.tonkeeper.core.history.list
 
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.tonapps.tonkeeper.core.history.list.holder.HistoryActionHolder
@@ -9,12 +10,15 @@ import com.tonapps.tonkeeper.core.history.list.holder.HistoryFailedHolder
 import com.tonapps.tonkeeper.core.history.list.holder.HistoryHeaderHolder
 import com.tonapps.tonkeeper.core.history.list.holder.HistoryLoaderHolder
 import com.tonapps.tonkeeper.core.history.list.item.HistoryItem
+import com.tonapps.tonkeeper.ui.screen.send.main.state.SendFee
 import com.tonapps.uikit.list.BaseListAdapter
 import com.tonapps.uikit.list.BaseListHolder
 import com.tonapps.uikit.list.BaseListItem
 
 open class HistoryAdapter(
-    private val disableOpenAction: Boolean = false
+    private val disableOpenAction: Boolean = false,
+    private val shouldShowFeeToggle: () -> Boolean = { true },
+    private val showFeeMethods: (currentFee: SendFee, targetView: View) -> Unit = { _, _ -> }
 ) : BaseListAdapter() {
 
     init {
@@ -35,7 +39,13 @@ open class HistoryAdapter(
         viewType: Int
     ): BaseListHolder<out BaseListItem> {
         return when (viewType) {
-            HistoryItem.TYPE_ACTION -> HistoryActionHolder(parent, disableOpenAction)
+            HistoryItem.TYPE_ACTION -> HistoryActionHolder(
+                parent,
+                disableOpenAction,
+                shouldShowFeeToggle,
+                showFeeMethods
+            )
+
             HistoryItem.TYPE_HEADER -> HistoryHeaderHolder(parent)
             HistoryItem.TYPE_LOADER -> HistoryLoaderHolder(parent)
             HistoryItem.TYPE_APP -> HistoryAppHolder(parent)

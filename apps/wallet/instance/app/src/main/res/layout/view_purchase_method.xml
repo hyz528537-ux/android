@@ -34,6 +34,15 @@
             android:textAppearance="@style/TextAppearance.Body2"
             android:textColor="?attr/textSecondaryColor"/>
 
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/min"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/offsetExtraExtraSmall"
+            android:textAppearance="@style/TextAppearance.Body2"
+            android:textColor="?attr/accentOrangeColor"/>
+
+
     </uikit.widget.ColumnLayout>
 
     <androidx.appcompat.widget.AppCompatImageView

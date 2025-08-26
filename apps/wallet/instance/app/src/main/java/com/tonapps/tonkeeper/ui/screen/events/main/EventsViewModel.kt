@@ -1,11 +1,9 @@
 package com.tonapps.tonkeeper.ui.screen.events.main
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.extensions.mapList
-import com.tonapps.tonkeeper.RemoteConfig
 import com.tonapps.tonkeeper.api.AccountEventWrap
 import com.tonapps.tonkeeper.core.history.ActionOptions
 import com.tonapps.tonkeeper.core.history.ActionOutStatus
@@ -59,7 +57,6 @@ class EventsViewModel(
     private val accountRepository: AccountRepository,
     private val api: API,
     private val cacheHelper: CacheHelper,
-    private val remoteConfig: RemoteConfig,
 ) : BaseWalletVM(app) {
 
     private var autoRefreshJob: Job? = null
@@ -67,7 +64,7 @@ class EventsViewModel(
     private val _triggerFlow = MutableEffectFlow<Unit>()
     private val _loadingTriggerFlow = MutableEffectFlow<Unit>()
 
-    private val _selectedFilter = MutableStateFlow<FilterItem?>(null)
+    private val _selectedFilter = MutableStateFlow<FilterItem>(FilterItem.All(true))
     private val selectedFilter = _selectedFilter.asStateFlow()
 
     private val dAppsNotificationsFlow =
@@ -78,10 +75,11 @@ class EventsViewModel(
     val uiFilterItemsFlow: Flow<List<FilterItem>> =
         combine(selectedFilter, dAppsNotificationsFlow) { selected, notifications ->
             val uiFilterItems = mutableListOf<FilterItem>()
-            uiFilterItems.add(FilterItem.Send(selected?.type == FilterItem.TYPE_SEND))
-            uiFilterItems.add(FilterItem.Receive(selected?.type == FilterItem.TYPE_RECEIVE))
+            uiFilterItems.add(FilterItem.All(selected.type == FilterItem.TYPE_ALL))
+            uiFilterItems.add(FilterItem.Send(selected.type == FilterItem.TYPE_SEND))
+            uiFilterItems.add(FilterItem.Receive(selected.type == FilterItem.TYPE_RECEIVE))
             if (notifications.isNotEmpty()) {
-                uiFilterItems.add(FilterItem.Dapps(selected?.type == FilterItem.TYPE_DAPPS))
+                uiFilterItems.add(FilterItem.Dapps(selected.type == FilterItem.TYPE_DAPPS))
             }
             uiFilterItems.add(FilterItem.Spam())
             uiFilterItems.toList()
@@ -175,6 +173,9 @@ class EventsViewModel(
         })
     }
 
+    private val tronEnabled: Boolean
+        get() = settingsRepository.getTronUsdtEnabled(wallet.id)
+
     init {
         with(settingsRepository) {
             tokenPrefsChangedFlow.drop(1).collectFlow { initialLoad() }
@@ -239,8 +240,8 @@ class EventsViewModel(
     }
 
     fun clickFilter(filter: FilterItem) {
-        if (_selectedFilter.value?.id == filter.id) {
-            _selectedFilter.value = null
+        if (_selectedFilter.value.id == filter.id) {
+            _selectedFilter.value = FilterItem.All(true)
         } else {
             _selectedFilter.value = filter
         }
@@ -285,7 +286,7 @@ class EventsViewModel(
 
             setLoading(loading = true, trigger = true)
 
-            val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && !remoteConfig.isTronDisabled) {
+            val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && tronEnabled) {
                 accountRepository.getTronAddress(wallet.id)
             } else null
             val tonProofToken = accountRepository.requestTonProofToken(wallet) ?: ""
@@ -348,7 +349,7 @@ class EventsViewModel(
     }
 
     private suspend fun loadMoreTron() {
-        val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && !remoteConfig.isTronDisabled) {
+        val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && tronEnabled) {
             accountRepository.getTronAddress(wallet.id)
         } else null
 
