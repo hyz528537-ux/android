@@ -15,45 +15,69 @@
 
 package io.tonapi.models
 
-import io.tonapi.models.BlockchainAccountInspectMethodsInner
+import io.tonapi.models.Method
+import io.tonapi.models.Source
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param code 
- * @param codeHash 
- * @param methods 
- * @param compiler 
- */
 
+@Serializable
 
 data class BlockchainAccountInspect (
 
-    @Json(name = "code")
+    @SerialName(value = "code")
     val code: kotlin.String,
 
-    @Json(name = "code_hash")
+    @SerialName(value = "code_hash")
     val codeHash: kotlin.String,
 
-    @Json(name = "methods")
-    val methods: kotlin.collections.List<BlockchainAccountInspectMethodsInner>,
+    @SerialName(value = "methods")
+    val methods: kotlin.collections.List<Method>,
 
-    @Json(name = "compiler")
-    val compiler: BlockchainAccountInspect.Compiler? = null
+    @SerialName(value = "compiler")
+    val compiler: BlockchainAccountInspect.Compiler,
+
+    @SerialName(value = "disassembled_code")
+    val disassembledCode: kotlin.String? = null,
+
+    @SerialName(value = "source")
+    val source: Source? = null
 
 ) {
 
     /**
      * 
      *
-     * Values: func
+     * Values: func,fift,tact.unknown
      */
-    @JsonClass(generateAdapter = false)
+    @Serializable(with = CompilerSerializer::class)
     enum class Compiler(val value: kotlin.String) {
-        @Json(name = "func") func("func");
+        @SerialName(value = "func") func("func"),
+        @SerialName(value = "fift") fift("fift"),
+        @SerialName(value = "tact") tact("tact"),
+        @SerialName(value = "unknown") unknown("unknown");
     }
+
+    internal object CompilerSerializer : KSerializer<Compiler> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): Compiler {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return Compiler.entries.firstOrNull { it.value == value }
+                ?: Compiler.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: Compiler) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
+    }
+
 }
 

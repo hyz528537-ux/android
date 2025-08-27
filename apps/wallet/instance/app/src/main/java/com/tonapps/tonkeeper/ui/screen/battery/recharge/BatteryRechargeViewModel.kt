@@ -2,13 +2,13 @@ package com.tonapps.tonkeeper.ui.screen.battery.recharge
 
 import android.app.Application
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.tonapps.blockchain.ton.TonAddressTags
 import com.tonapps.blockchain.ton.TonNetwork
 import com.tonapps.blockchain.ton.TonTransferHelper
 import com.tonapps.blockchain.ton.extensions.base64
 import com.tonapps.blockchain.ton.extensions.equalsAddress
-import com.tonapps.blockchain.ton.extensions.toAccountId
+import com.tonapps.blockchain.ton.extensions.isValidTonAddress
 import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.extensions.filterList
 import com.tonapps.extensions.state
@@ -17,7 +17,6 @@ import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.entities.TransferEntity
 import com.tonapps.tonkeeper.extensions.toGrams
-import com.tonapps.tonkeeper.koin.installId
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.battery.recharge.entity.BatteryRechargeEvent
 import com.tonapps.tonkeeper.ui.screen.battery.recharge.entity.RechargePackEntity
@@ -53,7 +52,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -77,6 +76,7 @@ class BatteryRechargeViewModel(
     private val settingsRepository: SettingsRepository,
     private val ratesRepository: RatesRepository,
     private val api: API,
+    private val analytics: AnalyticsHelper
 ) : BaseWalletVM(app) {
 
     private val _tokenFlow = MutableStateFlow<AccountTokenEntity?>(null)
@@ -85,7 +85,8 @@ class BatteryRechargeViewModel(
     private val promoStateFlow = MutableStateFlow<PromoState>(PromoState.Default)
 
     private val _amountFlow = MutableStateFlow(0.0)
-    private val amountFlow = combine(_amountFlow, tokenFlow) { amount, token -> Coins.of(amount, token.decimals) }
+    private val amountFlow =
+        combine(_amountFlow, tokenFlow) { amount, token -> Coins.of(amount, token.decimals) }
 
     private val _addressFlow = MutableStateFlow("")
 
@@ -149,7 +150,8 @@ class BatteryRechargeViewModel(
         val hasEnoughTonBalance = ton.balance.value >= Coins.of(0.1)
         val hasBatteryBalance = batteryBalance.balance > Coins.ZERO
         val rechargeMethod = getRechargeMethod(wallet, token)
-        val shouldMinusReservedAmount = batteryBalance.reservedBalance.value == BigDecimal.ZERO || args.isGift
+        val shouldMinusReservedAmount =
+            batteryBalance.reservedBalance.value == BigDecimal.ZERO || args.isGift
 
         val batteryReservedAmount = rechargeMethod.fromTon(api.config.batteryReservedAmount)
 
@@ -158,7 +160,7 @@ class BatteryRechargeViewModel(
                 Item.Address.State.Loading
             } else if (destination is SendDestination.NotFound) {
                 Item.Address.State.Error
-            } else if (destination is SendDestination.Account) {
+            } else if (destination is SendDestination.TonAccount) {
                 Item.Address.State.Success
             } else {
                 Item.Address.State.Default
@@ -219,8 +221,7 @@ class BatteryRechargeViewModel(
                         currency = token.symbol, value = remainingBalance
                     ),
                     formattedMinAmount = CurrencyFormatter.format(
-                        currency = token.symbol, value = minAmount,
-                        customScale = token.decimals,
+                        currency = token.symbol, value = minAmount
                     ),
                     isInsufficientBalance = remainingBalance.isNegative,
                     isLessThanMin = isLessThanMin,
@@ -231,7 +232,7 @@ class BatteryRechargeViewModel(
         }
 
         val isValidGiftAddress = if (args.isGift) {
-            destination is SendDestination.Account
+            destination is SendDestination.TonAccount
         } else {
             true
         }
@@ -270,6 +271,7 @@ class BatteryRechargeViewModel(
             }
         }
 
+        @OptIn(FlowPreview::class)
         combine(
             promoStateFlow,
             tokenFlow.map { it.token.symbol },
@@ -277,15 +279,26 @@ class BatteryRechargeViewModel(
             _selectedPackTypeFlow
         ) { promoState, tokenSymbol, amount, rechargePackType ->
             val promoCode = (promoState as? PromoState.Applied)?.appliedPromo ?: "null"
-            val size = if (amount) "custom" else rechargePackType?.name?.lowercase() ?: "null"
+            val size = if (amount) "custom" else rechargePackType?.name?.lowercase() ?: return@combine null
 
-            AnalyticsHelper.simpleTrackEvent("battery_select", settingsRepository.installId, hashMapOf(
+            mapOf(
                 "size" to size,
                 "promo" to promoCode,
                 "jetton" to tokenSymbol,
                 "type" to "crypto"
-            ))
-        }.launch()
+            )
+        }
+            .filterNotNull() // filter out `null` returns from combine
+            .distinctUntilChanged()
+            .debounce(300L) // wait 300ms before emitting
+            .onEach { params ->
+                analytics.simpleTrackEvent(
+                    "battery_select",
+                    HashMap(params)
+                )
+            }
+            .launch()
+
     }
 
     fun setToken(token: TokenEntity) {
@@ -345,7 +358,7 @@ class BatteryRechargeViewModel(
         }
 
         val fundReceiver = config.fundReceiver ?: return@combine
-        val recipientAddress = if (destination is SendDestination.Account) {
+        val recipientAddress = if (destination is SendDestination.TonAccount) {
             destination.address
         } else null
         val payload = wallet.contract.createBatteryBody(
@@ -364,6 +377,7 @@ class BatteryRechargeViewModel(
             rechargeMethod.minBootstrapValue != null -> {
                 amount.value >= rechargeMethod.minBootstrapValue!!.toBigDecimal()
             }
+
             else -> false
         }
 
@@ -371,12 +385,14 @@ class BatteryRechargeViewModel(
             val request = SignRequestEntity.Builder()
                 .setFrom(wallet.contract.address)
                 .setValidUntil(validUntil)
-                .addMessage(RawMessageEntity(
-                    addressValue = fundReceiver,
-                    amount = amount.toLong(),
-                    stateInitValue = null,
-                    payloadValue = payload.base64()
-                ))
+                .addMessage(
+                    RawMessageEntity(
+                        addressValue = fundReceiver,
+                        amount = amount.toLong(),
+                        stateInitValue = null,
+                        payloadValue = payload.base64()
+                    )
+                )
                 .setNetwork(network)
                 .build(Uri.parse("https://battery.tonkeeper.com/"))
 
@@ -401,12 +417,14 @@ class BatteryRechargeViewModel(
             val request = SignRequestEntity.Builder()
                 .setFrom(wallet.contract.address)
                 .setValidUntil(validUntil)
-                .addMessage(RawMessageEntity(
-                    addressValue = token.balance.walletAddress,
-                    amount = Coins.of(0.1).toLong(),
-                    stateInitValue = null,
-                    payloadValue = jettonPayload.base64()
-                ))
+                .addMessage(
+                    RawMessageEntity(
+                        addressValue = token.balance.walletAddress,
+                        amount = Coins.of(0.1).toLong(),
+                        stateInitValue = null,
+                        payloadValue = jettonPayload.base64()
+                    )
+                )
                 .setNetwork(network)
                 .build(Uri.parse("https://battery.tonkeeper.com/"))
 
@@ -438,7 +456,16 @@ class BatteryRechargeViewModel(
                 )
             )
         }
-        uiItems.add(Item.CustomAmount(position = ListCell.Position.LAST, selected = isCustomAmount))
+        uiItems.add(
+            Item.CustomAmount(
+                position = if (packs.isNotEmpty()) {
+                    ListCell.Position.LAST
+                } else {
+                    ListCell.Position.SINGLE
+                },
+                selected = isCustomAmount
+            )
+        )
         return uiItems.toList()
     }
 
@@ -518,19 +545,27 @@ class BatteryRechargeViewModel(
                 willBePaidManually = willBePaidManually,
                 currency = settingsRepository.currency,
             )
-        }
+        }.filter { it.isAvailableToBuy }
     }
 
     private suspend fun getDestinationAccount(
-        address: String, testnet: Boolean
+        userInput: String, testnet: Boolean
     ) = withContext(Dispatchers.IO) {
-        val accountDeferred = async { api.resolveAccount(address, testnet) }
-        val publicKeyDeferred = async { api.safeGetPublicKey(address, testnet) }
+        val addressTags = TonAddressTags.of(userInput)
+        val accountDeferred = async { api.resolveAccount(userInput, testnet) }
+        val publicKeyDeferred = async { api.safeGetPublicKey(userInput, testnet) }
 
         val account = accountDeferred.await() ?: return@withContext SendDestination.NotFound
         val publicKey = publicKeyDeferred.await()
 
-        SendDestination.Account(address, publicKey, account)
+        SendDestination.TonAccount(
+            userInput = userInput,
+            isUserInputAddress = userInput.isValidTonAddress(),
+            publicKey = publicKey,
+            account = account,
+            testnet = wallet.testnet,
+            tonAddressTags = addressTags
+        )
     }
 
     fun applyPromo(promo: String) {
@@ -557,10 +592,18 @@ class BatteryRechargeViewModel(
     }
 
     fun sign(request: SignRequestEntity, forceRelayer: Boolean) = flow {
+        val boc = SendTransactionScreen.run(context, wallet, request, forceRelayer = forceRelayer)
+
         val promoCode = (promoStateFlow.value as? PromoState.Applied)?.appliedPromo ?: "null"
         val tokenSymbol = _tokenFlow.value?.token?.symbol ?: "null"
-        AnalyticsHelper.batterySuccess(settingsRepository.installId, "crypto", promoCode, tokenSymbol)
-        val boc = SendTransactionScreen.run(context, wallet, request, forceRelayer = forceRelayer)
+        val size = if (_customAmountFlow.value) "custom" else _selectedPackTypeFlow.value?.name?.lowercase() ?: "null"
+        analytics.batterySuccess(
+            "crypto",
+            promoCode,
+            tokenSymbol,
+            size
+        )
+
         emit(boc)
     }.flowOn(Dispatchers.IO)
 }

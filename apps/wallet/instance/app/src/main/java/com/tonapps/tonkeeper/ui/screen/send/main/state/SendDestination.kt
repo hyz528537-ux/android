@@ -1,14 +1,25 @@
 package com.tonapps.tonkeeper.ui.screen.send.main.state
 
+import com.tonapps.blockchain.ton.TonAddressTags
 import com.tonapps.blockchain.ton.extensions.isValidTonAddress
+import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.TokenEntity
 import io.tonapi.models.AccountStatus
 import org.ton.api.pub.PublicKeyEd25519
 import org.ton.block.AddrStd
 
 sealed class SendDestination {
 
-    data class Account(
-        val query: String,
+    data class TronAccount(val address: String) : SendDestination()
+
+    data class TokenError(
+        val addressBlockchain: Blockchain,
+        val selectedToken: TokenEntity,
+    ) : SendDestination()
+
+    data class TonAccount(
+        val userInput: String,
+        val isUserInputAddress: Boolean,
         val publicKey: PublicKeyEd25519,
         val address: AddrStd,
         val memoRequired: Boolean,
@@ -16,43 +27,52 @@ sealed class SendDestination {
         val isWallet: Boolean,
         val name: String?,
         val isScam: Boolean,
+        val existing: Boolean,
+        val testnet: Boolean,
+        val tonAddressTags: TonAddressTags,
         val isBounce: Boolean,
-        val existing: Boolean
     ) : SendDestination() {
 
         companion object {
-            private fun isBounce(query: String, account: io.tonapi.models.Account): Boolean {
-                if (account.status != AccountStatus.active && query.startsWith("EQ")) {
+
+            private fun isBounce(
+                tonAddressTags: TonAddressTags,
+                isUserInputAddress: Boolean,
+                account: io.tonapi.models.Account
+            ): Boolean {
+                if (account.status != AccountStatus.active && (!tonAddressTags.isBounceable || tonAddressTags.isTestnet == true)) {
                     return false
                 }
-                val bounce = query.startsWith("EQ") || !query.startsWith("U")
-                if (!query.isValidTonAddress()) {
+                if (!isUserInputAddress) {
                     return !account.isWallet
                 }
-                return bounce
+                return tonAddressTags.isBounceable
             }
         }
 
-        val displayName: String?
-            get() {
-                return if (query.isValidTonAddress()) {
-                    name
-                } else {
-                    query.lowercase()
-                }
-            }
+        val displayName: String? by lazy {
+            if (isUserInputAddress) name else userInput.lowercase()
+        }
 
         val displayAddress: String
             get() {
-                return address.toString(userFriendly = true, bounceable = isBounce)
+                return address.toString(
+                    userFriendly = true,
+                    testOnly = testnet,
+                    bounceable = isBounce
+                )
             }
 
         constructor(
-            query: String,
+            userInput: String,
+            isUserInputAddress: Boolean,
             publicKey: PublicKeyEd25519,
-            account: io.tonapi.models.Account
+            account: io.tonapi.models.Account,
+            testnet: Boolean,
+            tonAddressTags: TonAddressTags
         ) : this(
-            query = query,
+            userInput = userInput,
+            isUserInputAddress = isUserInputAddress,
             publicKey = publicKey,
             address = AddrStd(account.address),
             memoRequired = account.memoRequired ?: false,
@@ -60,8 +80,10 @@ sealed class SendDestination {
             isWallet = account.isWallet,
             name = account.name,
             isScam = account.isScam ?: false,
-            isBounce = isBounce(query, account),
-            existing = (account.status == AccountStatus.active || account.status == AccountStatus.frozen)
+            existing = (account.status == AccountStatus.active || account.status == AccountStatus.frozen),
+            testnet = testnet,
+            tonAddressTags = tonAddressTags,
+            isBounce = isBounce(tonAddressTags, isUserInputAddress, account)
         )
     }
 

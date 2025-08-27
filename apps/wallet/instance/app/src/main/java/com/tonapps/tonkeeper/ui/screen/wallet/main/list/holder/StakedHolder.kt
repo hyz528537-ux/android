@@ -2,10 +2,10 @@ package com.tonapps.tonkeeper.ui.screen.wallet.main.list.holder
 
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.view.doOnDetach
 import androidx.core.view.doOnLayout
-import androidx.lifecycle.viewModelScope
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.helper.DateHelper
@@ -22,7 +22,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uikit.extensions.drawable
-import uikit.navigation.Navigation
 import uikit.widget.FrescoView
 import kotlin.time.Duration.Companion.seconds
 
@@ -35,6 +34,8 @@ class StakedHolder(parent: ViewGroup): Holder<Item.Stake>(parent, R.layout.view_
     private val balanceView = findViewById<AppCompatTextView>(R.id.balance)
     private val balanceFiatView = findViewById<AppCompatTextView>(R.id.balance_fiat)
     private val messageView = findViewById<AppCompatTextView>(R.id.message)
+    private val currencyIconView = findViewById<AppCompatImageView>(R.id.currency_icon)
+    private val titleView = findViewById<AppCompatTextView>(R.id.title)
 
     init {
         messageView.doOnDetach { stopTicker() }
@@ -43,8 +44,12 @@ class StakedHolder(parent: ViewGroup): Holder<Item.Stake>(parent, R.layout.view_
     override fun onBind(item: Item.Stake) {
         stopTicker()
 
+        titleView.text = getString(Localization.staked)
+
+        currencyIconView.setImageResource(item.currencyIcon)
+
         itemView.background = item.position.drawable(context)
-        iconView.setImageURI(item.iconUri, null)
+        iconView.setLocalRes(item.iconRes)
         nameView.text = item.poolName
 
         balanceView.text = if (item.hiddenBalance) {
@@ -60,7 +65,7 @@ class StakedHolder(parent: ViewGroup): Holder<Item.Stake>(parent, R.layout.view_
         }
 
         itemView.setOnClickListener {
-            Navigation.from(context)?.add(StakeViewerScreen.newInstance(item.wallet, item.poolAddress, item.poolName))
+            navigation?.add(StakeViewerScreen.newInstance(wallet = item.wallet, address = item.poolAddress, name = item.poolName))
         }
 
         messageView.setOnClickListener(null)

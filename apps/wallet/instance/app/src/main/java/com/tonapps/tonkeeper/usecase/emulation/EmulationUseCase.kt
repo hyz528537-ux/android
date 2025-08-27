@@ -1,6 +1,5 @@
 package com.tonapps.tonkeeper.usecase.emulation
 
-import android.util.Log
 import com.tonapps.blockchain.ton.AndroidSecureRandom
 import com.tonapps.icu.Coins
 import com.tonapps.icu.Coins.Companion.sumOf
@@ -13,7 +12,8 @@ import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.entities.MessageBodyEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.battery.BatteryRepository
-import com.tonapps.wallet.data.core.WalletCurrency
+import com.tonapps.wallet.data.core.entity.TransferType
+import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.rates.RatesRepository
 import com.tonapps.wallet.data.settings.SettingsRepository
 import io.tonapi.models.JettonQuantity
@@ -45,7 +45,6 @@ class EmulationUseCase(
                 emulateWithBattery(
                     message = message,
                     forceRelayer = forceRelayer,
-                    params = params
                 )
             } else {
                 emulate(message, params)
@@ -56,7 +55,8 @@ class EmulationUseCase(
                 total = Emulated.Total(Coins.ZERO, 0, false),
                 extra = Emulated.defaultExtra,
                 currency = settingsRepository.currency,
-                failed = true
+                failed = true,
+                type = TransferType.Default
             )
         }
     }
@@ -74,30 +74,26 @@ class EmulationUseCase(
     private suspend fun emulateWithBattery(
         message: MessageBodyEntity,
         forceRelayer: Boolean,
-        params: Boolean,
     ): Emulated {
-        try {
-            if (api.config.isBatteryDisabled) {
-                throw IllegalStateException("Battery is disabled")
-            }
-
-            val wallet = message.wallet
-            val tonProofToken = accountRepository.requestTonProofToken(wallet) ?: throw IllegalStateException("Can't find TonProof token")
-            val boc = createMessage(message, true)
-
-            val (consequences, withBattery) = batteryRepository.emulate(
-                tonProofToken = tonProofToken,
-                publicKey = wallet.publicKey,
-                testnet = wallet.testnet,
-                boc = boc,
-                forceRelayer = forceRelayer,
-                safeModeEnabled = settingsRepository.isSafeModeEnabled(api)
-            ) ?: throw IllegalStateException("Failed to emulate battery")
-
-            return parseEmulated(wallet, consequences, withBattery)
-        } catch (e: Throwable) {
-            return emulate(message, params)
+        if (api.config.batterySendDisabled) {
+            throw IllegalStateException("Battery is disabled")
         }
+
+        val wallet = message.wallet
+        val tonProofToken = accountRepository.requestTonProofToken(wallet)
+            ?: throw IllegalStateException("Can't find TonProof token")
+        val boc = createMessage(message, true)
+
+        val (consequences, withBattery) = batteryRepository.emulate(
+            tonProofToken = tonProofToken,
+            publicKey = wallet.publicKey,
+            testnet = wallet.testnet,
+            boc = boc,
+            forceRelayer = forceRelayer,
+            safeModeEnabled = settingsRepository.isSafeModeEnabled(api)
+        ) ?: throw IllegalStateException("Failed to emulate battery")
+
+        return parseEmulated(wallet, consequences, TransferType.Battery)
     }
 
     private suspend fun emulate(message: MessageBodyEntity, params: Boolean): Emulated {
@@ -118,20 +114,20 @@ class EmulationUseCase(
                 safeModeEnabled = settingsRepository.isSafeModeEnabled(api)
             )
         }) ?: throw IllegalArgumentException("Emulation failed")
-        return parseEmulated(wallet, consequences, false)
+        return parseEmulated(wallet, consequences, TransferType.Default)
     }
 
     private suspend fun parseEmulated(
         wallet: WalletEntity,
         consequences: MessageConsequences,
-        withBattery: Boolean,
+        transferType: TransferType,
         currency: WalletCurrency = settingsRepository.currency,
     ): Emulated {
         val total = getTotal(wallet, consequences.risk, currency)
         val extra = getExtra(consequences.event.extra, currency)
         return Emulated(
             consequences = consequences,
-            withBattery = withBattery,
+            type = transferType,
             total = total,
             extra = extra,
             currency = currency,
@@ -184,18 +180,22 @@ class EmulationUseCase(
         jettons: List<JettonQuantity>
     ): List<BalanceEntity> {
         val list = mutableListOf<BalanceEntity>()
-        list.add(BalanceEntity.create(
-            accountId = wallet.address,
-            value = Coins.of(tonValue),
-        ))
+        list.add(
+            BalanceEntity.create(
+                accountId = wallet.address,
+                value = Coins.of(tonValue),
+            )
+        )
         for (jettonQuantity in jettons) {
             val token = TokenEntity(jettonQuantity.jetton)
             val value = Coins.ofNano(jettonQuantity.quantity, token.decimals)
-            list.add(BalanceEntity(
-                token = token,
-                value = value,
-                walletAddress = jettonQuantity.walletAddress.address
-            ))
+            list.add(
+                BalanceEntity(
+                    token = token,
+                    value = value,
+                    walletAddress = jettonQuantity.walletAddress.address
+                )
+            )
         }
         return list.toList()
     }

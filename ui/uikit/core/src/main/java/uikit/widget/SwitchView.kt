@@ -17,6 +17,7 @@ import com.tonapps.uikit.color.constantWhiteColor
 import uikit.ArgbEvaluator
 import uikit.extensions.dp
 import uikit.extensions.range
+import androidx.core.graphics.toColorInt
 
 class SwitchView @JvmOverloads constructor(
     context: Context,
@@ -42,7 +43,7 @@ class SwitchView @JvmOverloads constructor(
 
     private val thumbPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = context.constantWhiteColor
-        setShadowLayer(8f.dp, 0f, 3f.dp, Color.parseColor("#26000000"))
+        // setShadowLayer(8f.dp, 0f, 3f.dp, "#26000000".toColorInt())
     }
 
     private var checked: Boolean = false
@@ -80,6 +81,16 @@ class SwitchView @JvmOverloads constructor(
     }
 
     fun isChecked() = checked
+
+    override fun setEnabled(enabled: Boolean) {
+        super.setEnabled(enabled)
+
+        alpha = if (enabled) {
+            1f
+        } else {
+            0.64f
+        }
+    }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)

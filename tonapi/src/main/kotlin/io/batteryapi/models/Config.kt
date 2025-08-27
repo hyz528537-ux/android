@@ -15,30 +15,39 @@
 
 package io.batteryapi.models
 
+import io.batteryapi.models.ConfigGasProxyInner
+import io.batteryapi.models.ConfigMeanPrices
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param fundReceiver with zero balance it is possible to transfer some jettons (stablecoins, jusdt, etc) to this address to refill the balance. Such transfers would be paid by Battery Service.
- * @param excessAccount when building a message to transfer an NFT or Jetton, use this address to send excess funds back to Battery Service.
- */
 
+@Serializable
 
 data class Config (
 
+    /* cost of 1 charge in TON */
+    @SerialName(value = "charge_cost")
+    val chargeCost: kotlin.String,
+
     /* with zero balance it is possible to transfer some jettons (stablecoins, jusdt, etc) to this address to refill the balance. Such transfers would be paid by Battery Service. */
-    @Json(name = "fund_receiver")
+    @SerialName(value = "fund_receiver")
     val fundReceiver: kotlin.String,
 
     /* when building a message to transfer an NFT or Jetton, use this address to send excess funds back to Battery Service. */
-    @Json(name = "excess_account")
+    @SerialName(value = "excess_account")
     val excessAccount: kotlin.String,
 
-    @Json(name = "gas_proxy")
-    val gasProxy: List<GasProxyAddress>,
+    /* ttl for message in seconds */
+    @SerialName(value = "message_ttl")
+    val messageTtl: kotlin.Int,
+
+    @SerialName(value = "gas_proxy")
+    val gasProxy: kotlin.collections.List<ConfigGasProxyInner>,
+
+    @SerialName(value = "mean_prices")
+    val meanPrices: ConfigMeanPrices
 
 ) {
 

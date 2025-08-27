@@ -2,7 +2,10 @@ package com.tonapps.tonkeeper.core.entities
 
 import com.tonapps.icu.Coins
 import com.tonapps.wallet.api.entity.BalanceEntity
+import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
+import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.data.settings.entities.TokenPrefsEntity
 import com.tonapps.wallet.data.token.entities.AccountTokenEntity
@@ -40,9 +43,32 @@ sealed class AssetsEntity(
             get() = staked.readyWithdraw
     }
 
-    data class Token(val token: AccountTokenEntity): AssetsEntity(token.fiat) {
+    data class Token(
+        val token: AccountTokenEntity
+    ): AssetsEntity(token.fiat) {
 
         val address: String
             get() = token.address
+
+        val decimals: Int
+            get() = token.decimals
+
+        val balance: Coins
+            get() = token.balance.value
+
+        val symbol: String
+            get() = token.symbol
+
+        val blockchain: Blockchain
+            get() = token.balance.token.blockchain
+
+        constructor(token: TokenEntity): this(
+            AccountTokenEntity.createEmpty(token, "")
+        )
     }
+
+    data class Currency(
+        val currency: WalletCurrency,
+        val coins: Coins = Coins.ZERO
+    ): AssetsEntity(coins)
 }

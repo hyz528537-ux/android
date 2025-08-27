@@ -49,6 +49,9 @@ data class NftEntity(
             return name ?: ""
         }
 
+    val isNotRender: Boolean
+        get() = metadata.isNotRender
+
     val collectionDescription: String
         get() = collection?.description ?: ""
 
@@ -116,6 +119,6 @@ data class NftEntity(
         verified = item.approvedBy.isNotEmpty(),
         inSale = item.sale != null,
         dns = item.dns,
-        trust = Trust(item.trust),
+        trust = Trust(item.trust.value),
     )
 }

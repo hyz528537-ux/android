@@ -8,6 +8,7 @@ import com.tonapps.icu.Coins
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
+import androidx.core.net.toUri
 
 @Parcelize
 data class ConfigEntity(
@@ -18,6 +19,7 @@ data class ConfigEntity(
     val mercuryoSecret: String,
     val tonapiMainnetHost: String,
     val tonapiTestnetHost: String,
+    val tonConnectBridgeHost: String,
     val stonfiUrl: String,
     val tonNFTsMarketplaceEndpoint: String,
     val directSupportUrl: String,
@@ -34,12 +36,13 @@ data class ConfigEntity(
     val batteryHost: String,
     val batteryTestnetHost: String,
     val batteryBeta: Boolean,
-    val batteryDisabled: Boolean,
     val batterySendDisabled: Boolean,
     val batteryMeanFees: String,
     val batteryMeanPriceNft: String,
     val batteryMeanPriceSwap: String,
     val batteryMeanPriceJetton: String,
+    val batteryMeanPriceTrcMin: String,
+    val batteryMeanPriceTrcMax: String,
     val disableBatteryIapModule: Boolean,
     val batteryReservedAmount: String,
     val batteryMaxInputAmount: String,
@@ -55,19 +58,18 @@ data class ConfigEntity(
     val stories: List<String>,
     val apkDownloadUrl: String?,
     val apkName: AppVersion?,
+    val tronApiUrl: String,
+    val enabledStaking: List<String>,
+    val qrScannerExtends: List<QRScannerExtendsEntity>,
 ): Parcelable {
 
     @IgnoredOnParcel
     val swapUri: Uri
-        get() = Uri.parse(stonfiUrl)
-
-    @IgnoredOnParcel
-    val isBatteryDisabled: Boolean
-        get() = batteryDisabled || batterySendDisabled
+        get() = stonfiUrl.toUri()
 
     @IgnoredOnParcel
     val domains: List<String> by lazy {
-        listOf(tonapiMainnetHost, tonapiTestnetHost, tonapiSSEEndpoint, tonapiSSETestnetEndpoint, "https://bridge.tonapi.io/", "https://tonapi.io/")
+        listOf(tonapiMainnetHost, tonapiTestnetHost, tonapiSSEEndpoint, tonapiSSETestnetEndpoint, tonConnectBridgeHost, "https://tonapi.io/")
     }
 
     @IgnoredOnParcel
@@ -75,6 +77,26 @@ data class ConfigEntity(
         val name = apkName ?: return@lazy null
         val url = apkDownloadUrl ?: return@lazy null
         ApkEntity(url, name)
+    }
+
+    @IgnoredOnParcel
+    val meanFees: Coins by lazy {
+        Coins.of(batteryMeanFees)
+    }
+
+    @IgnoredOnParcel
+    val meanFeeNft: Coins by lazy {
+        Coins.of(batteryMeanPriceNft)
+    }
+
+    @IgnoredOnParcel
+    val meanFeeSwap: Coins by lazy {
+        Coins.of(batteryMeanPriceSwap)
+    }
+
+    @IgnoredOnParcel
+    val meanFeeJetton: Coins by lazy {
+        Coins.of(batteryMeanPriceJetton)
     }
 
     constructor(json: JSONObject, debug: Boolean) : this(
@@ -85,6 +107,7 @@ data class ConfigEntity(
         mercuryoSecret = json.getString("mercuryoSecret"),
         tonapiMainnetHost = json.getString("tonapiMainnetHost"),
         tonapiTestnetHost = json.getString("tonapiTestnetHost"),
+        tonConnectBridgeHost = json.optString("ton_connect_bridge", "https://bridge.tonapi.io"),
         stonfiUrl = json.getString("stonfiUrl"),
         tonNFTsMarketplaceEndpoint = json.getString("tonNFTsMarketplaceEndpoint"),
         directSupportUrl = json.getString("directSupportUrl"),
@@ -105,13 +128,14 @@ data class ConfigEntity(
         batteryHost = json.optString("batteryHost", "https://battery.tonkeeper.com"),
         batteryTestnetHost = json.optString("batteryTestnetHost", "https://testnet-battery.tonkeeper.com"),
         batteryBeta = json.optBoolean("battery_beta", true),
-        batteryDisabled = json.optBoolean("disable_battery", false),
         batterySendDisabled = json.optBoolean("disable_battery_send", false),
         batteryMeanFees = json.optString("batteryMeanFees", "0.0055"),
         disableBatteryIapModule = json.optBoolean("disable_battery_iap_module", false),
         batteryMeanPriceNft = json.optString("batteryMeanPrice_nft", "0.03"),
         batteryMeanPriceSwap = json.optString("batteryMeanPrice_swap", "0.22"),
         batteryMeanPriceJetton = json.optString("batteryMeanPrice_jetton", "0.06"),
+        batteryMeanPriceTrcMin = json.optString("batteryMeanPrice_trc20_min", "0.312"),
+        batteryMeanPriceTrcMax = json.optString("batteryMeanPrice_trc20_max", "0.78"),
         batteryReservedAmount = json.optString("batteryReservedAmount", "0.3"),
         batteryMaxInputAmount = json.optString("batteryMaxInputAmount", "3"),
         batteryRefundEndpoint = json.optString("batteryRefundEndpoint", "https://battery-refund-app.vercel.app"),
@@ -127,7 +151,14 @@ data class ConfigEntity(
         reportAmount = Coins.of(json.optString("reportAmount") ?: "0.03"),
         stories = json.getJSONArray("stories").toStringList(),
         apkDownloadUrl = json.optString("apk_download_url"),
-        apkName = json.optString("apk_name")?.let { AppVersion(it.removePrefix("v")) }
+        apkName = json.optString("apk_name")?.let { AppVersion(it.removePrefix("v")) },
+        tronApiUrl = json.optString("tron_api_url", "https://api.trongrid.io"),
+        enabledStaking = json.optJSONArray("enabled_staking")?.let { array ->
+            (0 until array.length()).map { array.getString(it) }
+        } ?: emptyList(),
+        qrScannerExtends = json.optJSONArray("qr_scanner_extends")?.let { array ->
+            QRScannerExtendsEntity.of(array)
+        } ?: emptyList()
     )
 
     constructor() : this(
@@ -138,6 +169,7 @@ data class ConfigEntity(
         mercuryoSecret = "",
         tonapiMainnetHost = "https://keeper.tonapi.io",
         tonapiTestnetHost = "https://testnet.tonapi.io",
+        tonConnectBridgeHost = "https://bridge.tonapi.io",
         stonfiUrl = "https://swap-widget.tonkeeper.com",
         tonNFTsMarketplaceEndpoint = "https://ton.diamonds",
         directSupportUrl = "https://t.me/tonkeeper_supportbot",
@@ -154,13 +186,14 @@ data class ConfigEntity(
         batteryHost = "https://battery.tonkeeper.com",
         batteryTestnetHost = "https://testnet-battery.tonkeeper.com",
         batteryBeta = true,
-        batteryDisabled = false,
         batterySendDisabled = false,
         batteryMeanFees = "0.0055",
         disableBatteryIapModule = false,
         batteryMeanPriceNft = "0.03",
         batteryMeanPriceSwap = "0.22",
         batteryMeanPriceJetton = "0.06",
+        batteryMeanPriceTrcMin = "0.312",
+        batteryMeanPriceTrcMax = "0.78",
         batteryReservedAmount = "0.3",
         batteryMaxInputAmount = "3",
         batteryRefundEndpoint = "https://battery-refund-app.vercel.app",
@@ -174,7 +207,10 @@ data class ConfigEntity(
         reportAmount = Coins.of("0.03"),
         stories = emptyList(),
         apkDownloadUrl = null,
-        apkName = null
+        apkName = null,
+        tronApiUrl = "https://api.trongrid.io",
+        enabledStaking = emptyList(),
+        qrScannerExtends = emptyList()
     )
 
     companion object {

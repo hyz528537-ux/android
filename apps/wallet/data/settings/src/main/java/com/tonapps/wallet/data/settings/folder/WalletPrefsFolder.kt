@@ -7,6 +7,7 @@ import com.tonapps.wallet.data.settings.BatteryTransaction
 import com.tonapps.wallet.data.settings.BatteryTransaction.Companion.toIntArray
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.data.settings.SpamTransactionState
+import com.tonapps.wallet.data.settings.entities.PreferredFeeMethod
 import com.tonapps.wallet.data.settings.entities.WalletPrefsEntity
 import kotlinx.coroutines.CoroutineScope
 
@@ -22,6 +23,8 @@ internal class WalletPrefsFolder(context: Context, scope: CoroutineScope): BaseS
         private const val SPAM_STATE_TRANSACTION_PREFIX = "spam_state_transaction_"
         private const val BATTERY_TX_ENABLED_PREFIX = "batter_tx_enabled_"
         private const val USDT_W5_PREFIX = "usdt_w5_"
+        private const val DAPP_CONFIRM_PREFIX = "dapp_confirm_"
+        private const val PREFERRED_FEE_PREFIX = "preferred_fee_"
     }
 
     fun isUSDTW5(walletId: String): Boolean {
@@ -94,6 +97,14 @@ internal class WalletPrefsFolder(context: Context, scope: CoroutineScope): BaseS
         putInt(keyPurchaseOpenConfirm(walletId, id), 1)
     }
 
+    fun isDAppOpenConfirm(walletId: String, appHost: String): Boolean {
+        return getBoolean(key(DAPP_CONFIRM_PREFIX, walletId, appHost), true)
+    }
+
+    fun setDAppOpenConfirm(walletId: String, appHost: String, value: Boolean) {
+        putBoolean(key(DAPP_CONFIRM_PREFIX, walletId, appHost), value)
+    }
+
     fun isPushEnabled(walletId: String): Boolean {
         return getBoolean(keyPush(walletId), false)
     }
@@ -115,6 +126,20 @@ internal class WalletPrefsFolder(context: Context, scope: CoroutineScope): BaseS
                 putInt(keySort(walletId), index)
             }
         }
+    }
+
+    fun getPreferredFeeMethod(walletId: String): PreferredFeeMethod {
+        val value = getInt(keyPreferredFeeMethod(walletId), PreferredFeeMethod.UNSPECIFIED.id)
+        return PreferredFeeMethod.fromId(value)
+    }
+
+    fun setPreferredFeeMethod(walletId: String, method: PreferredFeeMethod) {
+        val key = keyPreferredFeeMethod(walletId)
+        putInt(key, method.id)
+    }
+
+    private fun keyPreferredFeeMethod(walletId: String): String {
+        return key(PREFERRED_FEE_PREFIX, walletId)
     }
 
     private fun keyBatteryTxEnabled(accountId: String): String {
@@ -147,7 +172,11 @@ internal class WalletPrefsFolder(context: Context, scope: CoroutineScope): BaseS
         return key(TELEGRAM_CHANNEL_PREFIX, walletId)
     }
 
-    private fun key(prefix: String, walletId: String): String {
-        return "$prefix$walletId"
+    private fun key(prefix: String, walletId: String, vararg keys: String): String {
+        return if (keys.isEmpty()) {
+            "$prefix$walletId"
+        } else {
+            keys.joinToString(separator = "_", prefix = "$prefix$walletId")
+        }
     }
 }

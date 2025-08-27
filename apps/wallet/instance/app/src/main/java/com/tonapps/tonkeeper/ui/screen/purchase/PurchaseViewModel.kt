@@ -1,8 +1,7 @@
 package com.tonapps.tonkeeper.ui.screen.purchase
 
 import android.app.Application
-import com.tonapps.tonkeeper.extensions.getNormalizeCountryFlow
-import com.tonapps.tonkeeper.koin.remoteConfig
+import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.purchase.list.Item
 import com.tonapps.uikit.list.ListCell
@@ -13,7 +12,6 @@ import com.tonapps.wallet.data.purchase.entity.PurchaseMethodEntity
 import com.tonapps.wallet.data.settings.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
@@ -26,27 +24,26 @@ class PurchaseViewModel(
     private val settingsRepository: SettingsRepository,
     private val purchaseRepository: PurchaseRepository,
     private val api: API,
+    private val environment: Environment
 ): BaseWalletVM(app) {
 
     enum class Tab {
         BUY, SELL
     }
 
-    val countryFlow = settingsRepository.getNormalizeCountryFlow(api).map { country ->
-        context.remoteConfig?.hardcodedCountryCode ?: country
-    }
-
     private val _tabFlow = MutableStateFlow(Tab.BUY)
     val tabFlow = _tabFlow.asStateFlow()
 
     val country: String
-        get() = (countryFlow as? StateFlow)?.value ?: settingsRepository.country
+        get() = environment.country
 
     val tabName: String
         get() = when (tabFlow.value) {
             Tab.BUY -> "buy"
             Tab.SELL -> "sell"
         }
+
+    val countryFlow = environment.countryFlow
 
     private val dataFlow = countryFlow.map { country ->
         purchaseRepository.get(wallet.testnet, country, settingsRepository.getLocale())

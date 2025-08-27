@@ -17,23 +17,19 @@ package io.batteryapi.models
 
 import io.batteryapi.models.TonConnectProofRequestProof
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param address 
- * @param proof 
- */
 
+@Serializable
 
 data class TonConnectProofRequest (
 
-    @Json(name = "address")
+    @SerialName(value = "address")
     val address: kotlin.String,
 
-    @Json(name = "proof")
+    @SerialName(value = "proof")
     val proof: TonConnectProofRequestProof
 
 ) {

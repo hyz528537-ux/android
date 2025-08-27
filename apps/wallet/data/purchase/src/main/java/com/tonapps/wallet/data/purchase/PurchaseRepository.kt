@@ -2,14 +2,25 @@ package com.tonapps.wallet.data.purchase
 
 import android.content.Context
 import android.util.Log
+import com.tonapps.extensions.getParcelable
+import com.tonapps.extensions.prefs
+import com.tonapps.extensions.putParcelable
 import com.tonapps.extensions.toByteArray
-import com.tonapps.extensions.toListParcel
 import com.tonapps.extensions.toParcel
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.data.core.BlobDataSource
+import com.tonapps.wallet.data.core.currency.WalletCurrency
+import com.tonapps.wallet.data.purchase.entity.MerchantEntity
+import com.tonapps.wallet.data.purchase.entity.OnRamp
 import com.tonapps.wallet.data.purchase.entity.PurchaseCategoryEntity
 import com.tonapps.wallet.data.purchase.entity.PurchaseDataEntity
 import com.tonapps.wallet.data.purchase.entity.PurchaseMethodEntity
+import io.Serializer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 import org.ton.crypto.digest.sha512
 import org.ton.crypto.hex
 import java.util.Locale
@@ -18,12 +29,78 @@ import java.util.concurrent.TimeUnit
 
 class PurchaseRepository(
     private val context: Context,
+    private val scope: CoroutineScope,
     private val api: API
 ) : BlobDataSource<PurchaseDataEntity>(
     context = context,
     path = "purchase",
     timeout = TimeUnit.DAYS.toMillis(1)
 ) {
+
+    private val onRampCache = simple<OnRamp.Data>(context, "onRamp", TimeUnit.DAYS.toMillis(1))
+    private val paymentMethodCache = simpleJSON<List<OnRamp.PaymentMethodMerchant>>(context,"payment_methods", TimeUnit.DAYS.toMillis(1))
+    private val merchantsCache = simpleJSON<List<MerchantEntity>>(context,"merchants", TimeUnit.DAYS.toMillis(1))
+
+    suspend fun getOnRamp(): OnRamp.Data? = withContext(Dispatchers.IO) {
+        getOnRampData()
+    }
+
+    private fun loadOnRampMerchants(): List<MerchantEntity> {
+        return try {
+            val data = api.getOnRampMerchants() ?: throw Exception("No merchants found")
+            Log.d("PurchaseRepositoryLog", "data: $data")
+            Serializer.JSON.decodeFromString<List<MerchantEntity>>(data)
+        } catch (e: Throwable) {
+            Log.e("PurchaseRepositoryLog", "loadOnRampMerchants", e)
+            emptyList()
+        }
+    }
+
+    fun getMerchants(): List<MerchantEntity> {
+        var list = merchantsCache.getCache("main") ?: emptyList()
+        if (list.isEmpty()) {
+            list = loadOnRampMerchants()
+            merchantsCache.setCache("main", list)
+        }
+        return list
+    }
+
+    private fun loadOnRampPaymentMethods(): List<OnRamp.PaymentMethodMerchant> {
+        return try {
+            val data = api.getOnRampPaymentMethods() ?: throw Exception("No payment methods found for country: ${api.country}")
+            Serializer.JSON.decodeFromString<List<OnRamp.PaymentMethodMerchant>>(data)
+        } catch (e: Throwable) {
+            emptyList()
+        }
+    }
+
+    suspend fun getPaymentMethods(): List<OnRamp.PaymentMethodMerchant> = withContext(Dispatchers.IO) {
+        var list = paymentMethodCache.getCache(api.country) ?: emptyList()
+        if (list.isEmpty() || list.map { it.methods }.flatten().isEmpty()) {
+            list = loadOnRampPaymentMethods()
+            paymentMethodCache.setCache(api.country, list)
+        }
+        list
+    }
+
+    private suspend fun loadOnRampData(): OnRamp.Data? = withContext(Dispatchers.IO) {
+        val data = api.getOnRampData() ?: return@withContext null
+        try {
+            Serializer.fromJSON<OnRamp.Data>(data)
+        } catch (e: Throwable) {
+            null
+        }
+    }
+
+    private suspend fun getOnRampData(): OnRamp.Data? {
+        val cacheKey = "data_${api.country}"
+        var data = onRampCache.getCache(cacheKey)
+        if (data == null) {
+            data = loadOnRampData() ?: return null
+            onRampCache.setCache(cacheKey, data)
+        }
+        return data
+    }
 
     fun get(
         testnet: Boolean,

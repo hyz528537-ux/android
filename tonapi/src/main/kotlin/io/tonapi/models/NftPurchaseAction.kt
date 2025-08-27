@@ -19,35 +19,33 @@ import io.tonapi.models.AccountAddress
 import io.tonapi.models.NftItem
 import io.tonapi.models.Price
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param auctionType 
- * @param amount 
- * @param nft 
- * @param seller 
- * @param buyer 
- */
 
+@Serializable
 
 data class NftPurchaseAction (
 
-    @Json(name = "auction_type")
-    val auctionType: String,
+    @SerialName(value = "auction_type")
+    val auctionType: NftPurchaseAction.AuctionType,
 
-    @Json(name = "amount")
+    @SerialName(value = "amount")
     val amount: Price,
 
-    @Json(name = "nft")
+    @SerialName(value = "nft")
     val nft: NftItem,
 
-    @Json(name = "seller")
+    @SerialName(value = "seller")
     val seller: AccountAddress,
 
-    @Json(name = "buyer")
+    @SerialName(value = "buyer")
     val buyer: AccountAddress
 
 ) {
@@ -55,14 +53,30 @@ data class NftPurchaseAction (
     /**
      * 
      *
-     * Values: dNSPeriodTon,dNSPeriodTg,nUMBERPeriodTg,getgems
+     * Values: DNSPeriodTon,DNSPeriodTg,NUMBERPeriodTg,getgems.unknown
      */
-    @JsonClass(generateAdapter = false)
+    @Serializable(with = AuctionTypeSerializer::class)
     enum class AuctionType(val value: kotlin.String) {
-        @Json(name = "DNS.ton") dNSPeriodTon("DNS.ton"),
-        @Json(name = "DNS.tg") dNSPeriodTg("DNS.tg"),
-        @Json(name = "NUMBER.tg") nUMBERPeriodTg("NUMBER.tg"),
-        @Json(name = "getgems") getgems("getgems");
+        @SerialName(value = "DNS.ton") DNSPeriodTon("DNS.ton"),
+        @SerialName(value = "DNS.tg") DNSPeriodTg("DNS.tg"),
+        @SerialName(value = "NUMBER.tg") NUMBERPeriodTg("NUMBER.tg"),
+        @SerialName(value = "getgems") getgems("getgems"),
+        @SerialName(value = "unknown") unknown("unknown");
     }
+
+    internal object AuctionTypeSerializer : KSerializer<AuctionType> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): AuctionType {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return AuctionType.entries.firstOrNull { it.value == value }
+                ?: AuctionType.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: AuctionType) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
+    }
+
 }
 

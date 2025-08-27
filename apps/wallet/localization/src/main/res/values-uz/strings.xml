@@ -10,6 +10,7 @@
     <string name="staking_pending_withdraw">%1$s %2$s ichida yechib olinadi</string>
     <string name="edit_full">Tahrirlash</string>
     <string name="safe_mode_tonconnect_description">Buni hamyoningiz Xavfsizlik sozlamalarida oʻzgartirishingiz mumkin.</string>
+    <string name="renew_dns_done">Domen 1 yilga uzaytirildi</string>
     <string name="staking_unstake_cycle">Toʻlovni bekor qilish soʻrovi %1$s da tekshirish davri tugaganidan keyin koʻrib chiqiladi</string>
     <string name="send_transaction_scroll">Tasdiqlash uchun barcha tafsilotlarni tekshiring</string>
     <string name="send_transaction_detail">Hamyoningizdan yuboriladigan tokenlarning umumiy qiymati. To\'lovlar umumiy qiymatga kiritilmagan.</string>
@@ -29,8 +30,10 @@
     <string name="setup_finish_title">Sozlashni yakunlash</string>
     <string name="setup_finish_push">Tranzaksiya bildirishnomalarini yoqing</string>
     <string name="setup_finish_biometry">Tranzaksiyalarni tasdiqlash uchun biometrikani qo\'llang</string>
-    <string name="setup_finish_backup">Hamyonni tiklash iborasini zaxiralash</string>
+    <string name="setup_finish_backup">Qayta tiklash iborangizni zaxiralang</string>
+    <string name="setup_finish_backup_subtitle">U holda, hamyoningizni tiklay olmaysiz</string>
     <string name="setup_finish_telegram">Tonkeeper kanaliga qo\'shiling</string>
+    <string name="setup_onboarding">Hamyoningizdan qanday foydalanishni o\'rganing</string>
     <string name="contacts">Kontaktlar</string>
     <string name="step_1">1-qadam</string>
     <string name="step_2">2-qadam</string>
@@ -60,10 +63,14 @@
     <string name="liquid_staking">Suyuqlikni to\'ldirish</string>
     <string name="other">Boshqa</string>
     <string name="minimum_amount">Minimal %1$s</string>
+    <string name="min_amount">Min. miqdori: %1$s</string>
+    <string name="stake_ethena_description">tsUSDe tokeni markazlashtirilmagan staking xizmati Ethena orqali o\'tkaziladigan USDe ni ifodalaydi. tsUSDe minimal blokirovka bilan avtomatik ravishda staking mukofotlarini oladi.</string>
+    <string name="stake_ethena_disclaimer">Bu o\'tgan haftadagi o\'rtacha protokol mukofotlari va stavkaga qo\'yilgan o\'rtacha USDe miqdoriga asoslangan taxminiy yillik daromaddir. Daromad haftalik birikma bilan yillik hisoblanadi. <annotation colorAttr="textSecondaryColor">O‘tgan ishlash kelajakdagi natijalarni kafolatlamaydi.</annotation> Staking va mukofotlar uchinchi tomon xizmati Ethena tomonidan taqdim etiladi va ularning <annotation colorAttr="textAccentColor">shartlariga</annotation> bo‘ysunadi.</string>
     <string name="stake_tonstakers_description">Tonstakerlar hovuziga TON qo‘shganingizda, siz hovuzdagi ulushingizni ifodalovchi tsTON deb nomlangan token olasiz. Hovuz daromadni to\'plaganligi sababli, sizning tsTON ko\'proq TON miqdorini bildiradi.</string>
     <string name="edit">Tahrirlash</string>
     <string name="pinned">Qaydnoma qilindi</string>
     <string name="all_assets">Barcha aktivlar</string>
+    <string name="all_ton_assets">Barcha TON aktivlari</string>
     <string name="sorted_by_price">Narx bo\'yicha saralangan</string>
     <string name="staking_minimum_deposit">Minimal depozit %1$s.</string>
     <string name="staking_options">Opsiyalar</string>
@@ -145,6 +152,7 @@
     <string name="unsubscribed">Obuna bekor qilindi</string>
     <string name="subscribed">Obuna bo\'ldi</string>
     <string name="received">Qabul qilindi</string>
+    <string name="on_sale">SOTISHDA</string>
     <string name="nft_transfer">NFT O\'tkazmasi</string>
     <string name="nft_disabled_transfer">NFT hozir bozorda sotilmoqda. Uni o\'tkazish uchun avval sotuvdan olib tashlashingiz kerak.</string>
     <string name="continue_action">Davom etish</string>
@@ -168,6 +176,7 @@
     <string name="yesterday">Kecha</string>
     <string name="collectibles">Kolleksiya buyumlari</string>
     <string name="purchases">Xaridlar</string>
+    <string name="enter_amount">Miqdorni kiriting</string>
     <string name="call_contract">Shartnomani chaqirish</string>
     <string name="contract_address">Shartnoma manzili</string>
     <string name="about_collection">Kolleksiya haqida</string>
@@ -183,6 +192,7 @@
     <string name="empty_collectibles_subtitle">Birinchi narsangizni oling!</string>
     <string name="new_wallet">Yangi hamyon</string>
     <string name="buy_toncoin">Toncoin sotib olish</string>
+    <string name="buy_or_sell_dot">Sotib olish · Sotish</string>
     <string name="buy_or_sell">Sotib olish yoki sotish</string>
     <string name="fiat_open_description">Siz Tonkeeper tomonidan boshqarilmaydigan tashqi ilovani ochmoqdasiz.</string>
     <string name="buy">Sotib olish</string>
@@ -306,6 +316,7 @@
     <string name="view_details">Tafsilotlarni ko\'rish</string>
     <string name="receive_coin">Qabul qilish %1$s</string>
     <string name="receive_coin_description">Faqat %1$s va TON tarmog\'idagi tokenlarni ushbu manzilga yuboring, aks holda mablag\'ingiz yo\'qolishi mumkin.</string>
+    <string name="receive_tron_description">Bu manzilga atigi %1$s yuboring, aks holda mablagʻingiz yoʻqolishi mumkin.</string>
     <string name="copy">Nusxa ko\'chirish</string>
     <string name="legal">Huquqiy</string>
     <string name="terms">Foydalanish shartlari</string>
@@ -324,6 +335,7 @@
     <string name="logout_confirmation">Men %1$s uchun tiklash iborasining zaxira nusxasiga egaman</string>
     <string name="last_updated">Yangilangan %1$s</string>
     <string name="back_up_now">Hozir nusxa oling</string>
+    <string name="confirm_swap">Almashtirishni tasdiqlang</string>
     <string name="max">Maks</string>
     <string name="confirm_and_send">Tasdiqlang va yuboring</string>
     <string name="confirm_action">Harakatni tasdiqlang</string>
@@ -348,7 +360,7 @@
     <string name="system">Tizim</string>
     <string name="network_fee">Tarmoq to\'lovi</string>
     <string name="confirm">Tasdiqlash</string>
-    <string name="send_request_comment">Pul oʻtkazmasi uchun almashinuvdan eslatmani kiritishingiz kerak. Aks holda, mablagʻlaringiz yoʻqoladi.</string>
+    <string name="send_request_comment">Yuborishda birjadan olingan eslatma yoki tegni qo‘shganingizga ishonch hosil qiling. U bo‘lmasa, mablag‘lar tushmaydi va yo‘qolishi mumkin.</string>
     <string name="banner_top">Siz hozirda Tonkeeper-ning tajribaviy versiyasidan foydalanmoqdasiz.</string>
     <string name="banner_top_button">Barqaror versiyani o\'rnating</string>
     <string name="signer_description">Signer-ni oching » Kerakli kalitni tanlang » QR kodni skaner qiling</string>
@@ -403,10 +415,11 @@
     <string name="battery">Batareya</string>
     <string name="battery_refill_title">Tonkeeper Batareya</string>
     <string name="battery_refill_subtitle">Tonkeeper orqali almashtirish, tokenlar va NFTlarni yuboring.</string>
-    <plurals name="battery_current_charges">
+    <plurals name="battery_charges">
         <item quantity="one">%1$s zaryad</item>
         <item quantity="other">%1$s zaryadlar</item>
     </plurals>
+    <string name="out_of_available_charges">%1$s mavjud zaryaddan chiqdi</string>
     <string name="battery_refill_crypto">%1$s bilan qayta zaryadlang</string>
     <string name="battery_refill_gift">Batareya Sovg‘asi</string>
     <string name="battery_refill_gift_subtitle">Do‘stlar bilan ulashing</string>
@@ -417,13 +430,13 @@
     <string name="battery_nft">NFT o\'tkazmalari</string>
     <string name="battery_swap">Tonkeeper orqali almashtirish</string>
     <string name="battery_jetton">token o\'tkazmalari</string>
+    <string name="battery_trc20">USD₮ TRC20 o‘tkazmalari</string>
     <string name="battery_swap_single">almashtirish</string>
     <string name="battery_transfer_single">o‘tkazish</string>
     <plurals name="battery_charges_per_action">
         <item quantity="one">≈ %1$s zaryad %2$s uchun</item>
         <item quantity="other">≈ %1$s zaryadlar %2$s uchun</item>
     </plurals>
-    <string name="will_be_paid_with_battery">Batareya bilan to‘lanadi</string>
     <string name="battery_settings_title">Batareya Sozlamalari</string>
     <string name="battery_settings_subtitle">Tanlangan tranzaktsiyalar Tonkeeper Batareya orqali to‘lanadi.</string>
     <string name="battery_recharge_title">Zaryadlash</string>
@@ -466,6 +479,8 @@
     <string name="payment_method_not_found">Toʻlov usuli mavjud emas</string>
     <string name="app_not_found">Ilova topilmadi</string>
     <string name="insufficient_balance_in_wallet">Hamyonda mablag\' yetarli emas</string>
+    <string name="insufficient_battery_charges">Yetarli emas\\nBatareya zaryati</string>
+    <string name="insufficient_balance_charges">Toʻlov uchun talab qilinadi: %1$s\\nMavjud: %2$s</string>
     <string name="insufficient_balance_fees">Blokcheyn to‘lovlari uchun talab qilinadi: %1$s.\nBalansingiz: %2$s.</string>
     <string name="insufficient_balance_default">Toʻlanishi kerak: %1$s.\nBalansingiz: %2$s.</string>
     <string name="buy_ton">TON sotib oling</string>
@@ -473,6 +488,7 @@
     <string name="nothing_to_restore">Qayta tiklash uchun hech narsa yo\'q</string>
     <string name="name">Ism</string>
     <string name="ledger_blind_signing_error">Ledger sozlamalarida koʻr-koʻrona imzo qoʻyish yoqilishi kerak</string>
+    <string name="purchase">Sotib olish</string>
     <string name="new_contact">Yangi manzil</string>
     <string name="contact_delete_dialog">Haqiqatan ham “%1$s” manzillar kitobingizdan o‘chirib tashlansinmi?</string>
     <string name="add_to_contact">Manzillar kitobiga qo\'shish</string>
@@ -501,16 +517,21 @@
     <string name="stories_safemode_2_title">Faqat tasdiqlangan NFTlar</string>
     <string name="stories_safemode_2_subtitle">Spam va soxta narsalarni oldini olish uchun.</string>
     <string name="stories_safemode_3_title">Faqat tasdiqlangan tokenlar</string>
+    <string name="open_explorer">Explorerda oching</string>
     <string name="tx_marked_as_spam">Tranzaksiya Spam sifatida belgilandi</string>
+    <string name="exchange_rate">Valyuta kursi</string>
     <string name="address_prefix">Manzil:</string>
     <string name="your_address">Sizning manzilingiz:</string>
     <string name="safe_mode_tokens_footer">Xavfsiz rejim yoqilgan. Faqat tasdiqlangan tokenlar mavjud. <annotation colorAttr="textAccentColor">Sozlamalar</annotation></string>
     <string name="all">Hammasi</string>
     <string name="report_encrypted_comment">Ushbu tranzaksiyaga oid fikr shifrlangan koʻrinishda hisobot bilan yuboriladi.</string>
     <string name="select_from_gallery">Galereyadan tanlang</string>
+    <string name="swipe_right">O‘ngga suring</string>
     <string name="open">Ochiq</string>
     <string name="theme_light">Nur</string>
+    <string name="payment_method">To\'lov usuli</string>
     <string name="downloading">Yuklab olinmoqda…</string>
+    <string name="emulation_failed_warning">Tasdiqlangandan so\'ng, hamma narsa yuz berishi mumkin, jumladan, barcha mablag\'laringizni yo\'qotish. Barcha operatsiyalar qaytarilmasdir. Biz tranzaksiyani taqlid qila olmadik va keyin nima bo\'lishini bilmaymiz.</string>
     <string name="update_tonkeeper">Tonkeeper-ni yangilang</string>
     <string name="update_tonkeeper_subtitle">Tonkeeper ilovasining yangi versiyasi mavjud. Uni hozir yuklab olishingiz mumkin.</string>
     <string name="download_error">Yuklab olish xatosi. Qayta urinish uchun bosing.</string>
@@ -529,8 +550,62 @@
     <string name="default_font_size">Standart shrift hajmi</string>
     <string name="words12">12 so\'z</string>
     <string name="words24">24 so\'z</string>
+    <string name="provider">Provayder</string>
     <string name="theme_deep_blue">Chuqur moviy</string>
     <string name="theme_dark">Qorong\'i</string>
     <string name="sign_data_binary_message">Siz ko\'r-ko\'rona imzo chekyapsiz. Faqat ishonchli manbalardan kiring.</string>
     <string name="slide_to_sign">Imzolash uchun suring</string>
+    <string name="tron_toggle_text">USD₮ TRC20 ni TRX holda ishlating. Komissiyalar Tonkeeper Battery tomonidan qoplanadi.</string>
+    <string name="trc20">TRC20</string>
+    <string name="copy_phrase">Iborani nusxalash</string>
+    <string name="export_tron">TRC20 hamyonni eksport qilish</string>
+    <string name="phrase_title_tron">TRC20 hamyon</string>
+    <string name="phrase_description_tron">Ushbu so‘zlarni raqamlari bilan yozib oling va xavfsiz joyda saqlang.</string>
+    <string name="prhase_tron_warning">Ushbu ibora faqat TRC20 uchun. Bu sizning TON hamyoningizni tiklay olmaydi. TON hamyonini tiklash uchun TON tiklash iborasidan foydalaning.</string>
+    <string name="battery_required_title">%1$s uchun Tonkeeper Battery talab qilinadi</string>
+    <string name="battery_required_text">Tranzaksiya to‘lovlarini qoplash uchun zaryadlar ishlatiladi, bu esa pul o‘tkazmalarini oson va arzon qiladi.</string>
+    <string name="charge_battery">Batareyani zaryadlash</string>
+    <string name="send_wrong_blockchain">Manzil %1$s tarmog‘iga tegishli.</string>
+    <string name="send_wrong_blockchain_swap">USD₮ %1$s ni USD₮ %2$s ga %3$s orqali almashtirib, pul o‘tkazmasini davom eting.</string>
+    <string name="enable_usdt_tron">USD₮ TRC20 ni yoqish</string>
+    <string name="dapp_share_title">%1$s ulashish</string>
+    <string name="dapp_share_subtitle">Ushbu havola %1$s ni bevosita Tonkeeper’da ochadi. Keyinroq yana foydalanishingiz yoki kerak bo‘lsa, boshqalar bilan ulashishingiz mumkin.</string>
+    <string name="copy_link">Havolani nusxalash</string>
+    <string name="dapp_disclaimer">Siz Tonkeeper tomonidan boshqarilmaydigan tashqi ilovani ochyapsiz. Faqat manbaga ishonsangiz davom eting.</string>
+    <string name="sign">Obuna boʻling</string>
+    <string name="ton_assets">TON aktivlari</string>
+    <string name="pair_not_available">Bu valyuta juftligi mavjud emas. Iltimos, boshqa sinab koʻring.</string>
+    <string name="balance_prefix">Balans: %1$s</string>
+    <string name="all_currencies">Barcha valyutalar</string>
+    <string name="crypto">Kripto</string>
+    <string name="close">Yopish</string>
+    <string name="dapp_safe_modal_title">Havola firibgarlik xizmatiga olib keladi</string>
+    <string name="dapp_safe_model_button">Qanday qilib xavfsiz bo\'lish kerak</string>
+    <string name="dapp_safe_modal_subtitle">Biz uni xavfsizlik nuqtai nazaridan ochmadik</string>
+    <string name="credit_card">Kredit kartasi</string>
+    <string name="credit_card_subtitle">Visa yoki Mastercard</string>
+    <string name="currency_not_found">Valyuta topilmadi</string>
+    <string name="onrmap_provider_description">Turli valyuta juftliklari uchun boshqa provayderlar mavjud.</string>
+    <string name="support_title">Yordam kerakmi?</string>
+    <string name="support_subtitle">Telegram orqali bizga murojaat qiling — yordam berishga harakat qilamiz.</string>
+    <string name="ask_question">Savol berish</string>
+    <string name="renew_dns_title">Domenlar muddati tugayapti</string>
+    <string name="renew_dns_expires">Muddati %1$d kundan keyin tugaydi</string>
+    <string name="wallet_renew_dns">Sizda muddati tugagan %1$d domen bor. Hammasini %2$sgacha yangilang.</string>
+    <string name="renew_dns_until">%1$sgacha hammasini yangilang</string>
+    <string name="renew_signel_dns_until">%1$s gacha yangilang</string>
+    <string name="renew_dns_all">Hammasini yangilang</string>
+    <string name="dns_onsale_error_title">Domen hozirda bozorda sotilmoqda</string>
+    <string name="dns_onsale_error_desc">Domenni yangilash uchun avval uni sotuvdan olib tashlashingiz kerak.</string>
+    <string name="choose_token">Token-ni tanlang</string>
+    <string name="about_usde">USDe haqida</string>
+    <string name="empty_history">Tranzaksiyalar yo‘q</string>
+    <string name="staked_usde">Stak qilingan USDe</string>
+    <string name="learn_more">Batafsil ma’lumot</string>
+    <string name="charging_unavailable">Batareya zaryadlash mavjud emas</string>
+    <string name="ethena_operated_by">%1$s tomonidan boshqariladi</string>
+    <string name="deposit_and_stake">Depozit va stake qilish</string>
+    <string name="ethena_check_eligibility">Statusni tekshirish</string>
+    <string name="about_ethena">Ethena haqida</string>
+
 </resources>

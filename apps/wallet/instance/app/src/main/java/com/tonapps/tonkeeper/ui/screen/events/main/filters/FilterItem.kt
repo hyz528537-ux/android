@@ -16,17 +16,22 @@ sealed class FilterItem(
 ): BaseListItem(type) {
 
     companion object {
+
+        const val TYPE_ALL = 0
         const val TYPE_SEND = 1
         const val TYPE_RECEIVE = 2
         const val TYPE_APP = 3
         const val TYPE_SPAM = 4
         const val TYPE_DAPPS = 5
 
+        const val ALL_ID = "all"
         const val SEND_ID = "send"
         const val RECEIVE_ID = "receive"
         const val SPAM_ID = "spam"
         const val DAPPS_ID = "dapps"
     }
+
+    data class All(override val selected: Boolean) : FilterItem(TYPE_ALL, selected, ALL_ID, Localization.all)
 
     data class Send(override val selected: Boolean) : FilterItem(TYPE_SEND, selected, SEND_ID, Localization.sent)
 

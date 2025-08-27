@@ -3,14 +3,16 @@ package com.tonapps.tonkeeper.helper
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.tonapps.extensions.currentTimeSeconds
 import com.tonapps.tonkeeper.extensions.capitalized
 import com.tonapps.wallet.localization.Localization
-import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimePeriod
+import kotlin.time.Clock
 import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
-import kotlinx.datetime.toJavaInstant
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.todayIn
 import java.text.SimpleDateFormat
@@ -20,9 +22,12 @@ import java.util.Date
 import java.util.Locale
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.ExperimentalTime
+import kotlin.time.toJavaInstant
 
 object DateHelper {
 
+    @OptIn(ExperimentalTime::class)
     fun formatTransactionDetailsTime(date: Long, locale: Locale): String {
         if (0 >= date) {
             return ""
@@ -31,6 +36,7 @@ object DateHelper {
         return formatTransactionDetailsTime(instant, locale)
     }
 
+    @OptIn(ExperimentalTime::class)
     fun formatTransactionDetailsTime(date: Instant, locale: Locale): String {
         val shortMonth = formatDate(date, "MMM", locale).replace(".", "") + ","
         val month = if (locale.language == "en") shortMonth.capitalized else shortMonth
@@ -44,11 +50,26 @@ object DateHelper {
         }
     }
 
+    @OptIn(ExperimentalTime::class)
+    fun untilDate(timestamp: Long = currentTimeSeconds(), locale: Locale): String {
+        val startInstant = Instant.fromEpochSeconds(timestamp)
+
+        val zone = TimeZone.currentSystemDefault()
+        val oneYearLater = startInstant.plus(
+            DateTimePeriod(years = 1),
+            zone
+        )
+
+        return formatDate(oneYearLater, "dd MMM yyyy", locale)
+    }
+
+    @OptIn(ExperimentalTime::class)
     fun timestampToDateString(timestamp: Long, locale: Locale): String {
         val date = Instant.fromEpochSeconds(timestamp)
         return formatDate(date, "yyyy-MM-dd", locale)
     }
 
+    @OptIn(ExperimentalTime::class)
     fun formatTransactionTime(date: Long, locale: Locale): String {
         if (0 >= date) {
             return ""
@@ -57,6 +78,7 @@ object DateHelper {
         return formatTransactionTime(instant, locale)
     }
 
+    @OptIn(ExperimentalTime::class)
     fun formatChartTime(epochSeconds: Long, locale: Locale, hasHHmm: Boolean): String {
         if (0 >= epochSeconds) {
             return ""
@@ -73,6 +95,7 @@ object DateHelper {
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     fun formatTransactionTime(date: Instant, locale: Locale): String {
         val shortMonth = formatDate(date, "MMM", locale).replace(".", "") + ","
         val month = if (locale.language == "en") shortMonth.capitalized else shortMonth
@@ -85,6 +108,7 @@ object DateHelper {
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     fun formatTransactionsGroupDate(context: Context, timestamp: Long, locale: Locale): String {
         val date = Instant.fromEpochMilliseconds(timestamp * 1000)
         return when {
@@ -96,21 +120,25 @@ object DateHelper {
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     fun isToday(date: Instant): Boolean {
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
         return date.toLocalDateTime(TimeZone.currentSystemDefault()).date == today
     }
 
+    @OptIn(ExperimentalTime::class)
     fun isYesterday(date: Instant): Boolean {
         val yesterday = Clock.System.todayIn(TimeZone.currentSystemDefault()).minus(1, DateTimeUnit.DAY)
         return date.toLocalDateTime(TimeZone.currentSystemDefault()).date == yesterday
     }
 
+    @OptIn(ExperimentalTime::class)
     fun isThisYear(date: Instant): Boolean {
         val now = Clock.System.now()
         return now.minus(date, DateTimeUnit.YEAR, TimeZone.currentSystemDefault()) < 1
     }
 
+    @OptIn(ExperimentalTime::class)
     fun isThisMonth(date: Instant): Boolean {
         val now = Clock.System.now()
         return now.minus(date, DateTimeUnit.MONTH, TimeZone.currentSystemDefault()) < 1
@@ -123,6 +151,7 @@ object DateHelper {
             .toFormatter(locale)
     }
 
+    @OptIn(ExperimentalTime::class)
     @RequiresApi(Build.VERSION_CODES.O)
     private fun formatModernDate(instant: Instant, formatString: String, locale: Locale): String {
         val formatter = createModernFormatter(formatString, locale)
@@ -135,6 +164,7 @@ object DateHelper {
         return formatter.format(date)
     }
 
+    @OptIn(ExperimentalTime::class)
     fun formatDate(instant: Instant, formatString: String, locale: Locale): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             return formatModernDate(instant, formatString, locale)
@@ -144,6 +174,7 @@ object DateHelper {
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     fun formattedDate(unixTimestamp: Long, locale: Locale): String {
         if (0 >= unixTimestamp) {
             return ""
@@ -153,6 +184,7 @@ object DateHelper {
         return formatDate(instant, formatString, locale)
     }
 
+    @OptIn(ExperimentalTime::class)
     fun formatCycleEnd(timestamp: Long): String {
         val now = Clock.System.now()
         var estimateInstant = Instant.fromEpochSeconds(timestamp)

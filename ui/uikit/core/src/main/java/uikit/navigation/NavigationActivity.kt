@@ -131,6 +131,12 @@ abstract class NavigationActivity: BaseActivity(), Navigation, ViewTreeObserver.
         }
     }
 
+    fun addScreenDelay(fragment: BaseFragment) {
+        baseView.postDelayed({
+            add(fragment)
+        }, 800)
+    }
+
     fun setPrimaryFragment(
         fragment: BaseFragment,
         recreate: Boolean = false,

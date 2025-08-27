@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+    kotlin("plugin.serialization")
 }
 
 android {
@@ -21,7 +22,7 @@ android {
 }
 
 dependencies {
-    implementation(Dependence.Squareup.moshi)
-    implementation(Dependence.Squareup.moshiAdapters)
-    implementation(Dependence.Squareup.okhttp)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinX.serialization.core)
+    implementation(libs.kotlinX.serialization.json)
 }

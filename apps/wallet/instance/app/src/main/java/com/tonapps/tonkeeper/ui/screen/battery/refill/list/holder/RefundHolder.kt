@@ -29,8 +29,8 @@ class RefundHolder(
                 wallet = item.wallet,
                 title = "Battery",
                 url = item.refundUrl.toUri(),
-                source = "battery_refund",
-                sendAnalytics = false
+                iconUrl = "",
+                source = "battery_refund"
             ))
         }
 

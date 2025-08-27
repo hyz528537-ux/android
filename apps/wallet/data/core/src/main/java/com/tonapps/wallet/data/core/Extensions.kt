@@ -3,6 +3,12 @@ package com.tonapps.wallet.data.core
 import android.content.Context
 import androidx.biometric.BiometricManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.tonapps.blockchain.ton.extensions.equalsAddress
+import com.tonapps.wallet.data.core.currency.WalletCurrency
+
+fun List<WalletCurrency>.query(value: String) = firstOrNull {
+    it.address.equalsAddress(value)
+}
 
 fun accountId(accountId: String, testnet: Boolean): String {
     if (testnet) {

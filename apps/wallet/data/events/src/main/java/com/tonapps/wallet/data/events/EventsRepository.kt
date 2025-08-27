@@ -2,28 +2,21 @@ package com.tonapps.wallet.data.events
 
 import android.content.Context
 import android.util.Log
-import com.tonapps.extensions.MutableEffectFlow
-import com.tonapps.extensions.prefs
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.entity.TokenEntity
-import com.tonapps.wallet.data.collectibles.CollectiblesRepository
-import com.tonapps.wallet.data.core.WalletCurrency
+import com.tonapps.wallet.api.tron.entity.TronEventEntity
 import com.tonapps.wallet.data.events.entities.AccountEventsResult
-import com.tonapps.wallet.data.events.entities.EventEntity
+import com.tonapps.wallet.data.events.entities.LatestRecipientEntity
 import com.tonapps.wallet.data.events.source.LocalDataSource
 import com.tonapps.wallet.data.events.source.RemoteDataSource
-import com.tonapps.wallet.data.rates.entity.RatesEntity
 import io.tonapi.models.AccountAddress
 import io.tonapi.models.AccountEvent
 import io.tonapi.models.AccountEvents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
 class EventsRepository(
@@ -46,6 +39,20 @@ class EventsRepository(
         localDataSource.saveDecryptedComment(txId, comment)
     }
 
+    suspend fun tronLatestSentTransactions(
+        tronWalletAddress: String, tonProofToken: String
+    ): List<TronEventEntity> {
+        val events =
+            getTronLocal(tronWalletAddress) ?: loadTronEvents(tronWalletAddress, tonProofToken)
+            ?: emptyList()
+
+        val sentTransactions =
+            events.filter { it.from == tronWalletAddress && it.to != tronWalletAddress }
+                .distinctBy { it.to }
+
+        return sentTransactions.take(6)
+    }
+
     fun latestRecipientsFlow(accountId: String, testnet: Boolean) = flow {
         localDataSource.getLatestRecipients(cacheLatestRecipientsKey(accountId, testnet))?.let {
             emit(it)
@@ -55,7 +62,7 @@ class EventsRepository(
         emit(remote)
     }.flowOn(Dispatchers.IO)
 
-    private fun loadLatestRecipients(accountId: String, testnet: Boolean): List<AccountAddress> {
+    private fun loadLatestRecipients(accountId: String, testnet: Boolean): List<LatestRecipientEntity> {
         val list = remoteDataSource.getLatestRecipients(accountId, testnet)
         localDataSource.setLatestRecipients(cacheLatestRecipientsKey(accountId, testnet), list)
         return list
@@ -88,6 +95,26 @@ class EventsRepository(
             } catch (e: Throwable) {
                 null
             }
+        }
+    }
+
+    suspend fun loadTronEvents(
+        tronWalletAddress: String,
+        tonProofToken: String,
+        beforeLt: Long? = null,
+        limit: Int = 30
+    ) = withContext(Dispatchers.IO) {
+        try {
+            val events = api.tron.getTronHistory(tronWalletAddress, tonProofToken, limit, beforeLt)
+
+            if (beforeLt == null) {
+                localDataSource.setTronEvents(tronWalletAddress, events)
+            }
+
+            events
+        } catch (e: Throwable) {
+            Log.d("API", "loadTronEvents: error", e)
+            null
         }
     }
 
@@ -183,6 +210,12 @@ class EventsRepository(
         val spamList = list.filter { it.isScam }
         localDataSource.addSpam(accountId, testnet, spamList)
         spamList
+    }
+
+    suspend fun getTronLocal(
+        tronWalletAddress: String,
+    ): List<TronEventEntity>? = withContext(Dispatchers.IO) {
+        localDataSource.getTronEvents(tronWalletAddress)
     }
 
     suspend fun getLocal(

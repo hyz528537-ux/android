@@ -18,6 +18,15 @@ class SlideBetweenView @JvmOverloads constructor(
 ) : FrameLayout(context, attrs, defStyle) {
 
     private var currentIndex: Int = 0
+        set(value) {
+            field = value
+            doOnChange?.invoke(value)
+        }
+
+    val isFirst: Boolean
+        get() = currentIndex == 0
+
+    var doOnChange: ((Int) -> Unit)? = null
 
     private fun getFromToView(
         fromIndex: Int,
@@ -32,7 +41,12 @@ class SlideBetweenView @JvmOverloads constructor(
     }
 
     fun next(animated: Boolean = true) {
-        getFromToView(currentIndex, currentIndex + 1) { fromView, toView ->
+        val fromIndex = currentIndex
+        val toIndex = currentIndex + 1
+        if (toIndex >= childCount) {
+            return
+        }
+        getFromToView(fromIndex, toIndex) { fromView, toView ->
             if (animated) {
                 toView.visibility = VISIBLE
                 toView.translationX = measuredWidth.toFloat()
@@ -53,7 +67,12 @@ class SlideBetweenView @JvmOverloads constructor(
     }
 
     fun prev(animated: Boolean = true) {
-        getFromToView(currentIndex, currentIndex - 1) { fromView, toView ->
+        val fromIndex = currentIndex
+        val toIndex = currentIndex - 1
+        if (toIndex < 0) {
+            return
+        }
+        getFromToView(fromIndex, toIndex) { fromView, toView ->
             if (animated) {
                 toView.visibility = VISIBLE
                 toView.translationX = -measuredWidth.toFloat()
@@ -70,6 +89,17 @@ class SlideBetweenView @JvmOverloads constructor(
                 toView.visibility = VISIBLE
                 currentIndex--
             }
+        }
+    }
+
+    fun moveToIndex(index: Int, animated: Boolean = true) {
+        if (index < 0 || index >= childCount || index == currentIndex) {
+            return
+        }
+        if (index > currentIndex) {
+            repeat(index - currentIndex) { next(animated) }
+        } else {
+            repeat(currentIndex - index) { prev(animated) }
         }
     }
 

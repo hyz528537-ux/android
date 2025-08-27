@@ -18,28 +18,31 @@ package io.tonapi.models
 import io.tonapi.models.BlockRaw
 import io.tonapi.models.InitStateRaw
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param last 
- * @param stateRootHash 
- * @param `init` 
- */
 
+@Serializable
 
 data class GetRawMasterchainInfo200Response (
 
-    @Json(name = "last")
+    @SerialName(value = "last")
     val last: BlockRaw,
 
-    @Json(name = "state_root_hash")
+    @SerialName(value = "state_root_hash")
     val stateRootHash: kotlin.String,
 
-    @Json(name = "init")
+    @SerialName(value = "init")
     val `init`: InitStateRaw
 
-)
+) {
+
+
+}
 

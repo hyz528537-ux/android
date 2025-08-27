@@ -1,5 +1,8 @@
 package com.tonapps.tonkeeper.ui.screen.wallet.main
 
+import android.content.Context
+import android.text.SpannableStringBuilder
+import android.util.Log
 import com.tonapps.icu.Coins
 import com.tonapps.icu.Coins.Companion.sumOf
 import com.tonapps.icu.CurrencyFormatter
@@ -15,12 +18,15 @@ import com.tonapps.wallet.api.entity.ConfigEntity
 import com.tonapps.wallet.api.entity.NotificationEntity
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
-import com.tonapps.wallet.data.core.WalletCurrency
+import com.tonapps.wallet.data.collectibles.entities.DnsExpiringEntity
+import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.core.isAvailableBiometric
-import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.dapps.entities.AppPushEntity
 import com.tonapps.wallet.data.rates.entity.RatesEntity
 import com.tonapps.wallet.localization.Localization
+import uikit.extensions.badgeGreen
+import uikit.extensions.badgeRed
+import uikit.extensions.withGreenBadge
 
 sealed class State {
 
@@ -30,6 +36,7 @@ sealed class State {
         Telegram,
         Backup,
         SafeMode,
+        OnboardingStories,
     }
 
     data class Battery(
@@ -44,7 +51,8 @@ sealed class State {
         val biometryEnabled: Boolean,
         val hasBackup: Boolean,
         val showTelegramChannel: Boolean,
-        val safeModeBlock: Boolean
+        val safeModeBlock: Boolean,
+        val onboardingStoriesEnabled: Boolean,
     ): State()
 
     data class Assets(
@@ -87,6 +95,7 @@ sealed class State {
         val lt: Long?,
         val isOnline: Boolean,
         val apkStatus: APKManager.Status,
+        val tronUsdtEnabled: Boolean,
     ): State() {
 
         val totalBalanceFiat: Coins
@@ -98,7 +107,7 @@ sealed class State {
         private val balanceType: Int
             get() = assets.getBalanceType(wallet)
 
-        private fun uiItemsTokens(hiddenBalance: Boolean): List<Item> {
+        private fun uiItemsTokens(context: Context, hiddenBalance: Boolean): List<Item> {
             val currencyCode = assets.currency.code
             val uiItems = mutableListOf<Item>()
             uiItems.add(Item.Space(true))
@@ -126,6 +135,7 @@ sealed class State {
                         pendingWithdraw = staked.pendingWithdraw,
                         pendingWithdrawFormat = CurrencyFormatter.formatFiat("TON", staked.pendingWithdraw),
                         cycleEnd = staked.cycleEnd,
+                        apy = staked.pool.apy
                     )
                     uiItems.add(item)
                 } else if (asset is AssetsEntity.Token) {
@@ -136,6 +146,7 @@ sealed class State {
                         testnet = wallet.testnet,
                         currencyCode = currencyCode,
                         wallet = wallet,
+                        showNetwork = tronUsdtEnabled && (asset.token.isUsdt || asset.token.isTrc20),
                     )
                     uiItems.add(item)
                 }
@@ -160,19 +171,22 @@ sealed class State {
                 balanceType = balanceType,
                 lastUpdatedFormat = lastUpdatedFormat,
                 batteryBalance = battery.balance,
-                showBattery = !battery.disabled && (!battery.beta || !battery.balance.isZero),
+                showBattery = !battery.disabled,
                 batteryEmptyState = if (battery.viewed) BatteryView.EmptyState.SECONDARY else BatteryView.EmptyState.ACCENT,
                 prefixYourAddress = prefixYourAddress
             )
         }
 
         private fun uiItemActions(
-            config: ConfigEntity
+            config: ConfigEntity,
         ): Item.Actions {
             return Item.Actions(
                 wallet = wallet,
                 token = TokenEntity.TON,
-                swapUri = config.swapUri
+                swapUri = config.swapUri,
+                tronEnabled = tronUsdtEnabled,
+                isSwapDisabled = config.flags.disableSwap,
+                isStakingDisabled = config.flags.disableStaking,
             )
         }
 
@@ -193,6 +207,7 @@ sealed class State {
                         position = position,
                         iconRes = UIKitIcon.ic_key_28,
                         textRes = Localization.setup_finish_backup,
+                        subtitleRes = Localization.setup_finish_backup_subtitle,
                         link = "tonkeeper://backups",
                         blue = false,
                         walletId = wallet.id,
@@ -207,6 +222,15 @@ sealed class State {
                         walletId = wallet.id,
                         settingsType = Item.SetupLink.TYPE_TELEGRAM_CHANNEL
                     )
+                    SetupType.OnboardingStories -> Item.SetupLink(
+                        position = position,
+                        iconRes = UIKitIcon.ic_stories_44,
+                        textRes = Localization.setup_onboarding,
+                        link = "tonkeeper://stories/onboarding",
+                        blue = false,
+                        walletId = wallet.id,
+                        settingsType = Item.SetupLink.TYPE_STORIES
+                    )
                     SetupType.Biometry -> Item.SetupSwitch(
                         position = position,
                         iconRes = UIKitIcon.ic_faceid_28,
@@ -216,7 +240,7 @@ sealed class State {
                         settingsType = Item.SetupSwitch.TYPE_BIOMETRIC
                     )
                     SetupType.Push -> Item.SetupSwitch(
-                        position = ListCell.Position.FIRST,
+                        position = position,
                         iconRes = UIKitIcon.ic_bell_28,
                         textRes = Localization.setup_finish_push,
                         enabled = false,
@@ -242,6 +266,9 @@ sealed class State {
             setup: Setup,
         ): List<SetupType> {
             val setupTypes = mutableListOf<SetupType>()
+            if (!hasBackup) {
+                setupTypes.add(SetupType.Backup)
+            }
             if (!setup.pushEnabled) {
                 setupTypes.add(SetupType.Push)
             }
@@ -251,16 +278,18 @@ sealed class State {
             if (setup.showTelegramChannel) {
                 setupTypes.add(SetupType.Telegram)
             }
-            if (!hasBackup) {
-                setupTypes.add(SetupType.Backup)
-            }
             if (setup.safeModeBlock) {
                 setupTypes.add(SetupType.SafeMode)
             }
+            if (setup.onboardingStoriesEnabled) {
+                setupTypes.add(SetupType.OnboardingStories)
+            }
+
             return setupTypes.toList()
         }
 
         fun uiItems(
+            context: Context,
             wallet: WalletEntity,
             hiddenBalance: Boolean,
             status: Item.Status,
@@ -270,6 +299,7 @@ sealed class State {
             setup: Setup?,
             lastUpdatedFormat: String,
             prefixYourAddress: Boolean,
+            renewDomains: List<DnsExpiringEntity>
         ): List<Item> {
             val uiItems = mutableListOf<Item>()
             if (apkStatus != APKManager.Status.Default && apkStatus !is APKManager.Status.UpdateAvailable) {
@@ -287,6 +317,10 @@ sealed class State {
                 uiItems.add(Item.Push(dAppNotifications.pushes))
             }
 
+            if (renewDomains.isNotEmpty()) {
+                uiItems.add(Item.RenewDomains(wallet, renewDomains))
+            }
+
             setup?.let {
                 val setupTypes = createSetupTypes(it)
                 if (setupTypes.isNotEmpty()) {
@@ -294,7 +328,7 @@ sealed class State {
                 }
             }
 
-            uiItems.addAll(uiItemsTokens(hiddenBalance))
+            uiItems.addAll(uiItemsTokens(context, hiddenBalance))
             return uiItems.toList()
         }
     }

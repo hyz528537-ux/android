@@ -3,21 +3,28 @@ package com.tonapps.wallet.api.internal
 import android.content.Context
 import android.net.Uri
 import android.util.ArrayMap
+import android.util.Log
+import androidx.core.net.toUri
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.tonapps.extensions.deviceCountry
-import com.tonapps.extensions.getStoreCountry
 import com.tonapps.extensions.isDebug
 import com.tonapps.extensions.locale
+import com.tonapps.extensions.map
 import com.tonapps.network.get
+import com.tonapps.network.postJSON
 import com.tonapps.wallet.api.entity.ConfigEntity
+import com.tonapps.wallet.api.entity.EthenaEntity
 import com.tonapps.wallet.api.entity.NotificationEntity
+import com.tonapps.wallet.api.entity.OnRampArgsEntity
 import com.tonapps.wallet.api.entity.StoryEntity
+import com.tonapps.wallet.api.entity.SwapEntity
 import com.tonapps.wallet.api.withRetry
+import io.Serializer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import org.json.JSONObject
+import java.math.BigDecimal
 import java.util.Locale
 
 internal class InternalApi(
@@ -26,12 +33,24 @@ internal class InternalApi(
     private val appVersionName: String
 ) {
 
+    private var _deviceCountry: String? = null
+    private var _storeCountry: String? = null
+
+    val country: String
+        get() = _storeCountry ?: _deviceCountry ?: Locale.getDefault().country.uppercase()
+
+    fun setCountry(deviceCountry: String, storeCountry: String?) {
+        _deviceCountry = deviceCountry.uppercase()
+        _storeCountry = storeCountry?.uppercase()
+    }
+
     private fun endpoint(
         path: String,
         testnet: Boolean,
         platform: String,
         build: String,
         boot: Boolean = false,
+        queryParams: Map<String, String> = emptyMap(),
     ): String = runBlocking {
         val builder = Uri.Builder()
         builder.scheme("https")
@@ -43,11 +62,16 @@ internal class InternalApi(
             .appendQueryParameter("chainName", if (testnet) "testnet" else "mainnet")
             .appendQueryParameter("bundle_id", context.packageName)
 
-        val storeCountry = context.getStoreCountry()
-        storeCountry?.let {
-            builder.appendQueryParameter("store_country_code", storeCountry)
+        _storeCountry?.let {
+            builder.appendQueryParameter("store_country_code", it)
         }
-        builder.appendQueryParameter("device_country_code", context.deviceCountry)
+        _deviceCountry?.let {
+            builder.appendQueryParameter("device_country_code", it)
+        }
+
+        queryParams.forEach {
+            builder.appendQueryParameter(it.key, it.value)
+        }
 
         builder.build().toString()
     }
@@ -59,14 +83,56 @@ internal class InternalApi(
         build: String = appVersionName,
         locale: Locale,
         boot: Boolean = false,
+        queryParams: Map<String, String> = emptyMap(),
     ): JSONObject {
-        val url = endpoint(path, testnet, platform, build, boot)
+        val url = endpoint(path, testnet, platform, build, boot, queryParams)
         val headers = ArrayMap<String, String>()
         headers["Accept-Language"] = locale.toString()
         val body = withRetry {
             okHttpClient.get(url, headers)
         } ?: throw IllegalStateException("Internal API request failed")
         return JSONObject(body)
+    }
+
+    private fun swapEndpoint(path: String): String {
+        val builder = "https://swap.tonkeeper.com".toUri().buildUpon()
+            .appendEncodedPath(path)
+        _deviceCountry?.let {
+            builder.appendQueryParameter("device_country_code", _deviceCountry)
+            builder.appendQueryParameter("country", _storeCountry ?: _deviceCountry)
+        }
+        _storeCountry?.let {
+            builder.appendQueryParameter("store_country_code", _storeCountry)
+        }
+
+        return builder.build().toString()
+    }
+
+    fun getSwapAssets() = withRetry {
+        okHttpClient.get(swapEndpoint("v2/swap/assets"))
+    }
+
+    fun getOnRampData() = withRetry {
+        okHttpClient.get(swapEndpoint("v2/onramp/currencies"))
+    }
+
+    fun getOnRampPaymentMethods() = withRetry {
+        okHttpClient.get(swapEndpoint("v2/onramp/payment_methods"))
+    }
+
+    fun getOnRampMerchants() = withRetry {
+        okHttpClient.get(swapEndpoint("v2/onramp/merchants"))
+    }
+
+    fun calculateOnRamp(args: OnRampArgsEntity): String? {
+        val json = args.toJSON()
+        _deviceCountry?.let { json.put("country", _deviceCountry) }
+        return withRetry {
+            okHttpClient.postJSON(
+                swapEndpoint("v2/onramp/calculate"),
+                json.toString()
+            ).body.string()
+        }
     }
 
     fun getNotifications(): List<NotificationEntity> {
@@ -84,17 +150,24 @@ internal class InternalApi(
             okHttpClient.get("https://scam.tonkeeper.com/v1/scam/domains")
         }?.let { JSONObject(it).getJSONArray("items") } ?: return emptyArray()
 
-        val domains = mutableListOf<String>()
-        for (i in 0 until array.length()) {
-            var url = array.getJSONObject(i).getString("url")
-            if (url.startsWith("www.")) {
-                url = url.substring(5)
-            } else if (url.startsWith("@")) {
-                continue
+        val domains = array.map { it.getString("url") }.map {
+            if (it.startsWith("www.")) {
+                "*.${it.substring(4)}"
+            } else {
+                it
             }
-            domains.add(url)
         }
-        return domains.toTypedArray()
+        val telegramBots = domains.filter { it.startsWith("@") }.map { "t.me/${it.substring(1)}" }
+        val maskDomains = domains.filter { it.startsWith("*.") }
+        val cleanDomains = domains.filter { domain ->
+            !domain.startsWith("@") && !domain.startsWith("*.") && maskDomains.none { mask ->
+                domain.endsWith(
+                    ".$mask"
+                )
+            }
+        }
+
+        return (maskDomains + cleanDomains + telegramBots).toTypedArray()
     }
 
     fun getBrowserApps(testnet: Boolean, locale: Locale): JSONObject {
@@ -149,6 +222,16 @@ internal class InternalApi(
             FirebaseCrashlytics.getInstance().recordException(e)
             null
         }
+    }
+
+    fun getEthena(accountId: String): EthenaEntity? = withRetry {
+        val json = request(
+            "staking/ethena",
+            false,
+            locale = context.locale,
+            queryParams = mapOf("address" to accountId)
+        )
+        EthenaEntity(json)
     }
 
 }

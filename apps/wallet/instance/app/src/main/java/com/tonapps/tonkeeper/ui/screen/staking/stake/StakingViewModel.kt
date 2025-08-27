@@ -20,6 +20,7 @@ import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.usecase.emulation.Emulated
 import com.tonapps.tonkeeper.usecase.emulation.EmulationUseCase
 import com.tonapps.tonkeeper.usecase.sign.SignUseCase
+import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.SendBlockchainState
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.AccountRepository
@@ -31,7 +32,6 @@ import com.tonapps.wallet.data.staking.StakingRepository
 import com.tonapps.wallet.data.staking.entities.PoolEntity
 import com.tonapps.wallet.data.staking.entities.PoolInfoEntity
 import com.tonapps.wallet.data.token.TokenRepository
-import com.tonapps.wallet.data.token.entities.AccountTokenEntity
 import com.tonapps.wallet.localization.Localization
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -66,6 +66,7 @@ class StakingViewModel(
     private val transactionManager: TransactionManager,
     private val signUseCase: SignUseCase,
     private val emulationUseCase: EmulationUseCase,
+    private val api: API,
 ) : BaseWalletVM(app) {
 
     val installId: String
@@ -77,7 +78,7 @@ class StakingViewModel(
         val minStakeFormat: CharSequence,
         val insufficientBalance: Boolean,
         val requestMinStake: Boolean,
-        val hiddenBalance: Boolean
+        val hiddenBalance: Boolean,
     )
 
     private val _poolsFlow = MutableStateFlow<List<PoolInfoEntity>?>(null)
@@ -89,8 +90,20 @@ class StakingViewModel(
     private val _selectedPoolFlow = MutableStateFlow<PoolEntity?>(null)
     val selectedPoolFlow = _selectedPoolFlow.asStateFlow().filterNotNull()
 
-    private val _tokenFlow = MutableStateFlow<AccountTokenEntity?>(null)
-    val tokenFlow = _tokenFlow.asStateFlow().filterNotNull()
+    val tokenFlow = selectedPoolFlow.map { pool ->
+        val tokens = tokenRepository.get(settingsRepository.currency, wallet.accountId, wallet.testnet) ?: emptyList()
+
+        tokens.firstOrNull()
+    }.filterNotNull()
+
+    val analyticsFlow = combine(selectedPoolFlow, poolsFlow, tokenFlow) { pool, providers, token ->
+        val provider = providers.find { item -> item.pools.any { it.address == pool.address } }
+        hashMapOf<String, Any>(
+            "jetton_symbol" to token.symbol,
+            "provider_name" to (provider?.implementation?.title ?: ""),
+            "provider_domain" to (provider?.details?.url ?: ""),
+        )
+    }
 
     private val ratesFlow = tokenFlow.map { token ->
         ratesRepository.getRates(settingsRepository.currency, token.address)
@@ -135,22 +148,23 @@ class StakingViewModel(
     }
 
     val amountFormatFlow = combine(amountFlow, tokenFlow) { amount, token ->
-        CurrencyFormatter.format(token.symbol, amount)
+        CurrencyFormatter.formatFull(token.symbol, amount, token.decimals)
     }
 
     val apyFormatFlow = combine(
         amountFlow,
+        tokenFlow,
         selectedPoolFlow,
         poolsFlow
-    ) { amount, pool, pools ->
+    ) { amount, token, pool, pools ->
         val info = pools.find { it.implementation == pool.implementation } ?: return@combine ""
         val apyFormat = CurrencyFormatter.formatPercent(info.apy)
         if (amount.isPositive) {
             val earning = amount.multiply(pool.apy).divide(100)
-            "%s ≈ %s · %s".format(
+            "%s ≈ %s · %s".format(
                 getString(Localization.staking_apy),
                 apyFormat,
-                CurrencyFormatter.format(TokenEntity.TON.symbol, earning)
+                CurrencyFormatter.format(token.symbol, earning)
             )
         } else {
             "%s ≈ %s".format(
@@ -178,8 +192,9 @@ class StakingViewModel(
         updateAmount(0.0)
 
         viewModelScope.launch(Dispatchers.IO) {
-            _poolsFlow.value = stakingRepository.get(wallet.accountId, wallet.testnet).pools
-            _tokenFlow.value = tokenRepository.get(settingsRepository.currency, wallet.accountId, wallet.testnet)?.firstOrNull()
+            _poolsFlow.value = stakingRepository.get(wallet.accountId, wallet.testnet).pools.filter {
+                api.config.enabledStaking.contains(it.implementation.title)
+            }
         }
     }
 
@@ -294,11 +309,10 @@ class StakingViewModel(
         val fee = StakingPool.getTotalFee(extra.value, pool.implementation)
 
         val fiat = rates.convertTON(fee)
+        val first = CurrencyFormatter.format(TokenEntity.TON.symbol, fee)
+        val second = CurrencyFormatter.formatFiat(currency.code, fiat)
 
-        Pair(
-            CurrencyFormatter.format(TokenEntity.TON.symbol, fee, TokenEntity.TON.decimals),
-            CurrencyFormatter.format(currency.code, fiat, currency.decimals)
-        )
+        Pair(first, second)
     }
 
     fun stake(
@@ -364,5 +378,9 @@ class StakingViewModel(
         if (state != SendBlockchainState.SUCCESS) {
             throw SendBlockchainException.fromState(state)
         }
+    }
+
+    fun getAmount(): Double {
+        return _amountFlow.value
     }
 }

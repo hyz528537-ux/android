@@ -22,10 +22,10 @@ android {
 }
 
 dependencies {
-    implementation(Dependence.AndroidX.core)
-    implementation(Dependence.KotlinX.coroutines)
-    implementation(Dependence.zxing)
+    implementation(libs.androidX.core)
+    implementation(libs.kotlinX.coroutines.android)
+    implementation(libs.zxing)
 
-    api(Dependence.ML.barcode)
-    implementation(Dependence.AndroidX.Camera.base)
+    api(libs.barcode.scanning)
+    implementation(libs.cameraX.base)
 }

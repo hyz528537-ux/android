@@ -2,6 +2,7 @@ package com.tonapps.tonkeeper.ui.screen.collectibles.main.list.holder
 
 import android.graphics.drawable.RippleDrawable
 import android.net.Uri
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatImageView
@@ -33,6 +34,7 @@ class NftHolder(parent: ViewGroup): Holder<Item.Nft>(parent, R.layout.view_colle
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val collectionView = findViewById<AppCompatTextView>(R.id.collection)
     private val saleBadgeView = findViewById<AppCompatImageView>(R.id.sale_badge)
+    private val fireBadgeView = findViewById<AppCompatImageView>(R.id.fire_badge)
 
     init {
         itemView.foreground = RippleDrawable(context.backgroundHighlightedColor.stateList, null, null)
@@ -45,6 +47,7 @@ class NftHolder(parent: ViewGroup): Holder<Item.Nft>(parent, R.layout.view_colle
         itemView.setOnClickListener {
             Navigation.from(context)?.add(NftScreen.newInstance(item.wallet, item.entity))
         }
+        fireBadgeView.visibility = if (item.expiringDomainSoon) View.VISIBLE else View.GONE
         loadImage(item.imageURI, item.hiddenBalance)
         if (item.hiddenBalance) {
             titleView.text = HIDDEN_BALANCE

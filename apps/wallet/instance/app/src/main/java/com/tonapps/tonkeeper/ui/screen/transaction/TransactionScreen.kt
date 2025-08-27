@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.text.SpannableString
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.widget.AppCompatTextView
@@ -13,6 +14,8 @@ import androidx.lifecycle.lifecycleScope
 import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.extensions.logError
 import com.tonapps.extensions.max24
+import com.tonapps.extensions.plus
+import com.tonapps.extensions.shortTron
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.api.shortAddress
 import com.tonapps.tonkeeper.core.history.ActionType
@@ -32,6 +35,8 @@ import com.tonapps.uikit.color.textPrimaryColor
 import com.tonapps.uikit.color.textTertiaryColor
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.uikit.list.ListCell
+import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.data.settings.SpamTransactionState
@@ -45,13 +50,17 @@ import uikit.base.BaseFragment
 import uikit.dialog.modal.ModalDialog
 import uikit.extensions.dp
 import uikit.extensions.drawable
+import uikit.extensions.getViews
 import uikit.extensions.reject
 import uikit.extensions.setColor
 import uikit.navigation.Navigation.Companion.navigation
+import uikit.widget.ColumnLayout
 import uikit.widget.FrescoView
+import androidx.core.view.isVisible
+import androidx.core.net.toUri
 
 
-class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment.Modal {
+class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragment.Modal {
 
     override val fragmentName: String = "TransactionScreen"
 
@@ -90,7 +99,9 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
 
     private val historyHelper: HistoryHelper by inject()
 
+    private lateinit var iconContainerView: View
     private lateinit var iconView: FrescoView
+    private lateinit var networkIconView: FrescoView
     private lateinit var moreView: View
     private lateinit var iconSwapView: View
     private lateinit var iconSwap1View: FrescoView
@@ -103,9 +114,10 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
     private lateinit var feeView: TransactionDetailView
     private lateinit var commentView: TransactionDetailView
     private lateinit var accountNameView: TransactionDetailView
-    private lateinit var accountAddressView: TransactionDetailView
+    private lateinit var accountAddressView: ColumnLayout
     private lateinit var explorerButton: AppCompatTextView
     private lateinit var unverifiedView: View
+    private lateinit var failedView: View
     private lateinit var amount2View: AppCompatTextView
     private lateinit var reportSpamButton: Button
     private lateinit var notSpamButton: Button
@@ -124,7 +136,9 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
 
         moreView = view.findViewById(R.id.more)
 
+        iconContainerView = view.findViewById(R.id.icon_container)
         iconView = view.findViewById(R.id.icon)
+        networkIconView = view.findViewById(R.id.network_icon)
         iconSwapView = view.findViewById(R.id.icon_swap)
 
         iconSwap1View = view.findViewById(R.id.icon_swap1)
@@ -141,6 +155,8 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
         unverifiedView.setOnClickListener {
             navigation?.add(TokenUnverifiedScreen.newInstance())
         }
+
+        failedView = view.findViewById(R.id.failed)
 
         dataView = view.findViewById(R.id.data)
 
@@ -164,9 +180,18 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
         }
     }
 
+    private fun accountAddressTitle(): AppCompatTextView {
+        return accountAddressView.getChildAt(0) as AppCompatTextView
+    }
+
+    private fun accountAddressValue(): AppCompatTextView {
+        return accountAddressView.getChildAt(1) as AppCompatTextView
+    }
+
     private fun initArgs(actionArgs: HistoryItem.Event) {
         spamView.visibility = if (isScam) View.VISIBLE else View.GONE
-        feeView.title = if (actionArgs.refund == null) getString(Localization.fee) else getString(Localization.refund)
+        feeView.title =
+            if (actionArgs.refund == null) getString(Localization.fee) else getString(Localization.refund)
         unverifiedView.visibility = if (actionArgs.unverifiedToken) {
             View.VISIBLE
         } else {
@@ -175,18 +200,40 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
         moreView.setOnClickListener { openMore(it, actionArgs) }
 
         reportSpamButton.setOnClickListener { reportSpamWithDialog(true, actionArgs) }
-        explorerButton.setOnClickListener { openTonViewer(actionArgs) }
+        explorerButton.setOnClickListener { openExplorer(actionArgs) }
         notSpamButton.setOnClickListener { reportSpamWithDialog(false, actionArgs) }
+
+        failedView.visibility = if (actionArgs.failed) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
 
         if (actionArgs.hiddenBalance) {
             amountView.text = HIDDEN_BALANCE
             feeView.setData(HIDDEN_BALANCE, HIDDEN_BALANCE)
         } else {
-            amountView.text = actionArgs.value.withCustomSymbol(requireContext())
+            amountView.text = if (actionArgs.showNetwork) {
+                val networkRes = when (actionArgs.blockchain) {
+                    Blockchain.TRON -> Localization.trc20
+                    else -> Localization.ton
+                }
+                actionArgs.valueFullFormatted.withCustomSymbol(requireContext())
+                    .plus(" ")
+                    .plus(getString(networkRes))
+            } else {
+                actionArgs.valueFullFormatted.withCustomSymbol(requireContext())
+            }
             if (actionArgs.refund != null) {
-                feeView.setData(actionArgs.refund!!.withCustomSymbol(requireContext()), actionArgs.refundInCurrency!!.withCustomSymbol(requireContext()))
+                feeView.setData(
+                    actionArgs.refund!!.withCustomSymbol(requireContext()),
+                    actionArgs.refundInCurrency!!.withCustomSymbol(requireContext())
+                )
             } else if (actionArgs.fee != null) {
-                feeView.setData(actionArgs.fee!!.withCustomSymbol(requireContext()), actionArgs.feeInCurrency!!.withCustomSymbol(requireContext()))
+                feeView.setData(
+                    actionArgs.fee.withCustomSymbol(requireContext()),
+                    actionArgs.feeInCurrency?.withCustomSymbol(requireContext())
+                )
             } else {
                 feeView.visibility = View.GONE
             }
@@ -199,7 +246,12 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
             feeView.position = ListCell.Position.LAST
         }
 
-        applyAccount(actionArgs.isOut, actionArgs.account?.address, actionArgs.account?.name)
+        applyAccount(
+            actionArgs.isOut,
+            actionArgs.blockchain,
+            actionArgs.account?.address,
+            actionArgs.account?.name
+        )
         applyCurrency(actionArgs.currency, actionArgs.hiddenBalance)
         applyDate(actionArgs.action, actionArgs.dateDetails)
 
@@ -222,11 +274,11 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
             iconSwapView.visibility = View.GONE
         } else if (actionArgs.isSwap) {
             iconView.visibility = View.GONE
-            iconSwap1View.setImageURI(Uri.parse(actionArgs.coinIconUrl), this)
-            iconSwap2View.setImageURI(Uri.parse(actionArgs.coinIconUrl2), this)
+            iconSwap1View.setImageURI(actionArgs.coinIconUrl.toUri(), this)
+            iconSwap2View.setImageURI(actionArgs.coinIconUrl2.toUri(), this)
             amount2View.visibility = View.VISIBLE
-            amount2View.text = actionArgs.value2.withCustomSymbol(requireContext())
-            accountAddressView.title = getString(Localization.recipient_address)
+            amount2View.text = actionArgs.valueFullFormatted2?.withCustomSymbol(requireContext())
+            accountAddressTitle().text = getString(Localization.recipient_address)
         } else if (actionArgs.hasNft) {
             iconSwapView.visibility = View.GONE
             val nft = actionArgs.nft!!
@@ -243,18 +295,32 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
             amount2View.setTextColor(requireContext().textPrimaryColor)
         } else if (actionArgs.coinIconUrl.isNotBlank()) {
             iconSwapView.visibility = View.GONE
-            iconView.setImageURI(Uri.parse(actionArgs.coinIconUrl), null)
+            iconView.setImageURI(actionArgs.coinIconUrl.toUri(), null)
+
+            if (actionArgs.showNetwork) {
+                val networkIconRes = when (actionArgs.blockchain) {
+                    Blockchain.TRON -> R.drawable.ic_tron
+                    else -> R.drawable.ic_ton
+                }
+                networkIconView.setLocalRes(networkIconRes)
+                networkIconView.visibility = View.VISIBLE
+            } else {
+                networkIconView.visibility = View.GONE
+            }
         } else {
             iconSwapView.visibility = View.GONE
             iconView.visibility = View.GONE
         }
+
+        iconContainerView.visibility = iconView.visibility
 
         applySpamState(actionArgs)
         updateDataView()
     }
 
     private fun reportSpamWithDialog(spam: Boolean, actionArgs: HistoryItem.Event) {
-        val isEncryptedComment = actionArgs.comment?.isEncrypted == true || actionArgs.comment?.type == HistoryItem.Event.Comment.Type.OriginalEncrypted
+        val isEncryptedComment =
+            actionArgs.comment?.isEncrypted == true || actionArgs.comment?.type == HistoryItem.Event.Comment.Type.OriginalEncrypted
         if (isEncryptedComment && spam) {
             CommentReportDialog(requireContext()).show {
                 reportEncryptedComment(actionArgs)
@@ -295,11 +361,16 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
         }
     }
 
-    private fun openTonViewer(actionArgs: HistoryItem.Event) {
-        val url = if (actionArgs.wallet.testnet) {
-            "https://testnet.tonviewer.com/transaction"
-        } else {
-            "https://tonviewer.com/transaction"
+    private fun openExplorer(actionArgs: HistoryItem.Event) {
+        val url = when (actionArgs.blockchain) {
+            Blockchain.TON -> if (actionArgs.wallet.testnet) {
+                "https://testnet.tonviewer.com/transaction"
+            } else {
+                "https://tonviewer.com/transaction"
+            }
+
+            Blockchain.TRON -> "https://tronscan.org/#/transaction"
+            else -> return
         }
         navigation?.openURL("$url/${actionArgs.txId}")
     }
@@ -313,12 +384,16 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
                 actionSheet.addItem(REPORT_SPAM_ID, Localization.report_spam, UIKitIcon.ic_block_16)
             }
         }
-        actionSheet.addItem(OPEN_EXPLORER_ID, Localization.open_tonviewer, UIKitIcon.ic_globe_16)
+        val explorerTitleRes = when (actionArgs.blockchain) {
+            Blockchain.TON -> Localization.open_tonviewer
+            else -> Localization.open_explorer
+        }
+        actionSheet.addItem(OPEN_EXPLORER_ID, explorerTitleRes, UIKitIcon.ic_globe_16)
         actionSheet.doOnItemClick = { item ->
             when (item.id) {
                 REPORT_SPAM_ID -> reportSpamWithDialog(true, actionArgs)
                 NOT_SPAM_ID -> reportSpamWithDialog(false, actionArgs)
-                OPEN_EXPLORER_ID -> openTonViewer(actionArgs)
+                OPEN_EXPLORER_ID -> openExplorer(actionArgs)
             }
         }
         actionSheet.show(view)
@@ -380,8 +455,17 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
         }
     }
 
-    private fun decryptComment(action: HistoryItem.Event, comment: HistoryItem.Event.Comment, callback: ((comment: String) -> Unit)? = null) {
-        historyHelper.requestDecryptComment(requireContext(), comment, action.txId, action.sender?.address ?: "").catch {
+    private fun decryptComment(
+        action: HistoryItem.Event,
+        comment: HistoryItem.Event.Comment,
+        callback: ((comment: String) -> Unit)? = null
+    ) {
+        historyHelper.requestDecryptComment(
+            requireContext(),
+            comment,
+            action.txId,
+            action.sender?.address ?: ""
+        ).catch {
             context?.logError(it)
             commentView.reject()
         }.onEach {
@@ -390,7 +474,12 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
         }.launchIn(lifecycleScope)
     }
 
-    private fun applyAccount(out: Boolean, address: String?, name: String?) {
+    private fun applyAccount(
+        out: Boolean,
+        blockchain: Blockchain,
+        address: String?,
+        name: String?
+    ) {
         accountNameView.visibility = View.GONE
         accountAddressView.visibility = View.GONE
 
@@ -399,8 +488,13 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
             applyAccountWithName(out, address!!, name!!)
         } else if (address != null) {
             accountAddressView.visibility = View.VISIBLE
-            accountAddressView.title = getAccountTitle(out)
-            accountAddressView.setData(address.shortAddress, "")
+            accountAddressTitle().text = getAccountTitle(out)
+            /*val shortAddress = if (blockchain == Blockchain.TRON) {
+                address.shortTron
+            } else {
+                address.shortAddress
+            }*/
+            accountAddressValue().text = address
             accountAddressView.setOnClickListener {
                 context?.copyWithToast(address)
             }
@@ -418,12 +512,12 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
         }
 
         accountAddressView.visibility = View.VISIBLE
-        accountAddressView.title = getString(
+        accountAddressTitle().text = getString(
             if (out) {
                 Localization.recipient_address
             } else Localization.sender_address
         )
-        accountAddressView.setData(address.shortAddress, "")
+        accountAddressValue().text = address
         accountAddressView.setOnClickListener {
             context?.copyWithToast(address)
         }
@@ -438,20 +532,20 @@ class TransactionScreen: BaseFragment(R.layout.dialog_transaction), BaseFragment
     }
 
     private fun updateDataView() {
-        val visibleViews = mutableListOf<TransactionDetailView>()
-        for (i in 0 until dataView.childCount) {
-            val child = dataView.getChildAt(i)
-            if (child is TransactionDetailView && child.visibility == View.VISIBLE) {
-                visibleViews.add(child)
-            }
-        }
+        val visibleViews = dataView.getViews().filter { it.isVisible }
 
         for (i in 0 until visibleViews.size) {
-            visibleViews[i].position = ListCell.getPosition(visibleViews.size, i)
+            val view = visibleViews[i]
+            if (view is TransactionDetailView) {
+                view.position = ListCell.getPosition(visibleViews.size, i)
+            } else {
+                view.background = ListCell.getPosition(visibleViews.size, i).drawable(requireContext())
+            }
         }
     }
 
-    private class CommentReportDialog(context: Context): ModalDialog(context, R.layout.dialog_tx_report_comment) {
+    private class CommentReportDialog(context: Context) :
+        ModalDialog(context, R.layout.dialog_tx_report_comment) {
 
         init {
             findViewById<View>(R.id.close)?.setOnClickListener { dismiss() }

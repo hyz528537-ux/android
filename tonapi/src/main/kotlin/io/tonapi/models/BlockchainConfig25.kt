@@ -17,20 +17,25 @@ package io.tonapi.models
 
 import io.tonapi.models.MsgForwardPrices
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * The cost of sending messages in the basechains of the TON blockchain.
- *
- * @param msgForwardPrices 
- */
 
+@Serializable
 
 data class BlockchainConfig25 (
 
-    @Json(name = "msg_forward_prices")
+    @SerialName(value = "msg_forward_prices")
     val msgForwardPrices: MsgForwardPrices
 
-)
+) {
+
+
+}
 

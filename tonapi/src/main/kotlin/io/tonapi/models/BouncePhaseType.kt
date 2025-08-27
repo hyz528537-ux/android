@@ -16,26 +16,33 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * 
  *
- * Values: trPhaseBounceNegfunds,trPhaseBounceNofunds,trPhaseBounceOk
+ * Values: TrPhaseBounceNegfunds,TrPhaseBounceNofunds,TrPhaseBounceOk.unknown
  */
-
-@JsonClass(generateAdapter = false)
+@Serializable(with = BouncePhaseTypeSerializer::class)
 enum class BouncePhaseType(val value: kotlin.String) {
 
-    @Json(name = "TrPhaseBounceNegfunds")
-    trPhaseBounceNegfunds("TrPhaseBounceNegfunds"),
+    @SerialName(value = "TrPhaseBounceNegfunds")
+    TrPhaseBounceNegfunds("TrPhaseBounceNegfunds"),
 
-    @Json(name = "TrPhaseBounceNofunds")
-    trPhaseBounceNofunds("TrPhaseBounceNofunds"),
+    @SerialName(value = "TrPhaseBounceNofunds")
+    TrPhaseBounceNofunds("TrPhaseBounceNofunds"),
 
-    @Json(name = "TrPhaseBounceOk")
-    trPhaseBounceOk("TrPhaseBounceOk");
+    @SerialName(value = "TrPhaseBounceOk")
+    TrPhaseBounceOk("TrPhaseBounceOk"),
+
+    @SerialName(value = "unknown")
+    unknown("unknown");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -57,10 +64,24 @@ enum class BouncePhaseType(val value: kotlin.String) {
          */
         fun decode(data: kotlin.Any?): BouncePhaseType? = data?.let {
           val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
+          entries.firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()
           }
         }
+    }
+}
+
+internal object BouncePhaseTypeSerializer : KSerializer<BouncePhaseType> {
+    override val descriptor = kotlin.String.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): BouncePhaseType {
+        val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+        return BouncePhaseType.entries.firstOrNull { it.value == value }
+            ?: BouncePhaseType.unknown
+    }
+
+    override fun serialize(encoder: Encoder, value: BouncePhaseType) {
+        encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
     }
 }
 

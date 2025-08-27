@@ -37,10 +37,22 @@
 -keep class com.tonapps.tonkeeper.manager.** { *; }
 
 -keep class android.graphics.ColorSpace { *; }
+-dontwarn android.graphics.ColorSpace
+-dontwarn android.graphics.ColorSpace$**
+
 -keep class org.koin.** { *; }
 -keep class com.tonapps.tonkeeper.App { *; }
 
 -keepnames class com.tonapps.tonkeeper.ui.screen.** { *; }
 
+-dontwarn com.fasterxml.jackson.databind.ext.Java7SupportImpl
+-keep class com.fasterxml.jackson.databind.ext.** { *; }
+-dontwarn org.slf4j.**
+-dontwarn org.w3c.dom.**
+-dontwarn com.fasterxml.jackson.databind.ext.DOMSerializer
 
+-keep class com.facebook.imagepipeline.** { *; }
+-dontwarn com.facebook.imagepipeline.**
+-keep class com.facebook.imageutils.** { *; }
+-dontwarn com.facebook.imageutils.**
 

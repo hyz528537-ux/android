@@ -17,6 +17,7 @@ import com.tonapps.wallet.localization.Localization
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import uikit.HapticHelper
+import uikit.R
 import uikit.base.BaseFragment
 import uikit.base.BaseListFragment
 import uikit.extensions.collectFlow
@@ -44,6 +45,7 @@ class TokensManageScreen(wallet: WalletEntity): BaseListWalletScreen<ScreenConte
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setTitle(getString(Localization.home_screen))
+        applyListMargin(top = requireContext().getDimensionPixelSize(R.dimen.barHeight))
         setAdapter(adapter)
         val horizontalOffset = requireContext().getDimensionPixelSize(uikit.R.dimen.cornerMedium)
         setListPadding(horizontalOffset, 0, horizontalOffset, 0)

@@ -9,6 +9,7 @@ data class PoolDetailsEntity(
     val name: String,
     val description: String,
     val url: String,
+    val additionalUrl: String? = null,
     val socials: List<String>,
 ): Parcelable {
 
@@ -20,8 +21,11 @@ data class PoolDetailsEntity(
     )
 
     fun getLinks(address: String): List<String> {
-        val links = mutableListOf(url, "https://tonviewer.com/${address}")
+        val links = mutableListOf(url)
+        additionalUrl?.let { links.add(it) }
+        links.add("https://tonviewer.com/${address}")
         links.addAll(socials)
         return links.toList()
     }
+
 }

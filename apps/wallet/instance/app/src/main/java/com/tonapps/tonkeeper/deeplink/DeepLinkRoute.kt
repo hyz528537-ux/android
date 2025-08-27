@@ -7,6 +7,9 @@ import com.tonapps.blockchain.ton.extensions.cellFromBase64
 import com.tonapps.blockchain.ton.extensions.isValidTonAddress
 import com.tonapps.blockchain.ton.extensions.isValidTonDomain
 import com.tonapps.blockchain.ton.extensions.publicKeyFromHex
+import com.tonapps.blockchain.ton.extensions.toRawAddress
+import com.tonapps.blockchain.tron.isValidTronAddress
+import com.tonapps.extensions.currentTimeSeconds
 import com.tonapps.extensions.hasUnsupportedQuery
 import com.tonapps.extensions.hostOrNull
 import com.tonapps.extensions.pathOrNull
@@ -14,6 +17,7 @@ import com.tonapps.extensions.query
 import com.tonapps.extensions.queryBoolean
 import com.tonapps.extensions.queryLong
 import com.tonapps.extensions.queryPositiveLong
+import com.tonapps.extensions.toUriOrNull
 import org.ton.api.pub.PublicKeyEd25519
 import org.ton.block.StateInit
 import org.ton.cell.Cell
@@ -103,6 +107,8 @@ sealed class DeepLinkRoute {
         )
     }
 
+    data object DnsRenew: DeepLinkRoute()
+
     data class Transfer(
         val exp: Long?,
         val address: String,
@@ -113,20 +119,34 @@ sealed class DeepLinkRoute {
         val initStateBase64: String?
     ): DeepLinkRoute() {
 
+        companion object {
+            const val MAX_EXP = 10 * 60L
+        }
+
         val isExpired: Boolean
             get() {
                 if (exp == null || 0 >= exp) {
                     return false
                 }
-                return exp < (System.currentTimeMillis() / 1000)
+                val now = currentTimeSeconds()
+                val fixedExp = exp - 15
+                return now > fixedExp
             }
 
         constructor(uri: Uri) : this(
-            exp = uri.queryLong("exp"),
+            exp = uri.queryLong("exp")?.let { parsedExp ->
+                val maxExp = currentTimeSeconds() + MAX_EXP
+                val validUntil = minOf(parsedExp, maxExp)
+                if (0 >= validUntil) {
+                    currentTimeSeconds() + MAX_EXP
+                } else {
+                    validUntil
+                }
+            },
             address = uri.pathOrNull ?: throw IllegalArgumentException("Address is required"),
             amount = uri.queryLong("amount"),
             text = uri.query("text"),
-            jettonAddress = uri.query("jettonAddress") ?: uri.query("jetton"),
+            jettonAddress = (uri.query("jettonAddress") ?: uri.query("jetton"))?.toRawAddress(),
             bin = uri.query("bin")?.cellFromBase64(),
             initStateBase64 = uri.query("init")
         ) {
@@ -134,7 +154,7 @@ sealed class DeepLinkRoute {
                 throw IllegalArgumentException("Unsupported query parameters")
             }
 
-            if (address.isNotBlank() && (!address.isValidTonAddress() && !address.isValidTonDomain())) {
+            if (address.isNotBlank() && (!address.isValidTonAddress() && !address.isValidTronAddress() && !address.isValidTonDomain())) {
                 throw IllegalArgumentException("Invalid address")
             }
 
@@ -204,10 +224,25 @@ sealed class DeepLinkRoute {
 
     data class DApp(val url: String): DeepLinkRoute() {
 
+        private companion object {
+
+            private fun parseLink(uri: Uri): String {
+                var path = uri.toString().replace("tonkeeper://dapp/", "").toUriOrNull()
+                if (path == null) {
+                    path = uri.lastPathSegment?.toUriOrNull()
+                }
+                return path?.toString()?.let {
+                    if (it.startsWith("http")) {
+                        Uri.decode(it)
+                    } else {
+                        "https://${Uri.decode(it)}"
+                    }
+                } ?: throw IllegalArgumentException("DApp url is required")
+            }
+        }
+
         constructor(uri: Uri) : this(
-            url = uri.pathOrNull?.let {
-                "https://$it"
-            } ?: throw IllegalArgumentException("DApp url is required")
+            url = parseLink(uri)
         )
     }
 
@@ -241,6 +276,9 @@ sealed class DeepLinkRoute {
             val uri = normalize(input)
             val from = input.query("from") ?: "deep-link"
             val domain = uri.hostOrNull ?: return Unknown(uri)
+            if (domain == "dns" && uri.pathOrNull?.startsWith("expiring") == true) {
+                return DnsRenew
+            }
             try {
                 return when (domain) {
                     "backup", "backups" -> Backups
@@ -285,7 +323,7 @@ sealed class DeepLinkRoute {
             }
         }
 
-        private fun normalize(uri: Uri): Uri {
+        fun normalize(uri: Uri): Uri {
             return uri.toString()
                 .replace("ton://", PREFIX)
                 .replace("https://app.tonkeeper.com/", PREFIX)

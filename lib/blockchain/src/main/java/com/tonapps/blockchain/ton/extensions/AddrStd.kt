@@ -16,14 +16,6 @@ fun AddrStd.toAccountId(): String {
     ).lowercase()
 }
 
-fun String.isTestnetAddress(): Boolean {
-    return startsWith("0Q") || startsWith("kQ")
-}
-
-fun String.isBounceable(): Boolean {
-    return startsWith("0:") || startsWith("E")
-}
-
 fun String.toUserFriendly(
     wallet: Boolean = true,
     testnet: Boolean,
@@ -48,7 +40,7 @@ fun String.toRawAddress(): String {
     return try {
         AddrStd(this).toString(userFriendly = false).lowercase()
     } catch (e: Exception) {
-        this
+        this.lowercase()
     }
 }
 
@@ -66,6 +58,9 @@ fun String.isValidTonDomain(): Boolean {
 }
 
 fun String.equalsAddress(other: String): Boolean {
+    if (other.equals("TON", ignoreCase = true)) {
+        return true
+    }
     return try {
         toRawAddress().equals(other.toRawAddress(), ignoreCase = true)
     } catch (e: Throwable) {

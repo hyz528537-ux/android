@@ -18,43 +18,39 @@ package io.tonapi.models
 import io.tonapi.models.AccountAddress
 import io.tonapi.models.ImagePreview
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param address 
- * @param nextItemIndex 
- * @param rawCollectionContent 
- * @param approvedBy 
- * @param owner 
- * @param metadata 
- * @param previews 
- */
 
+@Serializable
 
 data class NftCollection (
 
-    @Json(name = "address")
+    @SerialName(value = "address")
     val address: kotlin.String,
 
-    @Json(name = "next_item_index")
+    @SerialName(value = "next_item_index")
     val nextItemIndex: kotlin.Long,
 
-    @Json(name = "raw_collection_content")
+    @SerialName(value = "raw_collection_content")
     val rawCollectionContent: kotlin.String,
 
-    @Json(name = "approved_by")
+    @SerialName(value = "approved_by")
     val approvedBy: kotlin.collections.List<NftCollection.ApprovedBy>,
 
-    @Json(name = "owner")
+    @SerialName(value = "owner")
     val owner: AccountAddress? = null,
 
-    @Json(name = "metadata")
-    val metadata: kotlin.collections.Map<kotlin.String, kotlin.Any>? = null,
+    @Contextual @SerialName(value = "metadata")
+    val metadata: kotlin.collections.Map<kotlin.String, io.JsonAny>? = null,
 
-    @Json(name = "previews")
+    @SerialName(value = "previews")
     val previews: kotlin.collections.List<ImagePreview>? = null
 
 ) {
@@ -62,13 +58,28 @@ data class NftCollection (
     /**
      * 
      *
-     * Values: getgems,tonkeeper,tonPeriodDiamonds
+     * Values: getgems,tonkeeper.unknown
      */
-    @JsonClass(generateAdapter = false)
+    @Serializable(with = ApprovedBySerializer::class)
     enum class ApprovedBy(val value: kotlin.String) {
-        @Json(name = "getgems") getgems("getgems"),
-        @Json(name = "tonkeeper") tonkeeper("tonkeeper"),
-        @Json(name = "ton.diamonds") tonPeriodDiamonds("ton.diamonds");
+        @SerialName(value = "getgems") getgems("getgems"),
+        @SerialName(value = "tonkeeper") tonkeeper("tonkeeper"),
+        @SerialName(value = "unknown") unknown("unknown");
     }
+
+    internal object ApprovedBySerializer : KSerializer<ApprovedBy> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): ApprovedBy {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return ApprovedBy.entries.firstOrNull { it.value == value }
+                ?: ApprovedBy.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: ApprovedBy) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
+    }
+
 }
 

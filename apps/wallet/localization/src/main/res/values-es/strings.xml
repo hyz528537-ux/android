@@ -10,6 +10,7 @@
     <string name="staking_pending_withdraw">%1$s se retirarán en %2$s</string>
     <string name="edit_full">Editar</string>
     <string name="safe_mode_tonconnect_description">Puedes cambiar esto en la configuración de seguridad de tu billetera.</string>
+    <string name="renew_dns_done">Dominio extendido por 1 año</string>
     <string name="staking_unstake_cycle">La solicitud de cancelación de participación se procesará después del final del ciclo de validación en %1$s</string>
     <string name="send_transaction_scroll">Verifique todos los detalles para confirmar</string>
     <string name="send_transaction_detail">El valor total de los tokens que se enviarán desde su billetera. Los reembolsos no están incluidos en el valor total.</string>
@@ -29,8 +30,10 @@
     <string name="setup_finish_title">Terminar configuración</string>
     <string name="setup_finish_push">Habilitar notificaciones de transacciones</string>
     <string name="setup_finish_biometry">Usa la biometría para aprobar transacciones</string>
-    <string name="setup_finish_backup">Haz una copia de seguridad de la frase de recuperación del monedero</string>
+    <string name="setup_finish_backup">Haz una copia de seguridad de tu frase de recuperación</string>
+    <string name="setup_finish_backup_subtitle">Sin ella, no podrás restaurar tu billetera</string>
     <string name="setup_finish_telegram">Únete al canal de Tonkeeper</string>
+    <string name="setup_onboarding">Aprende a usar tu billetera</string>
     <string name="contacts">Contactos</string>
     <string name="step_1">Paso 1</string>
     <string name="step_2">Paso 2</string>
@@ -60,10 +63,12 @@
     <string name="liquid_staking">Replanteo líquido</string>
     <string name="other">Otro</string>
     <string name="minimum_amount">Mínimo %1$s</string>
+    <string name="stake_ethena_disclaimer">Este es el rendimiento anual estimado basado en las recompensas promedio del protocolo de la semana pasada y la cantidad promedio de USDe apostados. El rendimiento está anualizado con capitalización semanal. <annotation colorAttr="textSecondaryColor">El rendimiento pasado no garantiza resultados futuros.</annotation> El staking y las recompensas son proporcionados por Ethena, un servicio externo, y están sujetos a sus <annotation colorAttr="textAccentColor">términos</annotation>.</string>
     <string name="stake_tonstakers_description">Cuando haces staking de TON en un pool de Tonstakers, recibes un token llamado tsTON que representa tu participación en el pool. A medida que el pool acumula ganancias, tu tsTON representa una mayor cantidad de TON.</string>
     <string name="edit">Editar</string>
     <string name="pinned">Fijado</string>
     <string name="all_assets">Todos los activos</string>
+    <string name="all_ton_assets">Todos los activos de TON</string>
     <string name="sorted_by_price">Ordenado por Precio</string>
     <string name="staking_minimum_deposit">Depósito mínimo %1$s.</string>
     <string name="staking_options">Opciones</string>
@@ -145,6 +150,7 @@
     <string name="unsubscribed">Dado de baja</string>
     <string name="subscribed">Suscrito</string>
     <string name="received">Recibido</string>
+    <string name="on_sale">EN VENTA</string>
     <string name="nft_transfer">Transferencia de NFT</string>
     <string name="nft_disabled_transfer">El NFT está en venta en el mercado ahora. Para transferirlo, primero debes quitarlo de la venta.</string>
     <string name="continue_action">Continuar</string>
@@ -168,6 +174,7 @@
     <string name="yesterday">Ayer</string>
     <string name="collectibles">Coleccionables</string>
     <string name="purchases">Compras</string>
+    <string name="enter_amount">Ingrese el monto</string>
     <string name="call_contract">Llamar contrato</string>
     <string name="contract_address">Dirección del contrato</string>
     <string name="about_collection">Sobre la colección</string>
@@ -183,6 +190,7 @@
     <string name="empty_collectibles_subtitle">¡Consigue tu primer objeto!</string>
     <string name="new_wallet">Nuevo monedero</string>
     <string name="buy_toncoin">Comprar Toncoin</string>
+    <string name="buy_or_sell_dot">Comprar · Vender</string>
     <string name="buy_or_sell">Comprar o vender</string>
     <string name="fiat_open_description">Está abriendo una aplicación externa que no es operada por Tonkeeper.</string>
     <string name="buy">Comprar</string>
@@ -324,6 +332,7 @@
     <string name="logout_confirmation">Tengo una copia de seguridad de la frase de recuperación para %1$s</string>
     <string name="last_updated">Actualizado %1$s</string>
     <string name="back_up_now">Hacer copia de seguridad</string>
+    <string name="confirm_swap">Confirmar intercambio</string>
     <string name="max">Máx</string>
     <string name="confirm_and_send">Confirmar y enviar</string>
     <string name="confirm_action">Confirmar acción</string>
@@ -348,7 +357,7 @@
     <string name="system">Sistema</string>
     <string name="network_fee">Tarifa de red</string>
     <string name="confirm">Confirmar</string>
-    <string name="send_request_comment">Debe incluir la nota del intercambio para la transferencia. Sin ella, sus fondos se perderán.</string>
+    <string name="send_request_comment">Al enviar, asegúrate de incluir el memo o etiqueta del intercambio. Sin él, los fondos no se depositarán y podrían perderse.</string>
     <string name="banner_top">Actualmente estás usando una versión experimental de Tonkeeper.</string>
     <string name="banner_top_button">Instalar versión estable</string>
     <string name="signer_description">Abra Signer » Seleccione la clave requerida » Escanee el código QR</string>
@@ -403,7 +412,7 @@
     <string name="battery">Batería</string>
     <string name="battery_refill_title">Batería de Tonkeeper</string>
     <string name="battery_refill_subtitle">Intercambia a través de Tonkeeper, envía tokens y NFTs.</string>
-    <plurals name="battery_current_charges">
+    <plurals name="battery_charges">
         <item quantity="one">%1$s carga</item>
         <item quantity="other">%1$s cargas</item>
     </plurals>
@@ -417,13 +426,13 @@
     <string name="battery_nft">Transferencias de NFT</string>
     <string name="battery_swap">intercambios a través de Tonkeeper</string>
     <string name="battery_jetton">transferencias de tokens</string>
+    <string name="battery_trc20">Transferencias de USD₮ TRC20</string>
     <string name="battery_swap_single">intercambio</string>
     <string name="battery_transfer_single">transferencia</string>
     <plurals name="battery_charges_per_action">
         <item quantity="one">≈ %1$s carga por %2$s</item>
         <item quantity="other">≈ %1$s cargas por %2$s</item>
     </plurals>
-    <string name="will_be_paid_with_battery">Se pagará con la batería</string>
     <string name="battery_settings_title">Configuración de la batería</string>
     <string name="battery_settings_subtitle">Las transacciones seleccionadas serán pagadas por la batería de Tonkeeper.</string>
     <string name="battery_recharge_title">Recargar</string>
@@ -473,6 +482,7 @@
     <string name="name">Nombre</string>
     <string name="ledger_blind_signing_error">La firma ciega debe estar habilitada en la configuración de Ledger</string>
     <string name="nothing_to_restore">Nada que restaurar</string>
+    <string name="purchase">Compra</string>
     <string name="new_contact">Nueva dirección</string>
     <string name="contact_delete_dialog">¿Está seguro de que desea eliminar “%1$s” de su libreta de direcciones?</string>
     <string name="add_to_contact">Agregar a la libreta de direcciones</string>
@@ -502,15 +512,19 @@
     <string name="stories_safemode_2_subtitle">Para evitar spam y artículos falsos.</string>
     <string name="stories_safemode_3_title">Solo tokens verificados</string>
     <string name="tx_marked_as_spam">Transacción marcada como Spam</string>
+    <string name="exchange_rate">Tipo de cambio</string>
     <string name="address_prefix">DIRECCIÓN:</string>
     <string name="your_address">Su dirección:</string>
     <string name="safe_mode_tokens_footer">El modo seguro está habilitado. Solo están disponibles los tokens verificados. <annotation colorAttr="textAccentColor">Configuración</annotation></string>
     <string name="all">Todo</string>
     <string name="report_encrypted_comment">El comentario de esta transacción se enviará con el informe en forma descifrada.</string>
     <string name="select_from_gallery">Seleccionar de la galería</string>
+    <string name="swipe_right">Desliza hacia la derecha</string>
     <string name="open">Abierto</string>
     <string name="theme_light">Ligero</string>
+    <string name="payment_method">Método de pago</string>
     <string name="downloading">Descargando…</string>
+    <string name="emulation_failed_warning">Tras la confirmación, cualquier cosa puede pasar, incluso perder todos tus fondos. Todas las transacciones son irreversibles. No pudimos emular la transacción y desconocemos qué ocurrirá después.</string>
     <string name="update_tonkeeper">Actualizar Tonkeeper</string>
     <string name="update_tonkeeper_subtitle">Hay una nueva versión de Tonkeeper disponible. Puedes descargarla ahora.</string>
     <string name="download_error">Error de descarga. Pulsa para volver a intentarlo.</string>
@@ -529,9 +543,69 @@
     <string name="default_font_size">Tamaño de fuente predeterminado</string>
     <string name="words12">12 palabras</string>
     <string name="words24">24 palabras</string>
+    <string name="provider">Proveedor</string>
     <string name="theme_deep_blue">Azul profundo</string>
     <string name="theme_dark">Oscuro</string>
     <string name="sign_data_binary_message">Estás firmando a ciegas. Firma solo con fuentes confiables.</string>
     <string name="slide_to_sign">Deslizar para firmar</string>
+    <string name="insufficient_battery_charges">Cargas de batería insuficientes</string>
+    <string name="insufficient_balance_charges">Requerido para la tarifa: %1$s.\nDisponible: %2$s.</string>
+    <string name="receive_tron_description">Envía solo %1$s a esta dirección, o podrías perder tus fondos.</string>
+    <string name="open_explorer">Abrir en el explorador</string>
+    <string name="out_of_available_charges">agotado de %1$s</string>
+    <string name="tron_toggle_text">Usa USD₮ TRC20 sin TRX. Las tarifas son cubiertas por Tonkeeper Battery.</string>
+    <string name="trc20">TRC20</string>
+    <string name="copy_phrase">Copiar frase</string>
+    <string name="export_tron">Exportar billetera TRC20</string>
+    <string name="phrase_title_tron">Billetera TRC20</string>
+    <string name="phrase_description_tron">Anota estas palabras con sus números y guárdalas en un lugar seguro.</string>
+    <string name="prhase_tron_warning">Esta frase es solo para TRC20. No puede restaurar tu billetera TON. Usa tu frase de recuperación de TON para restaurar la billetera TON.</string>
+    <string name="battery_required_title">Se requiere Tonkeeper Battery para %1$s</string>
+    <string name="battery_required_text">Las cargas de batería se utilizan para cubrir las tarifas de transacción, haciendo las transferencias más simples y rentables.</string>
+    <string name="charge_battery">Cargar batería</string>
+    <string name="send_wrong_blockchain">La dirección pertenece a la red %1$s.</string>
+    <string name="send_wrong_blockchain_swap">Intercambia USD₮ %1$s por USD₮ %2$s a través de %3$s para continuar con la transferencia.</string>
+    <string name="enable_usdt_tron">Habilitar USD₮ TRC20</string>
+    <string name="dapp_share_title">Compartir %1$s</string>
+    <string name="dapp_share_subtitle">Este enlace abre %1$s directamente en Tonkeeper. Puedes usarlo más tarde o compartirlo si es necesario.</string>
+    <string name="copy_link">Copiar enlace</string>
+    <string name="dapp_disclaimer">Estás abriendo una aplicación externa que no es operada por Tonkeeper. Procede solo si confías en la fuente.</string>
+    <string name="sign">Firmar</string>
+    <string name="ton_assets">Activos de TON</string>
+    <string name="pair_not_available">Este par de divisas no está disponible. Intente con otro.</string>
+    <string name="balance_prefix">Saldo: %1$s</string>
+    <string name="all_currencies">Todas las monedas</string>
+    <string name="crypto">Cripto</string>
+    <string name="close">Cerca</string>
+    <string name="dapp_safe_modal_title">El enlace conduce a un servicio fraudulento.</string>
+    <string name="dapp_safe_model_button">Cómo mantenerse seguro</string>
+    <string name="dapp_safe_modal_subtitle">No lo abrimos por razones de seguridad.</string>
+    <string name="credit_card">Tarjeta de crédito</string>
+    <string name="credit_card_subtitle">Visa o Mastercard</string>
+    <string name="currency_not_found">Moneda no encontrada</string>
+    <string name="onrmap_provider_description">Otros proveedores disponibles para diferentes pares de divisas.</string>
+    <string name="min_amount">Importe mínimo: %1$s</string>
+    <string name="stake_ethena_description">El token tsUSDe representa USDe mantenido a través de Ethena, un servicio de staking descentralizado. tsUSDe acumula automáticamente recompensas de staking, con un bloqueo mínimo.</string>
+    <string name="support_title">¿Necesitas ayuda?</string>
+    <string name="support_subtitle">Pregúntanos en Telegram — haremos todo lo posible por ayudarte.</string>
+    <string name="ask_question">Hacer una pregunta</string>
+    <string name="renew_dns_title">Dominios que expiran</string>
+    <string name="renew_dns_expires">Caduca en %1$d días</string>
+    <string name="wallet_renew_dns">Tienes %1$d dominios a punto de expirar. Renueva todos hasta %2$s.</string>
+    <string name="renew_dns_until">Renovar todo hasta %1$s</string>
+    <string name="renew_signel_dns_until">Renovar hasta %1$s</string>
+    <string name="renew_dns_all">Renovar todo</string>
+    <string name="dns_onsale_error_title">El dominio está a la venta en el mercado ahora</string>
+    <string name="dns_onsale_error_desc">Para renovar el dominio, primero debes eliminarlo de la venta.</string>
+    <string name="choose_token">Elija token</string>
+    <string name="about_usde">Acerca de USDe</string>
+    <string name="empty_history">Sin transacciones</string>
+    <string name="staked_usde">USDe en staking</string>
+    <string name="learn_more">Más información</string>
+    <string name="charging_unavailable">La carga de la batería no está disponible</string>
+    <string name="ethena_operated_by">Operado por %1$s</string>
+    <string name="deposit_and_stake">Depositar y hacer staking</string>
+    <string name="ethena_check_eligibility">Comprobar estado</string>
+    <string name="about_ethena">Acerca de Ethena</string>
 
 </resources>

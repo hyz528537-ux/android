@@ -10,6 +10,7 @@
     <string name="staking_pending_withdraw">%1$s ще бъде изтеглен след %2$s</string>
     <string name="edit_full">Редактиране</string>
     <string name="safe_mode_tonconnect_description">Можете да промените това в настройките за сигурност на портфейла си.</string>
+    <string name="renew_dns_done">Домейнът е удължен за 1 година</string>
     <string name="staking_unstake_cycle">Заявката за премахване на залагане ще бъде обработена след края на цикъла на валидиране в %1$s</string>
     <string name="send_transaction_scroll">Проверете всички подробности, за да потвърдите</string>
     <string name="send_transaction_detail">Общата стойност на токените, които ще бъдат изпратени от вашия портфейл. Възстановяванията не са включени в общата стойност.</string>
@@ -29,8 +30,10 @@
     <string name="setup_finish_title">Завършете настройката</string>
     <string name="setup_finish_push">Активирайте уведомления за транзакции</string>
     <string name="setup_finish_biometry">Използвайте биометрия за потвърждаване на транзакции</string>
-    <string name="setup_finish_backup">Резервирайте възстановителната фраза на портфейла</string>
+    <string name="setup_finish_backup">Архивирайте вашата фраза за възстановяване</string>
+    <string name="setup_finish_backup_subtitle">Без нея не можете да възстановите своя портфейл</string>
     <string name="setup_finish_telegram">Присъединете се към канала на Tonkeeper</string>
+    <string name="setup_onboarding">Научете се как да използвате портфейла си</string>
     <string name="hide_full_collection">Скриване на колекцията</string>
     <string name="safe_mode_description">В този режим са налични само проверени приложения, NFT и токени. <annotation colorAttr="textAccentColor">Научете повече</annotation></string>
 
@@ -68,10 +71,12 @@
     <string name="liquid_staking">Течен залог</string>
     <string name="other">Други</string>
     <string name="minimum_amount">Минимум %1$s</string>
+    <string name="stake_ethena_disclaimer">Това е прогнозната годишна доходност, базирана на средните награди по протокола за изминалата седмица и средната сума на заложените USDe. Доходността се изчислява на годишна база със седмично начисляване на проценти. <annotation colorAttr="textSecondaryColor">Миналите резултати не гарантират бъдещи резултати.</annotation> Залагането и наградите се предоставят от Ethena, услуга на трета страна, и са предмет на техните <annotation colorAttr="textAccentColor">условия</annotation>.</string>
     <string name="stake_tonstakers_description">Когато заложите TON в пул на Tonstakers, получавате токен, наречен tsTON, който представлява вашия дял в пул. Тъй като пулът натрупва печалби, вашият tsTON представлява по-голямо количество TON.</string>
     <string name="edit">Редактиране</string>
     <string name="pinned">Прикрепено</string>
     <string name="all_assets">Всички активи</string>
+    <string name="all_ton_assets">Всички активи на TON</string>
     <string name="sorted_by_price">Сортирано по цена</string>
     <string name="spam">Спам</string>
     <string name="burn">Изгори</string>
@@ -184,6 +189,7 @@
     <string name="unsubscribed">Отписано</string>
     <string name="subscribed">Абонирано</string>
     <string name="received">Получено</string>
+    <string name="on_sale">В ПРОМОЦИЯ</string>
     <string name="nft_transfer">Трансфер на NFT</string>
     <string name="nft_disabled_transfer">NFT в момента е на продажба в пазара. За трансфер, трябва първо да го премахнете от продажба.</string>
 
@@ -209,6 +215,7 @@
     <string name="yesterday">Вчера</string>
     <string name="collectibles">Колекционерски предмети</string>
     <string name="purchases">Покупки</string>
+    <string name="enter_amount">Въведете сума</string>
     <string name="call_contract">Повикване на договор</string>
     <string name="contract_address">Адрес на договора</string>
     <string name="about_collection">За колекцията</string>
@@ -227,6 +234,7 @@
 
     <string name="new_wallet">Нов портфейл</string>
     <string name="buy_toncoin">Купете Toncoin</string>
+    <string name="buy_or_sell_dot">Купуване · Продажба</string>
     <string name="buy_or_sell">Купи или продай</string>
     <string name="fiat_open_description">Отваряте външно приложение, което не се управлява от Tonkeeper.</string>
     <string name="buy">Купи</string>
@@ -388,6 +396,7 @@
     <string name="logout_confirmation">Имам резервно копие на възстановителната фраза</string>
     <string name="last_updated">Актуализиран %1$s</string>
     <string name="back_up_now">Направете резервно копие сега</string>
+    <string name="confirm_swap">Потвърждаване на размяната</string>
     <string name="max">Макс</string>
     <string name="confirm_and_send">Потвърди и изпрати</string>
     <string name="confirm_action">Потвърдете действие</string>
@@ -412,7 +421,7 @@
     <string name="system">Система</string>
     <string name="network_fee">Мрежова такса</string>
     <string name="confirm">Потвърдете</string>
-    <string name="send_request_comment">Трябва да включите бележка от обмена за трансфер. Без нея средствата ви ще бъдат загубени.</string>
+    <string name="send_request_comment">При изпращане не забравяйте да включите бележката или тагa от борсата. Без него средствата няма да бъдат депозирани и може да бъдат загубени.</string>
     <string name="banner_top">В момента използвате експериментална версия на Tonkeeper.</string>
     <string name="banner_top_button">Инсталирайте стабилната версия</string>
     <string name="signer_description">Отворете Signer » Изберете необходимия ключ » Сканирайте QR код</string>
@@ -471,7 +480,7 @@
     <string name="battery">Батерия</string>
     <string name="battery_refill_title">Батерия Tonkeeper</string>
     <string name="battery_refill_subtitle">Обменяйте чрез Tonkeeper, изпращайте токени.</string>
-    <plurals name="battery_current_charges">
+    <plurals name="battery_charges">
         <item quantity="one">%1$s заряд</item>
         <item quantity="other">%1$s заряда</item>
     </plurals>
@@ -485,13 +494,13 @@
     <string name="battery_nft">изпращане на NFT</string>
     <string name="battery_swap">обмен чрез Tonkeeper</string>
     <string name="battery_jetton">изпращане на токени</string>
+    <string name="battery_trc20">Преводи с USD₮ TRC20</string>
     <string name="battery_swap_single">обмен</string>
     <string name="battery_transfer_single">изпращане</string>
     <plurals name="battery_charges_per_action">
         <item quantity="one">≈ %1$s заряд за %2$s</item>
         <item quantity="other">≈ %1$s заряда за %2$s</item>
     </plurals>
-    <string name="will_be_paid_with_battery">Ще бъде платено с батерията</string>
     <string name="battery_settings_title">Настройки на батерията</string>
     <string name="battery_settings_subtitle">Избраните транзакции ще бъдат платени с батерията Tonkeeper.</string>
     <string name="battery_recharge_title">Презареждане</string>
@@ -522,6 +531,7 @@
     <string name="name">Име</string>
     <string name="ledger_blind_signing_error">Сляпото подписване трябва да е активирано в Настройки на Ledger</string>
     <string name="nothing_to_restore">Нищо за възстановяване</string>
+    <string name="purchase">Покупка</string>
     <string name="new_contact">Нов адрес</string>
     <string name="contact_delete_dialog">Сигурни ли сте, че искате да изтриете „%1$s“ от вашата адресна книга?</string>
     <string name="add_to_contact">Добавяне към адресната книга</string>
@@ -549,14 +559,18 @@
     <string name="stories_safemode_2_subtitle">За да избегнете спам и фалшиви артикули.</string>
     <string name="stories_safemode_3_title">Само проверени токени</string>
     <string name="tx_marked_as_spam">Транзакцията е маркирана като спам</string>
+    <string name="exchange_rate">Валутен курс</string>
     <string name="address_prefix">Адрес:</string>
     <string name="your_address">Вашият адрес:</string>
     <string name="safe_mode_tokens_footer">Безопасният режим е активиран. Налични са само потвърдени токени. <annotation colorAttr="textAccentColor">Настройки</annotation></string>
     <string name="all">Всички</string>
     <string name="report_encrypted_comment">Коментарът от тази транзакция ще бъде изпратен с отчет в декриптирана форма.</string>
+    <string name="swipe_right">Плъзнете надясно</string>
     <string name="open">Отворете</string>
     <string name="theme_light">Светлина</string>
+    <string name="payment_method">Метод на плащане</string>
     <string name="downloading">Изтегля се...</string>
+    <string name="emulation_failed_warning">След потвърждение може да се случи всичко, включително загуба на всички ваши средства. Всички транзакции са необратими. Не успяхме да емулираме транзакцията и не знаем какво ще се случи след това.</string>
     <string name="update_tonkeeper">Актуализирайте Tonkeeper</string>
     <string name="update_tonkeeper_subtitle">Налична е нова версия на Tonkeeper. Можете да го изтеглите сега.</string>
     <string name="download_error">Грешка при изтегляне. Докоснете за повторен опит.</string>
@@ -575,8 +589,69 @@
     <string name="default_font_size">Размер на шрифта по подразбиране</string>
     <string name="words12">12 думи</string>
     <string name="words24">24 думи</string>
+    <string name="provider">Доставчик</string>
     <string name="theme_deep_blue">Deep Blue</string>
     <string name="theme_dark">Тъмно</string>
     <string name="sign_data_binary_message">Подписваш се на сляпо. Подписвайте само от доверени източници.</string>
     <string name="slide_to_sign">Плъзнете, за да подпишете</string>
+    <string name="insufficient_battery_charges">Недостатъчен\nзаряд на батерията</string>
+    <string name="insufficient_balance_charges">Необходимо за такса: %1$s\nНалично: %2$s</string>
+    <string name="receive_tron_description">Изпращайте само %1$s на този адрес, в противен случай може да загубите средствата си.</string>
+    <string name="open_explorer">Отвори в изследователя</string>
+    <string name="out_of_available_charges">изчерпани %1$s налични</string>
+    <string name="tron_toggle_text">Използвайте USD₮ TRC20 без TRX. Таксите се покриват от Tonkeeper Battery.</string>
+    <string name="trc20">TRC20</string>
+    <string name="copy_phrase">Копирай фразата</string>
+    <string name="export_tron">Експортирай TRC20 портфейл</string>
+    <string name="phrase_title_tron">TRC20 портфейл</string>
+    <string name="phrase_description_tron">Запишете тези думи с техните номера и ги съхранявайте на сигурно място.</string>
+    <string name="prhase_tron_warning">Тази фраза е само за TRC20. Тя не може да възстанови вашия TON портфейл. Използвайте вашата възстановителна фраза за TON за възстановяване на TON портфейла.</string>
+    <string name="battery_required_title">Необходим е Tonkeeper Battery за %1$s</string>
+    <string name="battery_required_text">Зарядите на батерията се използват за покриване на таксите за транзакции, правейки трансферите по-прости и икономични.</string>
+    <string name="charge_battery">Зареди батерията</string>
+    <string name="send_wrong_blockchain">Адресът принадлежи на мрежата %1$s.</string>
+    <string name="send_wrong_blockchain_swap">Разменете USD₮ %1$s за USD₮ %2$s чрез %3$s, за да продължите с трансфера.</string>
+    <string name="enable_usdt_tron">Активирайте USD₮ TRC20</string>
+    <string name="dapp_share_title">Сподели %1$s</string>
+    <string name="dapp_share_subtitle">Този линк отваря %1$s директно в Tonkeeper. Можете да го използвате по-късно или да го споделите при нужда.</string>
+    <string name="copy_link">Копирай линк</string>
+    <string name="dapp_disclaimer">Отваряте външно приложение, което не се управлява от Tonkeeper. Продължете само ако се доверявате на източника.</string>
+    <string name="sign">Подпишете</string>
+    <string name="ton_assets">Активи на TON</string>
+    <string name="pair_not_available">Тази валутна двойка не е налична. Моля, опитайте с друга.</string>
+    <string name="balance_prefix">Баланс: %1$s</string>
+    <string name="all_currencies">Всички валути</string>
+    <string name="crypto">Крипто</string>
+    <string name="close">Затвори</string>
+    <string name="dapp_safe_modal_title">Връзката води към измамна услуга</string>
+    <string name="dapp_safe_model_button">Как да останем в безопасност</string>
+    <string name="dapp_safe_modal_subtitle">Не го отворихме от съображения за безопасност</string>
+    <string name="credit_card">Кредитна карта</string>
+    <string name="credit_card_subtitle">Visa или Mastercard</string>
+    <string name="currency_not_found">Валутата не е намерена</string>
+    <string name="onrmap_provider_description">Други доставчици са налични за различни валутни двойки.</string>
+    <string name="min_amount">Мин. сума: %1$s</string>
+    <string name="stake_ethena_description">Токенът tsUSDe представлява USDe, държан чрез Ethena, децентрализирана услуга за стейкинг. tsUSDe автоматично натрупва награди за стейкинг, с минимално заключване.</string>
+    <string name="support_title">Нуждаете се от помощ?</string>
+    <string name="support_subtitle">Пишете ни в Telegram — ще направим всичко възможно да помогнем.</string>
+    <string name="ask_question">Задайте въпрос</string>
+    <string name="renew_dns_title">Изтичащи домейни</string>
+    <string name="renew_dns_expires">Изтича след %1$d дни</string>
+    <string name="wallet_renew_dns">Имате %1$d изтичащи домейна. Подновете всички до %2$s.</string>
+    <string name="renew_dns_until">Подновяване на всички до %1$s</string>
+    <string name="renew_signel_dns_until">Подновяване до %1$s</string>
+    <string name="renew_dns_all">Подновяване на всички</string>
+    <string name="dns_onsale_error_title">Домейнът е в продажба на пазара сега</string>
+    <string name="dns_onsale_error_desc">За подновяване на домейн, първо трябва да го премахнете от продажба.</string>
+    <string name="choose_token">Изберете токен</string>
+    <string name="about_usde">Относно USDe</string>
+    <string name="empty_history">Няма транзакции</string>
+    <string name="staked_usde">Заложен USDe</string>
+    <string name="learn_more">Научете повече</string>
+    <string name="charging_unavailable">Зареждането на батерията не е налично</string>
+    <string name="ethena_operated_by">Управлява се от %1$s</string>
+    <string name="deposit_and_stake">Депозирайте и заложете</string>
+    <string name="ethena_check_eligibility">Проверете статуса</string>
+    <string name="about_ethena">Относно Ethena</string>
+
 </resources>

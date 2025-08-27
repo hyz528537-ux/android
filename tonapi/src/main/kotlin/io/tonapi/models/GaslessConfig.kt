@@ -17,26 +17,30 @@ package io.tonapi.models
 
 import io.tonapi.models.GaslessConfigGasJettonsInner
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param relayAddress sending excess to this address decreases the commission of a gasless transfer
- * @param gasJettons list of jettons, any of them can be used to pay for gas
- */
 
+@Serializable
 
 data class GaslessConfig (
 
     /* sending excess to this address decreases the commission of a gasless transfer */
-    @Json(name = "relay_address")
+    @SerialName(value = "relay_address")
     val relayAddress: kotlin.String,
 
     /* list of jettons, any of them can be used to pay for gas */
-    @Json(name = "gas_jettons")
+    @SerialName(value = "gas_jettons")
     val gasJettons: kotlin.collections.List<GaslessConfigGasJettonsInner>
 
-)
+) {
+
+
+}
 

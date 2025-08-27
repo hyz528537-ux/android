@@ -17,20 +17,25 @@ package io.tonapi.models
 
 import io.tonapi.models.ApyHistory
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param apy 
- */
 
+@Serializable
 
 data class GetStakingPoolHistory200Response (
 
-    @Json(name = "apy")
+    @SerialName(value = "apy")
     val apy: kotlin.collections.List<ApyHistory>
 
-)
+) {
+
+
+}
 

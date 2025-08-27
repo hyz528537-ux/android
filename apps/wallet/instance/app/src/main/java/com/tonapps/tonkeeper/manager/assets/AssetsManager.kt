@@ -1,7 +1,7 @@
 package com.tonapps.tonkeeper.manager.assets
 
 import android.content.Context
-import android.util.Log
+import com.tonapps.blockchain.ton.extensions.equalsAddress
 import com.tonapps.icu.Coins
 import com.tonapps.icu.Coins.Companion.sumOf
 import com.tonapps.tonkeeper.core.entities.AssetsEntity
@@ -9,15 +9,18 @@ import com.tonapps.tonkeeper.core.entities.AssetsEntity.Companion.sort
 import com.tonapps.tonkeeper.core.entities.StakedEntity
 import com.tonapps.tonkeeper.extensions.isSafeModeEnabled
 import com.tonapps.wallet.api.API
+import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.entities.WalletEntity
-import com.tonapps.wallet.data.core.WalletCurrency
+import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.rates.RatesRepository
 import com.tonapps.wallet.data.settings.SettingsRepository
+import com.tonapps.wallet.data.staking.StakingPool
 import com.tonapps.wallet.data.staking.StakingRepository
 import com.tonapps.wallet.data.staking.entities.StakingEntity
 import com.tonapps.wallet.data.token.TokenRepository
 import com.tonapps.wallet.data.token.entities.AccountTokenEntity
+import com.tonapps.wallet.data.token.entities.TokenRateEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.drop
@@ -52,8 +55,43 @@ class AssetsManager(
         refresh: Boolean,
     ): List<AssetsEntity>? {
         val tokens = getTokens(wallet, currency, refresh)
-        val staked = getStaked(wallet, tokens.map { it.token }, currency, refresh)
-        val filteredTokens = tokens.filter { !it.token.isLiquid }
+        var staked = getStaked(wallet, tokens.map { it.token }, currency, refresh)
+
+        val filteredTokens = tokens.filter { !it.token.isLiquid && !it.token.isUSDe }.toMutableList()
+        val tokenTsUsde =
+            tokens.firstOrNull { it.token.address.equalsAddress(TokenEntity.TON_TS_USDE) }?.token
+        val tokenUsde =
+            tokens.firstOrNull { it.token.address.equalsAddress(TokenEntity.TON_USDE) }?.token
+        tokenUsde?.let {
+            if (tokenTsUsde != null) {
+                val rates = ratesRepository.getRates(
+                    currency,
+                    listOf(it.address, tokenTsUsde.address)
+                )
+                val stakedUsde = rates.convert(
+                    from = WalletCurrency.TS_USDE_TON_ETHENA,
+                    value = tokenTsUsde.balance.value,
+                    to = WalletCurrency.USDE_TON_ETHENA
+                )
+                val balance =
+                    it.balance.copy(value = it.balance.value + stakedUsde)
+                filteredTokens.add(
+                    AssetsEntity.Token(
+                        token = it.copy(
+                            balance = balance,
+                            fiatRate = TokenRateEntity(
+                                currency = currency,
+                                fiat = rates.convert(it.address, balance.value),
+                                rate = rates.getRate(it.address),
+                                rateDiff24h = rates.getDiff24h(it.address)
+                            )
+                        )
+                    )
+                )
+            } else {
+                filteredTokens.add(AssetsEntity.Token(token = it))
+            }
+        }
         val list = (filteredTokens + staked).sortedBy { it.fiat }.reversed()
         if (list.isEmpty()) {
             return null
@@ -61,13 +99,49 @@ class AssetsManager(
         return list
     }
 
-    private suspend fun getTokens(
+    suspend fun getTONBalance(
+        wallet: WalletEntity, currency: WalletCurrency = settingsRepository.currency
+    ) = getToken(
+        wallet = wallet, token = "TON", currency = currency
+    )?.balance ?: Coins.ZERO
+
+    suspend fun getToken(
+        wallet: WalletEntity, token: String, currency: WalletCurrency = settingsRepository.currency
+    ): AssetsEntity.Token? {
+        val tokens = getTokens(wallet, currency, false)
+        return tokens.firstOrNull {
+            it.token.address.equalsAddress(token)
+        }
+    }
+
+    suspend fun getTokens(
+        wallet: WalletEntity,
+        accountIds: List<String>,
+        currency: WalletCurrency = settingsRepository.currency
+    ): List<AssetsEntity.Token> = withContext(Dispatchers.IO) {
+        if (accountIds.isEmpty()) {
+            emptyList()
+        } else {
+            val tokens = getTokens(wallet, currency, false)
+            tokens.filter {
+                accountIds.any { accountId -> it.token.address.equalsAddress(accountId) }
+            }
+        }
+    }
+
+    suspend fun getTokens(
         wallet: WalletEntity,
         currency: WalletCurrency = settingsRepository.currency,
         refresh: Boolean,
-    ): List<AssetsEntity.Token>  {
+    ): List<AssetsEntity.Token> {
         val safeMode = settingsRepository.isSafeModeEnabled(api)
-        val tokens = tokenRepository.get(currency, wallet.accountId, wallet.testnet, refresh) ?: return emptyList()
+        val tronAddress =
+            if (wallet.hasPrivateKey && !wallet.testnet) {
+                accountRepository.getTronAddress(wallet.id)
+            } else null
+        val tokens =
+            tokenRepository.get(currency, wallet.accountId, wallet.testnet, refresh, tronAddress)
+                ?: return emptyList()
         tokens.firstOrNull()?.let {
             if (wallet.initialized != it.balance.initializedAccount) {
                 accountRepository.setInitialized(wallet.accountId, it.balance.initializedAccount)
@@ -87,18 +161,15 @@ class AssetsManager(
         refresh: Boolean,
     ): List<AssetsEntity.Staked> {
         val staking = getStaking(wallet, refresh)
-        val staked = StakedEntity.create(staking, tokens, currency, ratesRepository)
+        val staked = StakedEntity.create(wallet, staking, tokens, currency, ratesRepository, api)
         return staked.map { AssetsEntity.Staked(it) }
     }
 
     private suspend fun getStaking(
-        wallet: WalletEntity,
-        refresh: Boolean
+        wallet: WalletEntity, refresh: Boolean
     ): StakingEntity {
         return stakingRepository.get(
-            accountId = wallet.accountId,
-            testnet = wallet.testnet,
-            ignoreCache = refresh
+            accountId = wallet.accountId, testnet = wallet.testnet, ignoreCache = refresh
         )
     }
 
@@ -120,19 +191,16 @@ class AssetsManager(
     }
 
     fun setCachedTotalBalance(
-        wallet: WalletEntity,
-        currency: WalletCurrency,
-        sorted: Boolean = false,
-        value: Coins
+        wallet: WalletEntity, currency: WalletCurrency, sorted: Boolean = false, value: Coins
     ) {
         cache.set(wallet, currency, sorted, value)
     }
 
     suspend fun getTotalBalance(
-        wallet: WalletEntity,
-        currency: WalletCurrency,
-        sorted: Boolean = false
-    ) = getCachedTotalBalance(wallet, currency, sorted) ?: requestTotalBalance(wallet, currency, sorted)
+        wallet: WalletEntity, currency: WalletCurrency, sorted: Boolean = false
+    ) = getCachedTotalBalance(wallet, currency, sorted) ?: requestTotalBalance(
+        wallet, currency, sorted
+    )
 
     private suspend fun calculateTotalBalance(
         wallet: WalletEntity,

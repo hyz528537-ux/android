@@ -9,7 +9,6 @@ import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.extensions.getTitle
 import com.tonapps.tonkeeper.ui.base.BaseHolderWalletScreen
 import com.tonapps.tonkeeper.ui.screen.send.main.SendException
-import com.tonapps.tonkeeper.ui.screen.staking.stake.StakingScreen
 import com.tonapps.tonkeeper.ui.screen.staking.unstake.UnStakeScreen
 import com.tonapps.tonkeeper.ui.screen.staking.unstake.UnStakeViewModel
 import com.tonapps.tonkeeper.ui.screen.staking.viewer.StakeViewerScreen
@@ -34,7 +33,6 @@ class UnStakeConfirmFragment: BaseHolderWalletScreen.ChildFragment<UnStakeScreen
     private lateinit var recipientView: TransactionDetailView
     private lateinit var amountView: TransactionDetailView
     private lateinit var feeView: TransactionDetailView
-    private lateinit var apyView: TransactionDetailView
     private lateinit var button: Button
     private lateinit var taskView: ProcessTaskView
 
@@ -53,8 +51,6 @@ class UnStakeConfirmFragment: BaseHolderWalletScreen.ChildFragment<UnStakeScreen
 
         feeView = view.findViewById(R.id.review_fee)
         feeView.setLoading()
-
-        apyView = view.findViewById(R.id.review_apy)
 
         button = view.findViewById(R.id.button)
         taskView = view.findViewById(R.id.task)

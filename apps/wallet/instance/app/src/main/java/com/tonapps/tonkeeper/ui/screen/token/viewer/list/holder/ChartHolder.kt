@@ -66,7 +66,7 @@ class ChartHolder(
             priceView.text = item.fiatPrice.withCustomSymbol(context)
         } else {
             val coins = Coins.of(price)
-            priceView.text = CurrencyFormatter.formatFiat(item.currency.code, coins, 4).withCustomSymbol(context)
+            priceView.text = CurrencyFormatter.formatFiat(item.currency.code, coins).withCustomSymbol(context)
         }
         setDiffPrice(price, item)
     }

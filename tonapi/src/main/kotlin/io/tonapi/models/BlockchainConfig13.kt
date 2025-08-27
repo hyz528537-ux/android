@@ -16,28 +16,31 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * The cost of filing complaints about incorrect operation of validators.
- *
- * @param deposit 
- * @param bitPrice 
- * @param cellPrice 
- */
 
+@Serializable
 
 data class BlockchainConfig13 (
 
-    @Json(name = "deposit")
+    @SerialName(value = "deposit")
     val deposit: kotlin.Long,
 
-    @Json(name = "bit_price")
+    @SerialName(value = "bit_price")
     val bitPrice: kotlin.Long,
 
-    @Json(name = "cell_price")
+    @SerialName(value = "cell_price")
     val cellPrice: kotlin.Long
 
-)
+) {
+
+
+}
 

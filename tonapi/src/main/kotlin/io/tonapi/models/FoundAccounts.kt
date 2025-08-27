@@ -17,20 +17,25 @@ package io.tonapi.models
 
 import io.tonapi.models.FoundAccountsAddressesInner
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param addresses 
- */
 
+@Serializable
 
 data class FoundAccounts (
 
-    @Json(name = "addresses")
+    @SerialName(value = "addresses")
     val addresses: kotlin.collections.List<FoundAccountsAddressesInner>
 
-)
+) {
+
+
+}
 

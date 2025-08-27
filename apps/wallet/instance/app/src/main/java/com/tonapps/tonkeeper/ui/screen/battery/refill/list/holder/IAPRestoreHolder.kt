@@ -20,9 +20,14 @@ class IAPRestoreHolder(
     private val textView = itemView.findViewById<AppCompatTextView>(R.id.text)
 
     override fun onBind(item: Item.RestoreIAP) {
-        val disclaimerText = context.getString(Localization.battery_disclaimer)
-        val restoreText = context.getString(Localization.restore_purchases)
-        val span = SpannableString("$disclaimerText $restoreText")
+        val disclaimerText = if (item.chargeEnabled) {
+            getString(Localization.battery_disclaimer)
+        } else {
+            getString(Localization.charging_unavailable)
+        }
+        val restoreText = getString(Localization.restore_purchases)
+        val textDivider = if (item.chargeEnabled) " " else "\n"
+        val span = SpannableString("$disclaimerText$textDivider$restoreText")
 
         val clickableSpan = object : ClickableSpan() {
             override fun onClick(widget: View) {

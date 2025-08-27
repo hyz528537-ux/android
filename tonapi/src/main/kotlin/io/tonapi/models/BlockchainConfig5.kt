@@ -16,28 +16,31 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param feeBurnNom 
- * @param feeBurnDenom 
- * @param blackholeAddr 
- */
 
+@Serializable
 
 data class BlockchainConfig5 (
 
-    @Json(name = "fee_burn_nom")
+    @SerialName(value = "fee_burn_nom")
     val feeBurnNom: kotlin.Long,
 
-    @Json(name = "fee_burn_denom")
+    @SerialName(value = "fee_burn_denom")
     val feeBurnDenom: kotlin.Long,
 
-    @Json(name = "blackhole_addr")
+    @SerialName(value = "blackhole_addr")
     val blackholeAddr: kotlin.String? = null
 
-)
+) {
+
+
+}
 

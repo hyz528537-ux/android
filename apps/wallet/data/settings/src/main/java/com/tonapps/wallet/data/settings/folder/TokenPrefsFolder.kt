@@ -1,11 +1,11 @@
 package com.tonapps.wallet.data.settings.folder
 
 import android.content.Context
-import android.util.Log
 import com.tonapps.wallet.data.settings.entities.TokenPrefsEntity
 import kotlinx.coroutines.CoroutineScope
 
-internal class TokenPrefsFolder(context: Context, scope: CoroutineScope): BaseSettingsFolder(context, scope, "token_prefs") {
+internal class TokenPrefsFolder(context: Context, scope: CoroutineScope) :
+    BaseSettingsFolder(context, scope, "token_prefs") {
 
     private companion object {
         private const val PINNED_PREFIX = "pinned_"
@@ -41,16 +41,39 @@ internal class TokenPrefsFolder(context: Context, scope: CoroutineScope): BaseSe
     }
 
     fun getHidden(walletId: String, tokenAddress: String): Boolean {
-        return getBoolean(keyHidden(walletId, tokenAddress))
+        // trc20 usdt
+        val defValue = tokenAddress == "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+        return getBoolean(keyHidden(walletId, tokenAddress), defValue)
     }
 
     fun getPinned(walletId: String, tokenAddress: String): Boolean {
-        val defValue = tokenAddress.equals("0:b113a994b5024a16719f69139328eb759596c38a25f59028b146fecdc3621dfe", ignoreCase = true) || tokenAddress.equals("ton", ignoreCase = true)
+        val defValue = tokenAddress.equals(
+            "0:b113a994b5024a16719f69139328eb759596c38a25f59028b146fecdc3621dfe",
+            ignoreCase = true
+        ) || tokenAddress.equals("ton", ignoreCase = true) || tokenAddress.equals(
+            "0:086fa2a675f74347b08dd4606a549b8fdb98829cb282bc1949d3b12fbaed9dcc",
+            ignoreCase = true
+        )
         return getBoolean(keyPinned(walletId, tokenAddress), defValue)
     }
 
     fun getIndex(walletId: String, tokenAddress: String): Int {
-        return getInt(keySort(walletId, tokenAddress))
+        val index = getInt(keySort(walletId, tokenAddress), -1)
+        if (tokenAddress.equals("0:086fa2a675f74347b08dd4606a549b8fdb98829cb282bc1949d3b12fbaed9dcc", ignoreCase = true) && index == -1) {
+            val trc20UsdtIndex = getIndex(walletId, "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")
+            if (trc20UsdtIndex != -1) {
+                return trc20UsdtIndex + 1 // USDe should be after TRC20
+            }
+
+            val tonUsdtIndex = getIndex(walletId, "0:b113a994b5024a16719f69139328eb759596c38a25f59028b146fecdc3621dfe")
+            if (tonUsdtIndex != -1) {
+                return tonUsdtIndex + 1 // USDe should be after USDT
+            }
+
+            return 2
+        }
+
+        return index
     }
 
     fun setPinned(walletId: String, tokenAddress: String, pinned: Boolean) {

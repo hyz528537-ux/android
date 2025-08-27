@@ -16,29 +16,30 @@
 package io.batteryapi.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import io.batteryapi.models.GetTonConnectPayload200Response
-import io.batteryapi.models.GetTonConnectPayloadDefaultResponse
+import io.batteryapi.models.InlineObject
 
-import com.squareup.moshi.Json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-import io.batteryapi.infrastructure.ApiClient
-import io.batteryapi.infrastructure.ApiResponse
-import io.batteryapi.infrastructure.ClientException
-import io.batteryapi.infrastructure.ClientError
-import io.batteryapi.infrastructure.ServerException
-import io.batteryapi.infrastructure.ServerError
-import io.batteryapi.infrastructure.MultiValueMap
-import io.batteryapi.infrastructure.PartConfig
-import io.batteryapi.infrastructure.RequestConfig
-import io.batteryapi.infrastructure.RequestMethod
-import io.batteryapi.infrastructure.ResponseType
-import io.batteryapi.infrastructure.Success
-import io.batteryapi.infrastructure.toMultiValue
+import io.infrastructure.ApiClient
+import io.infrastructure.ApiResponse
+import io.infrastructure.ClientException
+import io.infrastructure.ClientError
+import io.infrastructure.ServerException
+import io.infrastructure.ServerError
+import io.infrastructure.MultiValueMap
+import io.infrastructure.PartConfig
+import io.infrastructure.RequestConfig
+import io.infrastructure.RequestMethod
+import io.infrastructure.ResponseType
+import io.infrastructure.Success
+import io.infrastructure.toMultiValue
 
-class ConnectApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class ConnectApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -46,16 +47,6 @@ class ConnectApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Get a payload for further token receipt
-     * @return GetTonConnectPayload200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getTonConnectPayload() : GetTonConnectPayload200Response {
@@ -76,13 +67,6 @@ class ConnectApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         }
     }
 
-    /**
-     * 
-     * Get a payload for further token receipt
-     * @return ApiResponse<GetTonConnectPayload200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getTonConnectPayloadWithHttpInfo() : ApiResponse<GetTonConnectPayload200Response?> {
@@ -93,11 +77,6 @@ class ConnectApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
         )
     }
 
-    /**
-     * To obtain the request config of the operation getTonConnectPayload
-     *
-     * @return RequestConfig
-     */
     fun getTonConnectPayloadRequestConfig() : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()

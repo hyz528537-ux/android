@@ -16,32 +16,17 @@
 package io.batteryapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
-/**
- * 
- *
- * @param boc 
- */
 
+@Serializable
 
 data class EmulateMessageToWalletRequest (
 
-    @Json(name = "boc")
-    val boc: kotlin.String,
-
-    @Json(name = "message")
-    val version: kotlin.String? = null,
-
-    @Json(name = "platform")
-    val platform: kotlin.String? = null,
-
-    @Json(name = "source")
-    val source: kotlin.String? = null,
-
-    @Json(name = "confirmation_time")
-    val confirmationTime: kotlin.Double? = null
+    @SerialName(value = "boc")
+    val boc: kotlin.String
 
 ) {
 

@@ -16,26 +16,33 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * 
  *
- * Values: unchanged,frozen,deleted
+ * Values: acst_unchanged,acst_frozen,acst_deleted.unknown
  */
-
-@JsonClass(generateAdapter = false)
+@Serializable(with = AccStatusChangeSerializer::class)
 enum class AccStatusChange(val value: kotlin.String) {
 
-    @Json(name = "acst_unchanged")
-    unchanged("acst_unchanged"),
+    @SerialName(value = "acst_unchanged")
+    acst_unchanged("acst_unchanged"),
 
-    @Json(name = "acst_frozen")
-    frozen("acst_frozen"),
+    @SerialName(value = "acst_frozen")
+    acst_frozen("acst_frozen"),
 
-    @Json(name = "acst_deleted")
-    deleted("acst_deleted");
+    @SerialName(value = "acst_deleted")
+    acst_deleted("acst_deleted"),
+
+    @SerialName(value = "unknown")
+    unknown("unknown");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -57,10 +64,24 @@ enum class AccStatusChange(val value: kotlin.String) {
          */
         fun decode(data: kotlin.Any?): AccStatusChange? = data?.let {
           val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
+          entries.firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()
           }
         }
+    }
+}
+
+internal object AccStatusChangeSerializer : KSerializer<AccStatusChange> {
+    override val descriptor = kotlin.String.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): AccStatusChange {
+        val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+        return AccStatusChange.entries.firstOrNull { it.value == value }
+            ?: AccStatusChange.unknown
+    }
+
+    override fun serialize(encoder: Encoder, value: AccStatusChange) {
+        encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
     }
 }
 

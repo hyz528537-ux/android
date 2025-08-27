@@ -152,31 +152,6 @@
                 android:textAppearance="@style/TextAppearance.Label1"
                 android:text="@string/transfer"/>
 
-            <Button
-                style="@style/Widget.App.Button"
-                android:id="@+id/domain_link"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/offsetMedium"
-                android:layout_marginTop="@dimen/offsetMedium"
-                android:textAppearance="@style/TextAppearance.Label1"
-                android:text="@string/domain_link_button"/>
-
-            <Button
-                style="@style/Widget.App.Button"
-                android:id="@+id/domain_renew"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/offsetMedium"
-                android:layout_marginTop="@dimen/offsetMedium"
-                android:textAppearance="@style/TextAppearance.Label1"
-                android:text="@string/domain_renew_button"/>
-
-            <uikit.widget.ColumnLayout
-                android:id="@+id/buttons_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/transfer_disabled"
                 android:layout_width="match_parent"
@@ -187,6 +162,31 @@
                 android:text="@string/nft_disabled_transfer"
                 android:textColor="?attr/textSecondaryColor"
                 android:textAppearance="@style/TextAppearance.Body2"/>
+
+            <uikit.widget.ColumnLayout
+                android:id="@+id/buttons_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <Button
+                style="@style/Widget.App.Button.Secondary"
+                android:id="@+id/domain_renew"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/offsetMedium"
+                android:layout_marginTop="@dimen/offsetMedium"
+                android:textAppearance="@style/TextAppearance.Label1"
+                android:text="@string/domain_renew_button"/>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/domain_expiration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="@dimen/offsetMedium"
+                android:textAppearance="@style/TextAppearance.Body2"
+                android:gravity="center"
+                android:textColor="?attr/textSecondaryColor"
+                android:visibility="gone"/>
 
             <uikit.widget.RowLayout
                 android:layout_width="match_parent"

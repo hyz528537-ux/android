@@ -16,24 +16,28 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param apy 
- * @param time 
- */
 
+@Serializable
 
 data class ApyHistory (
 
-    @Json(name = "apy")
-    val apy: java.math.BigDecimal,
+    @SerialName(value = "apy")
+    val apy: kotlin.String,
 
-    @Json(name = "time")
+    @SerialName(value = "time")
     val time: kotlin.Int
 
-)
+) {
+
+
+}
 

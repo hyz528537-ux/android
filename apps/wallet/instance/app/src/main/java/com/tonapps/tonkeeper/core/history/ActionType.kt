@@ -21,4 +21,5 @@ enum class ActionType {
     Subscribe,
     Fee,
     Refund,
+    Purchase
 }

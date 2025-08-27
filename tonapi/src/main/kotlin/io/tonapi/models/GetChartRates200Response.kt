@@ -16,20 +16,26 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param points 
- */
 
+@Serializable
 
 data class GetChartRates200Response (
 
-    @Json(name = "points")
-    val points: kotlin.collections.Map<kotlin.String, kotlin.Any>
+    /* Each inner array is a pair [timestamp, price]:   • index 0 — Unix timestamp (int64)     • index 1 — token price (decimal) in the requested currency.  */
+    @SerialName(value = "points")
+    val points: kotlin.collections.List<kotlin.collections.List<kotlin.String>>
 
-)
+) {
+
+
+}
 

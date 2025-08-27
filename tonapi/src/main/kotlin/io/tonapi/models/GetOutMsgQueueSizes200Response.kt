@@ -17,24 +17,28 @@ package io.tonapi.models
 
 import io.tonapi.models.GetOutMsgQueueSizes200ResponseShardsInner
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param extMsgQueueSizeLimit 
- * @param shards 
- */
 
+@Serializable
 
 data class GetOutMsgQueueSizes200Response (
 
-    @Json(name = "ext_msg_queue_size_limit")
+    @SerialName(value = "ext_msg_queue_size_limit")
     val extMsgQueueSizeLimit: kotlin.Int,
 
-    @Json(name = "shards")
+    @SerialName(value = "shards")
     val shards: kotlin.collections.List<GetOutMsgQueueSizes200ResponseShardsInner>
 
-)
+) {
+
+
+}
 

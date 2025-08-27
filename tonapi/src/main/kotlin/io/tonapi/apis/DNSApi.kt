@@ -16,32 +16,33 @@
 package io.tonapi.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import io.tonapi.models.Auctions
 import io.tonapi.models.DnsRecord
 import io.tonapi.models.DomainBids
 import io.tonapi.models.DomainInfo
-import io.tonapi.models.StatusDefaultResponse
+import io.tonapi.models.InlineObject
 
-import com.squareup.moshi.Json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-import io.tonapi.infrastructure.ApiClient
-import io.tonapi.infrastructure.ApiResponse
-import io.tonapi.infrastructure.ClientException
-import io.tonapi.infrastructure.ClientError
-import io.tonapi.infrastructure.ServerException
-import io.tonapi.infrastructure.ServerError
-import io.tonapi.infrastructure.MultiValueMap
-import io.tonapi.infrastructure.PartConfig
-import io.tonapi.infrastructure.RequestConfig
-import io.tonapi.infrastructure.RequestMethod
-import io.tonapi.infrastructure.ResponseType
-import io.tonapi.infrastructure.Success
-import io.tonapi.infrastructure.toMultiValue
+import io.infrastructure.ApiClient
+import io.infrastructure.ApiResponse
+import io.infrastructure.ClientException
+import io.infrastructure.ClientError
+import io.infrastructure.ServerException
+import io.infrastructure.ServerError
+import io.infrastructure.MultiValueMap
+import io.infrastructure.PartConfig
+import io.infrastructure.RequestConfig
+import io.infrastructure.RequestMethod
+import io.infrastructure.ResponseType
+import io.infrastructure.Success
+import io.infrastructure.toMultiValue
 
-class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class DNSApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -49,17 +50,6 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = A
         }
     }
 
-    /**
-     * 
-     * DNS resolve for domain name
-     * @param domainName domain name with .ton or .t.me
-     * @return DnsRecord
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun dnsResolve(domainName: kotlin.String) : DnsRecord {
@@ -80,14 +70,6 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = A
         }
     }
 
-    /**
-     * 
-     * DNS resolve for domain name
-     * @param domainName domain name with .ton or .t.me
-     * @return ApiResponse<DnsRecord?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun dnsResolveWithHttpInfo(domainName: kotlin.String) : ApiResponse<DnsRecord?> {
@@ -98,12 +80,6 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = A
         )
     }
 
-    /**
-     * To obtain the request config of the operation dnsResolve
-     *
-     * @param domainName domain name with .ton or .t.me
-     * @return RequestConfig
-     */
     fun dnsResolveRequestConfig(domainName: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -120,17 +96,6 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = A
         )
     }
 
-    /**
-     * 
-     * Get all auctions
-     * @param tld domain filter for current auctions \&quot;ton\&quot; or \&quot;t.me\&quot; (optional)
-     * @return Auctions
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getAllAuctions(tld: kotlin.String? = null) : Auctions {
@@ -151,14 +116,6 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = A
         }
     }
 
-    /**
-     * 
-     * Get all auctions
-     * @param tld domain filter for current auctions \&quot;ton\&quot; or \&quot;t.me\&quot; (optional)
-     * @return ApiResponse<Auctions?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getAllAuctionsWithHttpInfo(tld: kotlin.String?) : ApiResponse<Auctions?> {
@@ -169,12 +126,6 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = A
         )
     }
 
-    /**
-     * To obtain the request config of the operation getAllAuctions
-     *
-     * @param tld domain filter for current auctions \&quot;ton\&quot; or \&quot;t.me\&quot; (optional)
-     * @return RequestConfig
-     */
     fun getAllAuctionsRequestConfig(tld: kotlin.String?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -196,17 +147,6 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = A
         )
     }
 
-    /**
-     * 
-     * Get full information about domain name
-     * @param domainName domain name with .ton or .t.me
-     * @return DomainInfo
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getDnsInfo(domainName: kotlin.String) : DomainInfo {
@@ -227,14 +167,6 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = A
         }
     }
 
-    /**
-     * 
-     * Get full information about domain name
-     * @param domainName domain name with .ton or .t.me
-     * @return ApiResponse<DomainInfo?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getDnsInfoWithHttpInfo(domainName: kotlin.String) : ApiResponse<DomainInfo?> {
@@ -245,12 +177,6 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = A
         )
     }
 
-    /**
-     * To obtain the request config of the operation getDnsInfo
-     *
-     * @param domainName domain name with .ton or .t.me
-     * @return RequestConfig
-     */
     fun getDnsInfoRequestConfig(domainName: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -267,17 +193,6 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = A
         )
     }
 
-    /**
-     * 
-     * Get domain bids
-     * @param domainName domain name with .ton or .t.me
-     * @return DomainBids
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getDomainBids(domainName: kotlin.String) : DomainBids {
@@ -298,14 +213,6 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = A
         }
     }
 
-    /**
-     * 
-     * Get domain bids
-     * @param domainName domain name with .ton or .t.me
-     * @return ApiResponse<DomainBids?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getDomainBidsWithHttpInfo(domainName: kotlin.String) : ApiResponse<DomainBids?> {
@@ -316,12 +223,6 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = A
         )
     }
 
-    /**
-     * To obtain the request config of the operation getDomainBids
-     *
-     * @param domainName domain name with .ton or .t.me
-     * @return RequestConfig
-     */
     fun getDomainBidsRequestConfig(domainName: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()

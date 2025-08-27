@@ -8,14 +8,14 @@ android {
 
 dependencies {
 
-    implementation(Dependence.AndroidX.biometric)
+    implementation(libs.androidX.biometric)
 
-    implementation(project(Dependence.UIKit.core))
+    implementation(project(ProjectModules.UIKit.core))
 
-    implementation(project(Dependence.Wallet.Data.core))
-    implementation(project(Dependence.Wallet.Data.account))
-    implementation(project(Dependence.Wallet.Data.settings))
-    implementation(project(Dependence.Wallet.Data.rn))
-    implementation(project(Dependence.Lib.extensions))
-    implementation(project(Dependence.Lib.security))
+    implementation(project(ProjectModules.Wallet.Data.core))
+    implementation(project(ProjectModules.Wallet.Data.account))
+    implementation(project(ProjectModules.Wallet.Data.settings))
+    implementation(project(ProjectModules.Wallet.Data.rn))
+    implementation(project(ProjectModules.Lib.extensions))
+    implementation(project(ProjectModules.Lib.security))
 }

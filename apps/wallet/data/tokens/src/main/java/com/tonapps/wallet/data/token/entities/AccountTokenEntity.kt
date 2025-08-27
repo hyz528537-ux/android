@@ -4,7 +4,9 @@ import android.net.Uri
 import android.os.Parcelable
 import com.tonapps.icu.Coins
 import com.tonapps.wallet.api.entity.BalanceEntity
+import com.tonapps.wallet.api.entity.Blockchain
 import com.tonapps.wallet.api.entity.TokenEntity
+import com.tonapps.wallet.data.core.currency.WalletCurrency
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
@@ -63,8 +65,23 @@ data class AccountTokenEntity(
     val isLiquid: Boolean
         get() = balance.token.isLiquid
 
+    val isTsTON: Boolean
+        get() = balance.token.isTsTON
+
+    val isTsUSDe: Boolean
+        get() = balance.token.isTsUSDe
+
+    val isUSDe: Boolean
+        get() = address == TokenEntity.TON_USDE
+
     val isUsdt: Boolean
-        get() = address == TokenEntity.USDT.address
+        get() = address == TokenEntity.TON_USDT
+
+    val isTrc20: Boolean
+        get() = address == TokenEntity.TRC20_USDT
+
+    val isStable: Boolean
+        get() = isUsdt || isTrc20 || isUSDe
 
     val fiat: Coins
         get() = fiatRate?.fiat ?: Coins.ZERO
@@ -92,5 +109,8 @@ data class AccountTokenEntity(
 
     val token: TokenEntity
         get() = balance.token
+
+    val blockchain: Blockchain
+        get() = balance.token.blockchain
 
 }

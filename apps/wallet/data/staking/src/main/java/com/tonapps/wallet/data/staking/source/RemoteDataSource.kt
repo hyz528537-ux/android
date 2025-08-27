@@ -17,9 +17,7 @@ internal class RemoteDataSource(
 ) {
 
     suspend fun load(
-        accountId: String,
-        testnet: Boolean,
-        initializedAccount: Boolean
+        accountId: String, testnet: Boolean, initializedAccount: Boolean
     ): StakingEntity = withContext(Dispatchers.IO) {
         val poolsDeferred = async { loadPools(accountId, testnet) }
         val infoDeferred = async {
@@ -29,15 +27,18 @@ internal class RemoteDataSource(
                 emptyList()
             }
         }
+
+        val pools = poolsDeferred.await()
+        val info = infoDeferred.await()
+
         StakingEntity(
-            pools = poolsDeferred.await(),
-            info = infoDeferred.await()
+            pools = pools,
+            info = info
         )
     }
 
     private fun loadInfo(
-        accountId: String,
-        testnet: Boolean
+        accountId: String, testnet: Boolean
     ): List<StakingInfoEntity> {
         val list = withRetry {
             api.staking(testnet).getAccountNominatorsPools(accountId).pools
@@ -46,8 +47,7 @@ internal class RemoteDataSource(
     }
 
     private fun loadPools(
-        accountId: String,
-        testnet: Boolean
+        accountId: String, testnet: Boolean
     ): List<PoolInfoEntity> {
         val response = withRetry {
             api.staking(testnet).getStakingPools(accountId, includeUnverified = false)

@@ -292,7 +292,7 @@ class DAppsRepository(
 
     suspend fun getApps(urls: List<Uri>): List<AppEntity> {
         val apps = database.getApps(urls).toMutableList()
-        val notFoundApps = urls.filter { url -> apps.none { it.url == url } }
+        val notFoundApps = urls.filter { url -> apps.none { it.host == url.host } }
         if (notFoundApps.isNotEmpty()) {
             for (url in notFoundApps) {
                 val app = resolveAppByHost(url)
@@ -306,7 +306,7 @@ class DAppsRepository(
     }
 
     suspend fun getApp(url: Uri): AppEntity {
-        return getApps(listOf(url)).firstOrNull() ?: emptyApp(url)
+        return getApps(listOf(url)).firstOrNull() ?: resolveAppByHost(url)
     }
 
     suspend fun insertApp(app: AppEntity) {
@@ -410,7 +410,6 @@ class DAppsRepository(
         return legacyApps.toList()
     }
 
-
     private suspend fun resolveAppByHost(url: Uri): AppEntity = withContext(Dispatchers.IO) {
         val host = url.host ?: return@withContext emptyApp(url)
         for (path in manifestPaths) {
@@ -425,17 +424,36 @@ class DAppsRepository(
         emptyApp(url)
     }
 
-    private fun emptyApp(url: Uri): AppEntity {
+    private suspend fun emptyApp(url: Uri): AppEntity {
         val domain = url.host ?: "unknown"
+        var name = api.getPageTitle(url.toString()).ifBlank { domain }
+        name = fixAppTitle(name)
         return AppEntity(
             url = url,
-            name = domain,
+            name = name.trim(),
             iconUrl = "https://$domain/favicon.ico",
             empty = true
         )
     }
 
     companion object {
+
+        fun fixAppTitle(value: String): String {
+            var name = value.trim()
+            if (name.contains(":")) {
+                name = name.substringBefore(":")
+            } else if (name.contains("-")) {
+                name = name.substringBefore("-")
+            } else if (name.contains("|")) {
+                name = name.substringBefore("|")
+            } else if (name.contains("<")) {
+                name = name.substringBefore("|")
+            }
+            if (name.length > 50) {
+                name = name.substring(0, 50)
+            }
+            return name
+        }
 
         private val manifestPaths = arrayOf(
             "tonconnect-manifest.json",

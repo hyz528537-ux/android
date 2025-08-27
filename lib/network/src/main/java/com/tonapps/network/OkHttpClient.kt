@@ -1,21 +1,16 @@
 package com.tonapps.network
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.ArrayMap
 import android.util.Log
+import com.tonapps.network.ws.WSEvent
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.retry
-import kotlinx.coroutines.isActive
 import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -28,7 +23,6 @@ import okhttp3.internal.http2.StreamResetException
 import okhttp3.sse.EventSource
 import okhttp3.sse.EventSourceListener
 import okhttp3.sse.EventSources
-import org.json.JSONObject
 import java.io.IOException
 
 fun requestBuilder(url: String): Request.Builder {
@@ -71,7 +65,7 @@ fun OkHttpClient.get(
     url: String,
     headers: ArrayMap<String, String>? = null
 ): String {
-    return simple(url, headers).body?.string() ?: throw Exception("Empty response")
+    return simple(url, headers).body.string()
 }
 
 fun OkHttpClient.simple(
@@ -112,6 +106,7 @@ fun OkHttpClient.sse(
     onFailure: ((Throwable) -> Unit)?
 ): Flow<SSEvent> = callbackFlow {
     val listener = object : EventSourceListener() {
+
         override fun onEvent(eventSource: EventSource, id: String?, type: String?, data: String) {
             if (!this@callbackFlow.trySend(SSEvent(id, type, data)).isSuccess) {
                 eventSource.cancel()
@@ -159,3 +154,4 @@ fun OkHttpClient.sse(
         }
     }
 }.cancellable()
+

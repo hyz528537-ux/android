@@ -3,14 +3,10 @@ package com.tonapps.tonkeeper.ui.screen.browser.main
 import android.app.Application
 import android.graphics.Color
 import android.net.Uri
-import android.util.Log
-import android.view.View
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
-import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.extensions.mapList
-import com.tonapps.tonkeeper.extensions.getFixedCountryCode
-import com.tonapps.tonkeeper.extensions.getLocaleCountryFlow
+import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.koin.remoteConfig
 import com.tonapps.tonkeeper.manager.tonconnect.TonConnectManager
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
@@ -22,14 +18,11 @@ import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.browser.BrowserRepository
 import com.tonapps.wallet.data.browser.entities.BrowserAppEntity
 import com.tonapps.wallet.data.browser.entities.BrowserDataEntity
-import com.tonapps.wallet.data.dapps.entities.AppConnectEntity
 import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.settings.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class BrowserMainViewModel(
@@ -39,10 +32,9 @@ class BrowserMainViewModel(
     private val api: API,
     private val tonConnectManager: TonConnectManager,
     private val browserRepository: BrowserRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val environment: Environment
 ): BaseWalletVM(app) {
-
-    val countryFlow = settings.getLocaleCountryFlow(api)
 
     val installId: String
         get() = settings.installId
@@ -59,7 +51,7 @@ class BrowserMainViewModel(
 
         if (!isDappsDisable) {
             viewModelScope.launch(Dispatchers.IO) {
-                val code = settingsRepository.getFixedCountryCode(api)
+                val code = environment.country
                 val locale = settingsRepository.getLocale()
                 _uiExploreItemsFlow.value = emptyList()
                 browserRepository.load(code, wallet.testnet, locale)?.let { setData(it) }
@@ -91,7 +83,7 @@ class BrowserMainViewModel(
     private fun setData(data: BrowserDataEntity) {
         val items = mutableListOf<ExploreItem>()
         if (data.apps.isNotEmpty()) {
-            items.add(ExploreItem.Banners(data.apps, api.config.featuredPlayInterval, wallet))
+            items.add(ExploreItem.Banners(data.apps, api.config.featuredPlayInterval, wallet, environment.country))
         }
 
         var adsItem: ExploreItem.Ads? = null
@@ -112,17 +104,22 @@ class BrowserMainViewModel(
             }
 
             val apps = mutableListOf<BrowserAppEntity>()
-            for (chunk in category.apps.chunked(4)) {
-                if (chunk.size >= 3) {
-                    apps.addAll(chunk)
+            if (category.apps.size > 4) {
+                for (chunk in category.apps.chunked(4)) {
+                    if (chunk.size >= 3) {
+                        apps.addAll(chunk)
+                    }
                 }
+            } else {
+                apps.addAll(category.apps)
             }
 
-            for (app in apps) {
+            for (app in apps.take(8)) {
                 items.add(ExploreItem.App(
                     app = app,
                     wallet = wallet,
-                    singleLine = !isDigitalNomads
+                    singleLine = !isDigitalNomads,
+                    country = environment.country
                 ))
             }
         }
@@ -138,7 +135,8 @@ class BrowserMainViewModel(
                 debugItems.add(ExploreItem.App(
                     app = app,
                     wallet = wallet,
-                    singleLine = false
+                    singleLine = false,
+                    country = environment.country
                 ))
             }
             items.addAll(5, debugItems)

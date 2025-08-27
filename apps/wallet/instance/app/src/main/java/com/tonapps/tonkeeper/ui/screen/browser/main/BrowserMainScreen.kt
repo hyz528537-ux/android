@@ -14,6 +14,7 @@ import com.tonapps.tonkeeper.extensions.flagEmoji
 import com.tonapps.tonkeeper.koin.remoteConfig
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.ui.base.WalletContextScreen
+import com.tonapps.tonkeeper.ui.component.CountryFlagView
 import com.tonapps.tonkeeper.ui.screen.browser.base.BrowserBaseScreen
 import com.tonapps.tonkeeper.ui.screen.browser.base.BrowserBaseViewModel
 import com.tonapps.tonkeeper.ui.screen.browser.main.list.connected.ConnectedAdapter
@@ -71,7 +72,6 @@ class BrowserMainScreen(wallet: WalletEntity): WalletContextScreen(R.layout.frag
     private lateinit var slideView: SlideBetweenView
     private lateinit var exploreTabView: AppCompatTextView
     private lateinit var connectedTabView: AppCompatTextView
-    private lateinit var countryView: AppCompatTextView
     private lateinit var connectedPlaceholder: View
     private lateinit var connectedListView: RecyclerView
     private lateinit var exploreListView: RecyclerView
@@ -90,11 +90,6 @@ class BrowserMainScreen(wallet: WalletEntity): WalletContextScreen(R.layout.frag
 
         connectedTabView = view.findViewById(R.id.connected_tab)
         connectedTabView.setOnClickListener { clickTab(it as AppCompatTextView) }
-
-        countryView = view.findViewById(R.id.country)
-        countryView.setOnClickListener {
-            navigation?.add(CountryPickerScreen.newInstance(COUNTRY_REQUEST_KEY))
-        }
 
         slideView = view.findViewById(R.id.slide)
 
@@ -159,7 +154,6 @@ class BrowserMainScreen(wallet: WalletEntity): WalletContextScreen(R.layout.frag
         })
         collectFlow(viewModel.uiConnectedItemsFlow, ::setConnectedList)
         collectFlow(viewModel.uiExploreItemsFlow, exploreAdapter::submitList)
-        collectFlow(viewModel.countryFlow.map { it.flagEmoji }, countryView::setText)
 
         baseViewModel?.insetsRootFlow?.let { insets ->
             collectFlow(insets, ::onApplyWindowInsets)
@@ -168,7 +162,6 @@ class BrowserMainScreen(wallet: WalletEntity): WalletContextScreen(R.layout.frag
         val isDappsDisable = requireContext().remoteConfig?.isDappsDisable == true
 
         exploreTabView.isVisible = !isDappsDisable
-        countryView.isVisible = !isDappsDisable
 
         clickTab(if (isDappsDisable) connectedTabView else exploreTabView, animated = false)
     }

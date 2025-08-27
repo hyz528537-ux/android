@@ -21,10 +21,20 @@ data class AppEntity(
 
     @IgnoredOnParcel
     val host: String
-        get() = url.host ?: "unknown"
+        get() = url.host ?: id
+
+    @IgnoredOnParcel
+    val isBadIcon: Boolean by lazy {
+        iconUrl.isBlank() || iconUrl.endsWith("favicon.ico")
+    }
+
+    @IgnoredOnParcel
+    val iconByFavicon: String by lazy {
+        "https://www.google.com/s2/favicons?sz=256&domain=$host"
+    }
 
     constructor(json: JSONObject) : this(
-        url = Uri.parse(json.getString("url").removeSuffix("/")),
+        url = json.getString("url").removeSuffix("/").toUri(),
         name = json.getString("name").ifBlank {
             throw IllegalArgumentException("name is empty")
         },
@@ -35,4 +45,16 @@ data class AppEntity(
     )
 
     constructor(value: String) : this(JSONObject(value))
+
+    companion object {
+
+        val ETHENA_BASE_URL = "https://ethena.ston.fi".toUri()
+
+        val ethena = AppEntity(
+            url = ETHENA_BASE_URL,
+            name = "ethena.ston.fi",
+            iconUrl = "https://static.ston.fi/logo/external-logo.jpg",
+            empty = false
+        )
+    }
 }

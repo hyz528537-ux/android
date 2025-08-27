@@ -5,6 +5,7 @@ import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.RemoteConfig
 import com.tonapps.tonkeeper.billing.BillingManager
 import com.tonapps.tonkeeper.client.safemode.SafeModeClient
+import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.manager.assets.AssetsManager
 import com.tonapps.tonkeeper.manager.tx.TransactionManager
 import com.tonapps.tonkeeper.core.history.HistoryHelper
@@ -16,6 +17,7 @@ import com.tonapps.tonkeeper.ui.screen.main.MainViewModel
 import com.tonapps.tonkeeper.ui.screen.root.RootViewModel
 import com.tonapps.tonkeeper.manager.tonconnect.TonConnectManager
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
+import com.tonapps.tonkeeper.ui.base.picker.currency.CurrencyPickerViewModel
 import com.tonapps.tonkeeper.ui.screen.add.AddWalletViewModel
 import com.tonapps.tonkeeper.ui.screen.battery.BatteryViewModel
 import com.tonapps.tonkeeper.ui.screen.browser.main.BrowserMainViewModel
@@ -42,6 +44,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -64,6 +67,7 @@ val koinModel = module {
     singleOf(::APKManager)
     singleOf(::CacheHelper)
     singleOf(::ReferrerClientHelper)
+    singleOf(::AnalyticsHelper)
 
     factoryOf(::SignUseCase)
     factoryOf(::EmulationUseCase)
@@ -85,7 +89,7 @@ val koinModel = module {
     viewModelOf(::RootViewModel)
     viewModelOf(::PickerViewModel)
     viewModelOf(::TonConnectViewModel)
-
+    viewModelOf(::CurrencyPickerViewModel)
 
     viewModelOf(::LedgerConnectionViewModel)
     viewModelOf(::W5StoriesViewModel)

@@ -10,6 +10,7 @@ import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import com.tonapps.extensions.activity
 import com.tonapps.extensions.locale
+import com.tonapps.extensions.toUriOrNull
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.entities.WalletPurchaseMethodEntity
 import com.tonapps.tonkeeper.extensions.showToast
@@ -21,21 +22,23 @@ import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.browser.entities.BrowserAppEntity
 import com.tonapps.wallet.localization.Localization
 import uikit.navigation.Navigation
+import androidx.core.net.toUri
+import com.tonapps.tonkeeper.koin.analytics
 
 object BrowserHelper {
 
-    fun BrowserAppEntity.openDApp(context: Context, wallet: WalletEntity, source: String) {
+    fun BrowserAppEntity.openDApp(context: Context, wallet: WalletEntity, source: String, country: String) {
         if (useCustomTabs || useTG) {
             if (useCustomTabs) {
                 open(context, url.toString())
             } else if (useTG) {
                 openTG(context, url)
             }
-            AnalyticsHelper.trackEventClickDApp(
+            context.analytics?.trackEventClickDApp(
                 url = url.toString(),
                 name = name,
-                installId = context.installId,
-                source = source
+                source = source,
+                country = country
             )
         } else {
             Navigation.from(context)?.add(
@@ -43,6 +46,7 @@ object BrowserHelper {
                 wallet = wallet,
                 title = name,
                 url = url,
+                iconUrl = icon.toString(),
                 source = source
             ))
         }
@@ -61,7 +65,13 @@ object BrowserHelper {
     }
 
     fun open(activity: Activity, url: String) {
-        open(activity, Uri.parse(url))
+        open(activity, url.toUri())
+    }
+
+    fun open(context: Context, uri: Uri) {
+        context.activity?.let {
+            open(it, uri)
+        }
     }
 
     fun open(activity: Activity, uri: Uri) {
@@ -117,6 +127,17 @@ object BrowserHelper {
         }
     }
 
+    fun openX(activity: Activity, uri: Uri) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.setPackage("com.twitter.android")
+            activity.startActivity(intent)
+        } catch (e: Throwable) {
+            external(activity, uri)
+        }
+    }
+
     fun external(context: Context, uri: Uri) {
         context.activity?.let {
             external(it, uri)
@@ -127,8 +148,9 @@ object BrowserHelper {
         if (uri.scheme == "blob") {
             return
         }
+        val url = uri.toString().replace("intent://", "https://").toUriOrNull() ?: return
         try {
-            val intent = Intent(Intent.ACTION_VIEW, uri)
+            val intent = Intent(Intent.ACTION_VIEW, url)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             activity.startActivity(intent)
         } catch (e: Throwable) {

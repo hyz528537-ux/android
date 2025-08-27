@@ -23,7 +23,7 @@ android {
 }
 
 dependencies {
-    implementation(project(Dependence.Lib.extensions))
-    implementation(Dependence.cbor)
+    implementation(project(ProjectModules.Lib.extensions))
+    implementation(libs.cbor)
 }
 

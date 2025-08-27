@@ -17,20 +17,25 @@ package io.tonapi.models
 
 import io.tonapi.models.WorkchainDescr
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * Workchains in the TON Blockchain
- *
- * @param workchains 
- */
 
+@Serializable
 
 data class BlockchainConfig12 (
 
-    @Json(name = "workchains")
+    @SerialName(value = "workchains")
     val workchains: kotlin.collections.List<WorkchainDescr>
 
-)
+) {
+
+
+}
 

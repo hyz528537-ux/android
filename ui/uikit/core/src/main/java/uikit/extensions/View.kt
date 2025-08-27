@@ -1,5 +1,6 @@
 package uikit.extensions
 
+import android.animation.Animator
 import android.animation.ValueAnimator
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -50,6 +51,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import uikit.insets.KeyboardAnimationCallback
 import kotlin.math.sin
+import androidx.core.graphics.drawable.toDrawable
 
 var View.scale: Float
     get() = scaleX
@@ -81,7 +83,22 @@ fun View.getRootWindowInsetsCompat(): WindowInsetsCompat? {
 }
 
 val View.statusBarHeight: Int
-    get() = getRootWindowInsetsCompat()?.getInsets(WindowInsetsCompat.Type.statusBars())?.top ?: 0
+    get() {
+        val top = getRootWindowInsetsCompat()?.getInsets(WindowInsetsCompat.Type.statusBars())?.top ?: 0
+        if (top == 0) {
+            val resId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
+            if (resId > 0) {
+                return context.resources.getDimensionPixelSize(resId)
+            }
+        }
+        return top
+    }
+
+val View.bottomBarsOffset: Int
+    get() {
+        val insets = getRootWindowInsetsCompat()?.getInsets(WindowInsetsCompat.Type.systemBars()) ?: return 0
+        return insets.bottom
+    }
 
 fun ViewGroup.inflate(
     @LayoutRes
@@ -147,6 +164,16 @@ fun View.roundBottom(radius: Int) {
     }
 }
 
+fun View.circle() {
+    outlineProvider = object : ViewOutlineProvider() {
+        override fun getOutline(view: View, outline: Outline) {
+            val size = minOf(view.width, view.height)
+            outline.setOval(0, 0, size, size)
+        }
+    }
+    clipToOutline = true
+}
+
 fun View.round(radius: Int) {
     if (radius == 0) {
         outlineProvider = null
@@ -169,8 +196,12 @@ fun View.getDrawable(@DrawableRes resId: Int): Drawable {
     return try {
         AppCompatResources.getDrawable(context, resId) ?: throw IllegalArgumentException()
     } catch (e: Throwable) {
-        ColorDrawable(Color.TRANSPARENT)
+        Color.TRANSPARENT.toDrawable()
     }
+}
+
+fun View.withAnimation(duration: Long = 120) {
+    withAnimation(duration) { }
 }
 
 fun View.withAnimation(duration: Long = 120, block: () -> Unit) {
@@ -277,7 +308,7 @@ fun View.startSnakeAnimation(
     count: Int = 3,
     offset: Int = 16.dp,
     duration: Long = 400
-) {
+): Animator {
     val animator = ValueAnimator.ofFloat(0f, 1f)
     animator.addUpdateListener { animation ->
         val x = animation.animatedValue as Float
@@ -288,11 +319,13 @@ fun View.startSnakeAnimation(
     }
     animator.duration = duration
     animator.start()
+    return animator
 }
 
-fun View.reject() {
-    startSnakeAnimation()
+fun View.reject(): Animator {
+    val animator = startSnakeAnimation()
     hapticReject()
+    return animator
 }
 
 inline fun View.doKeyboardAnimation(
@@ -313,6 +346,23 @@ inline fun View.doKeyboardAnimation(
 fun View.pinToBottomInsets() {
     doKeyboardAnimation { offset, _, _ ->
         translationY = -offset.toFloat()
+    }
+}
+
+fun ViewGroup.viewMoveTo(child: View, toIndex: Int) {
+    val currentIndex = indexOfChild(child)
+    if (currentIndex == toIndex) {
+        return
+    }
+    removeViewAt(currentIndex)
+    addView(child, toIndex)
+}
+
+inline fun ViewGroup.removeViews(predicate: (View) -> Boolean) {
+    for (i in childCount - 1 downTo 0) {
+        if (predicate(getChildAt(i))) {
+            removeViewAt(i)
+        }
     }
 }
 
@@ -404,5 +454,13 @@ fun View.hideKeyboard(ignoreFocus: Boolean = true) {
     if (ignoreFocus || editText.hasFocus()) {
         editText.clearFocus()
         controller.hide(WindowInsetsCompat.Type.ime())
+    }
+}
+
+fun View.rotate180Animation() {
+    with(animate()) {
+        cancel()
+        rotation = 0f
+        rotationBy(180f).start()
     }
 }

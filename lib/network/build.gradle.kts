@@ -22,7 +22,7 @@ android {
 }
 
 dependencies {
-    implementation(Dependence.KotlinX.coroutines)
-    implementation(Dependence.Squareup.okhttp)
-    implementation(Dependence.Squareup.sse)
+    implementation(libs.kotlinX.coroutines.android)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.sse)
 }

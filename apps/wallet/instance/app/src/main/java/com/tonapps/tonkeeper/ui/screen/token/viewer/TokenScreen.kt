@@ -24,9 +24,11 @@ import com.tonapps.uikit.color.accentOrangeColor
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.uikit.list.BaseListHolder
 import com.tonapps.uikit.list.ListPaginationListener
+import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.token.entities.AccountTokenEntity
 import com.tonapps.wallet.localization.Localization
+import kotlinx.coroutines.flow.take
 import org.koin.core.parameter.parametersOf
 import uikit.base.BaseFragment
 import uikit.extensions.collectFlow
@@ -34,14 +36,18 @@ import uikit.extensions.dp
 import uikit.extensions.drawable
 import uikit.extensions.getDimensionPixelSize
 import uikit.extensions.setRightDrawable
+import androidx.core.net.toUri
+import com.tonapps.tonkeeper.helper.ExternalLinkHelper
 
-class TokenScreen(wallet: WalletEntity): BaseListWalletScreen<ScreenContext.Wallet>(ScreenContext.Wallet(wallet)), BaseFragment.SwipeBack {
+class TokenScreen(wallet: WalletEntity) :
+    BaseListWalletScreen<ScreenContext.Wallet>(ScreenContext.Wallet(wallet)),
+    BaseFragment.SwipeBack {
 
     override val fragmentName: String = "TokenScreen"
 
     private val args: TokenArgs by lazy { TokenArgs(requireArguments()) }
 
-    override val viewModel: TokenViewModel by walletViewModel { parametersOf(args.address) }
+    override val viewModel: TokenViewModel by walletViewModel { parametersOf(args.address, args.rawUsde) }
 
     private val tokenAdapter = TokenAdapter {
         viewModel.setChartPeriod(it)
@@ -56,14 +62,18 @@ class TokenScreen(wallet: WalletEntity): BaseListWalletScreen<ScreenContext.Wall
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.simpleTrackEvent("token_open", viewModel.installId)
+        analytics?.simpleTrackEvent("token_open")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val padding = requireContext().getDimensionPixelSize(uikit.R.dimen.offsetMedium)
-        setListPadding(0, padding, 0, padding)
+        updateListPadding(left = 0, right = 0)
+        // setListPadding(0, padding, 0, padding)
         setTitle(args.symbol)
+        if (args.address == TokenEntity.TRON_USDT.address) {
+            headerView.setSubtitle(Localization.trc20)
+        }
         setAdapter(ConcatAdapter(tokenAdapter, historyAdapter))
         addItemDecoration(HistoryItemDecoration())
         addItemDecoration(object : RecyclerView.ItemDecoration() {
@@ -118,11 +128,13 @@ class TokenScreen(wallet: WalletEntity): BaseListWalletScreen<ScreenContext.Wall
     }
 
     private fun actionMenu(view: View, token: AccountTokenEntity) {
-        val detailsUrl = if (token.isTon) {
-            Uri.parse("https://tonviewer.com/${screenContext.wallet.address}")
-        } else {
-            Uri.parse("https://tonviewer.com/${screenContext.wallet.address}/jetton/${token.address}")
-        }
+        val detailsUrl = with(screenContext.wallet) {
+            if (token.isTrc20) {
+                ExternalLinkHelper.tronToken(address, testnet)
+            } else {
+                ExternalLinkHelper.tonToken(address, token.address, testnet)
+            }
+        }.toUri()
 
         val actionSheet = ActionSheet(view.context)
         actionSheet.addItem(VIEWER_ID, Localization.view_details, R.drawable.ic_globe_16)
@@ -147,13 +159,15 @@ class TokenScreen(wallet: WalletEntity): BaseListWalletScreen<ScreenContext.Wall
     }
 
     private fun burn(token: AccountTokenEntity) {
-        navigation?.add(SendScreen.newInstance(
-            wallet = screenContext.wallet,
-            targetAddress = viewModel.burnAddress,
-            tokenAddress = token.address,
-            amountNano = token.balance.value.toLong(),
-            type = SendScreen.Companion.Type.Default
-        ))
+        navigation?.add(
+            SendScreen.newInstance(
+                wallet = screenContext.wallet,
+                targetAddress = viewModel.burnAddress,
+                tokenAddress = token.address,
+                amountNano = token.balance.value.toLong(),
+                type = SendScreen.Companion.Type.Default
+            )
+        )
         finish()
     }
 
@@ -167,10 +181,11 @@ class TokenScreen(wallet: WalletEntity): BaseListWalletScreen<ScreenContext.Wall
             wallet: WalletEntity,
             address: String,
             name: String,
-            symbol: String
+            symbol: String,
+            rawUsde: Boolean = false,
         ): TokenScreen {
             val fragment = TokenScreen(wallet)
-            fragment.setArgs(TokenArgs(address, name, symbol))
+            fragment.setArgs(TokenArgs(address, name, symbol, rawUsde))
             return fragment
         }
     }

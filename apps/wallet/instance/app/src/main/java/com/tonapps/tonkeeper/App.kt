@@ -14,9 +14,6 @@ import com.facebook.imagepipeline.core.ImagePipelineConfig
 import com.facebook.imagepipeline.core.ImageTranscoderType
 import com.facebook.imagepipeline.core.MemoryChunkType
 import com.google.firebase.FirebaseApp
-import com.tonapps.blockchain.MnemonicHelper
-import com.tonapps.blockchain.ton.contract.BaseWalletContract
-import com.tonapps.blockchain.ton.extensions.toWalletAddress
 import com.tonapps.extensions.setLocales
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.koin.koinModel
@@ -27,6 +24,7 @@ import com.tonapps.wallet.api.apiModule
 import com.tonapps.wallet.data.account.accountModule
 import com.tonapps.wallet.data.rates.ratesModule
 import com.tonapps.wallet.data.token.tokenModule
+import com.tonapps.wallet.data.swap.swapModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import com.tonapps.wallet.data.backup.backupModule
@@ -81,7 +79,7 @@ class App: Application(), CameraXConfig.Provider, KoinComponent {
 
         startKoin {
             androidContext(this@App)
-            modules(koinModel, contactsModule, workerModule, dAppsModule, viewModelWalletModule, purchaseModule, batteryModule, stakingModule, passcodeModule, rnLegacyModule, backupModule, dataModule, browserModule, apiModule, accountModule, ratesModule, tokenModule, eventsModule, collectiblesModule)
+            modules(koinModel, contactsModule, workerModule, dAppsModule, viewModelWalletModule, purchaseModule, batteryModule, stakingModule, passcodeModule, rnLegacyModule, swapModule, backupModule, dataModule, browserModule, apiModule, accountModule, ratesModule, tokenModule, eventsModule, collectiblesModule)
             workManagerFactory()
         }
         setLocales(settingsRepository.localeList)
@@ -108,8 +106,11 @@ class App: Application(), CameraXConfig.Provider, KoinComponent {
         configBuilder.experiment().setNativeCodeDisabled(true)
         configBuilder.experiment().setPartialImageCachingEnabled(false)
         configBuilder.setDownsampleMode(DownsampleMode.ALWAYS)
-        configBuilder.setBitmapsConfig(Bitmap.Config.ARGB_8888)
-
+        if (Build.VERSION_CODES.O > Build.VERSION.SDK_INT) {
+            configBuilder.setBitmapsConfig(Bitmap.Config.ARGB_8888)
+        } else {
+            configBuilder.setBitmapsConfig(Bitmap.Config.ARGB_4444)
+        }
         Fresco.initialize(this, configBuilder.build())
     }
 

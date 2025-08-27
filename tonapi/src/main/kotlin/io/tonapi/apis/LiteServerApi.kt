@@ -16,7 +16,7 @@
 package io.tonapi.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
 import io.tonapi.models.GetAllRawShardsInfo200Response
@@ -34,27 +34,28 @@ import io.tonapi.models.GetRawShardBlockProof200Response
 import io.tonapi.models.GetRawShardInfo200Response
 import io.tonapi.models.GetRawTime200Response
 import io.tonapi.models.GetRawTransactions200Response
+import io.tonapi.models.InlineObject
 import io.tonapi.models.SendRawMessage200Response
 import io.tonapi.models.SendRawMessageRequest
-import io.tonapi.models.StatusDefaultResponse
 
-import com.squareup.moshi.Json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-import io.tonapi.infrastructure.ApiClient
-import io.tonapi.infrastructure.ApiResponse
-import io.tonapi.infrastructure.ClientException
-import io.tonapi.infrastructure.ClientError
-import io.tonapi.infrastructure.ServerException
-import io.tonapi.infrastructure.ServerError
-import io.tonapi.infrastructure.MultiValueMap
-import io.tonapi.infrastructure.PartConfig
-import io.tonapi.infrastructure.RequestConfig
-import io.tonapi.infrastructure.RequestMethod
-import io.tonapi.infrastructure.ResponseType
-import io.tonapi.infrastructure.Success
-import io.tonapi.infrastructure.toMultiValue
+import io.infrastructure.ApiClient
+import io.infrastructure.ApiResponse
+import io.infrastructure.ClientException
+import io.infrastructure.ClientError
+import io.infrastructure.ServerException
+import io.infrastructure.ServerError
+import io.infrastructure.MultiValueMap
+import io.infrastructure.PartConfig
+import io.infrastructure.RequestConfig
+import io.infrastructure.RequestMethod
+import io.infrastructure.ResponseType
+import io.infrastructure.Success
+import io.infrastructure.toMultiValue
 
-class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -62,17 +63,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get all raw shards info
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @return GetAllRawShardsInfo200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getAllRawShardsInfo(blockId: kotlin.String) : GetAllRawShardsInfo200Response {
@@ -93,14 +83,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get all raw shards info
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @return ApiResponse<GetAllRawShardsInfo200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getAllRawShardsInfoWithHttpInfo(blockId: kotlin.String) : ApiResponse<GetAllRawShardsInfo200Response?> {
@@ -111,12 +93,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getAllRawShardsInfo
-     *
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @return RequestConfig
-     */
     fun getAllRawShardsInfoRequestConfig(blockId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -133,16 +109,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get out msg queue sizes
-     * @return GetOutMsgQueueSizes200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getOutMsgQueueSizes() : GetOutMsgQueueSizes200Response {
@@ -163,13 +129,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get out msg queue sizes
-     * @return ApiResponse<GetOutMsgQueueSizes200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getOutMsgQueueSizesWithHttpInfo() : ApiResponse<GetOutMsgQueueSizes200Response?> {
@@ -180,11 +139,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getOutMsgQueueSizes
-     *
-     * @return RequestConfig
-     */
     fun getOutMsgQueueSizesRequestConfig() : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -201,18 +155,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw account state
-     * @param accountId account ID
-     * @param targetBlock target block: (workchain,shard,seqno,root_hash,file_hash) (optional)
-     * @return GetRawAccountState200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawAccountState(accountId: kotlin.String, targetBlock: kotlin.String? = null) : GetRawAccountState200Response {
@@ -233,15 +175,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw account state
-     * @param accountId account ID
-     * @param targetBlock target block: (workchain,shard,seqno,root_hash,file_hash) (optional)
-     * @return ApiResponse<GetRawAccountState200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawAccountStateWithHttpInfo(accountId: kotlin.String, targetBlock: kotlin.String?) : ApiResponse<GetRawAccountState200Response?> {
@@ -252,13 +185,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawAccountState
-     *
-     * @param accountId account ID
-     * @param targetBlock target block: (workchain,shard,seqno,root_hash,file_hash) (optional)
-     * @return RequestConfig
-     */
     fun getRawAccountStateRequestConfig(accountId: kotlin.String, targetBlock: kotlin.String?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -280,19 +206,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw block proof
-     * @param knownBlock known block: (workchain,shard,seqno,root_hash,file_hash)
-     * @param mode mode
-     * @param targetBlock target block: (workchain,shard,seqno,root_hash,file_hash) (optional)
-     * @return GetRawBlockProof200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawBlockProof(knownBlock: kotlin.String, mode: kotlin.Int, targetBlock: kotlin.String? = null) : GetRawBlockProof200Response {
@@ -313,16 +226,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw block proof
-     * @param knownBlock known block: (workchain,shard,seqno,root_hash,file_hash)
-     * @param mode mode
-     * @param targetBlock target block: (workchain,shard,seqno,root_hash,file_hash) (optional)
-     * @return ApiResponse<GetRawBlockProof200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawBlockProofWithHttpInfo(knownBlock: kotlin.String, mode: kotlin.Int, targetBlock: kotlin.String?) : ApiResponse<GetRawBlockProof200Response?> {
@@ -333,14 +236,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawBlockProof
-     *
-     * @param knownBlock known block: (workchain,shard,seqno,root_hash,file_hash)
-     * @param mode mode
-     * @param targetBlock target block: (workchain,shard,seqno,root_hash,file_hash) (optional)
-     * @return RequestConfig
-     */
     fun getRawBlockProofRequestConfig(knownBlock: kotlin.String, mode: kotlin.Int, targetBlock: kotlin.String?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -364,17 +259,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw blockchain block
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @return GetRawBlockchainBlock200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawBlockchainBlock(blockId: kotlin.String) : GetRawBlockchainBlock200Response {
@@ -395,14 +279,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw blockchain block
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @return ApiResponse<GetRawBlockchainBlock200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawBlockchainBlockWithHttpInfo(blockId: kotlin.String) : ApiResponse<GetRawBlockchainBlock200Response?> {
@@ -413,12 +289,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawBlockchainBlock
-     *
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @return RequestConfig
-     */
     fun getRawBlockchainBlockRequestConfig(blockId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -435,18 +305,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw blockchain block header
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @param mode mode
-     * @return GetRawBlockchainBlockHeader200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawBlockchainBlockHeader(blockId: kotlin.String, mode: kotlin.Int) : GetRawBlockchainBlockHeader200Response {
@@ -467,15 +325,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw blockchain block header
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @param mode mode
-     * @return ApiResponse<GetRawBlockchainBlockHeader200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawBlockchainBlockHeaderWithHttpInfo(blockId: kotlin.String, mode: kotlin.Int) : ApiResponse<GetRawBlockchainBlockHeader200Response?> {
@@ -486,13 +335,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawBlockchainBlockHeader
-     *
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @param mode mode
-     * @return RequestConfig
-     */
     fun getRawBlockchainBlockHeaderRequestConfig(blockId: kotlin.String, mode: kotlin.Int) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -512,17 +354,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw blockchain block state
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @return GetRawBlockchainBlockState200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawBlockchainBlockState(blockId: kotlin.String) : GetRawBlockchainBlockState200Response {
@@ -543,14 +374,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw blockchain block state
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @return ApiResponse<GetRawBlockchainBlockState200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawBlockchainBlockStateWithHttpInfo(blockId: kotlin.String) : ApiResponse<GetRawBlockchainBlockState200Response?> {
@@ -561,12 +384,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawBlockchainBlockState
-     *
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @return RequestConfig
-     */
     fun getRawBlockchainBlockStateRequestConfig(blockId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -583,18 +400,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw config
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @param mode mode
-     * @return GetRawConfig200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawConfig(blockId: kotlin.String, mode: kotlin.Int) : GetRawConfig200Response {
@@ -615,15 +420,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw config
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @param mode mode
-     * @return ApiResponse<GetRawConfig200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawConfigWithHttpInfo(blockId: kotlin.String, mode: kotlin.Int) : ApiResponse<GetRawConfig200Response?> {
@@ -634,13 +430,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawConfig
-     *
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @param mode mode
-     * @return RequestConfig
-     */
     fun getRawConfigRequestConfig(blockId: kotlin.String, mode: kotlin.Int) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -660,21 +449,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw list block transactions
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @param mode mode
-     * @param count count
-     * @param accountId account ID (optional)
-     * @param lt lt (optional)
-     * @return GetRawListBlockTransactions200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawListBlockTransactions(blockId: kotlin.String, mode: kotlin.Int, count: kotlin.Int, accountId: kotlin.String? = null, lt: kotlin.Long? = null) : GetRawListBlockTransactions200Response {
@@ -695,18 +469,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw list block transactions
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @param mode mode
-     * @param count count
-     * @param accountId account ID (optional)
-     * @param lt lt (optional)
-     * @return ApiResponse<GetRawListBlockTransactions200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawListBlockTransactionsWithHttpInfo(blockId: kotlin.String, mode: kotlin.Int, count: kotlin.Int, accountId: kotlin.String?, lt: kotlin.Long?) : ApiResponse<GetRawListBlockTransactions200Response?> {
@@ -717,16 +479,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawListBlockTransactions
-     *
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @param mode mode
-     * @param count count
-     * @param accountId account ID (optional)
-     * @param lt lt (optional)
-     * @return RequestConfig
-     */
     fun getRawListBlockTransactionsRequestConfig(blockId: kotlin.String, mode: kotlin.Int, count: kotlin.Int, accountId: kotlin.String?, lt: kotlin.Long?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -753,16 +505,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw masterchain info
-     * @return GetRawMasterchainInfo200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawMasterchainInfo() : GetRawMasterchainInfo200Response {
@@ -783,13 +525,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw masterchain info
-     * @return ApiResponse<GetRawMasterchainInfo200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawMasterchainInfoWithHttpInfo() : ApiResponse<GetRawMasterchainInfo200Response?> {
@@ -800,11 +535,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawMasterchainInfo
-     *
-     * @return RequestConfig
-     */
     fun getRawMasterchainInfoRequestConfig() : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -821,17 +551,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw masterchain info ext
-     * @param mode mode
-     * @return GetRawMasterchainInfoExt200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawMasterchainInfoExt(mode: kotlin.Int) : GetRawMasterchainInfoExt200Response {
@@ -852,14 +571,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw masterchain info ext
-     * @param mode mode
-     * @return ApiResponse<GetRawMasterchainInfoExt200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawMasterchainInfoExtWithHttpInfo(mode: kotlin.Int) : ApiResponse<GetRawMasterchainInfoExt200Response?> {
@@ -870,12 +581,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawMasterchainInfoExt
-     *
-     * @param mode mode
-     * @return RequestConfig
-     */
     fun getRawMasterchainInfoExtRequestConfig(mode: kotlin.Int) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -895,17 +600,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw shard block proof
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @return GetRawShardBlockProof200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawShardBlockProof(blockId: kotlin.String) : GetRawShardBlockProof200Response {
@@ -926,14 +620,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw shard block proof
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @return ApiResponse<GetRawShardBlockProof200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawShardBlockProofWithHttpInfo(blockId: kotlin.String) : ApiResponse<GetRawShardBlockProof200Response?> {
@@ -944,12 +630,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawShardBlockProof
-     *
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @return RequestConfig
-     */
     fun getRawShardBlockProofRequestConfig(blockId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -966,20 +646,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw shard info
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @param workchain workchain
-     * @param shard shard
-     * @param exact exact
-     * @return GetRawShardInfo200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawShardInfo(blockId: kotlin.String, workchain: kotlin.Int, shard: kotlin.Long, exact: kotlin.Boolean) : GetRawShardInfo200Response {
@@ -1000,17 +666,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw shard info
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @param workchain workchain
-     * @param shard shard
-     * @param exact exact
-     * @return ApiResponse<GetRawShardInfo200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawShardInfoWithHttpInfo(blockId: kotlin.String, workchain: kotlin.Int, shard: kotlin.Long, exact: kotlin.Boolean) : ApiResponse<GetRawShardInfo200Response?> {
@@ -1021,15 +676,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawShardInfo
-     *
-     * @param blockId block ID: (workchain,shard,seqno,root_hash,file_hash)
-     * @param workchain workchain
-     * @param shard shard
-     * @param exact exact
-     * @return RequestConfig
-     */
     fun getRawShardInfoRequestConfig(blockId: kotlin.String, workchain: kotlin.Int, shard: kotlin.Long, exact: kotlin.Boolean) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -1051,16 +697,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw time
-     * @return GetRawTime200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawTime() : GetRawTime200Response {
@@ -1081,13 +717,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw time
-     * @return ApiResponse<GetRawTime200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawTimeWithHttpInfo() : ApiResponse<GetRawTime200Response?> {
@@ -1098,11 +727,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawTime
-     *
-     * @return RequestConfig
-     */
     fun getRawTimeRequestConfig() : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -1119,20 +743,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Get raw transactions
-     * @param accountId account ID
-     * @param count count
-     * @param lt lt
-     * @param hash hash
-     * @return GetRawTransactions200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getRawTransactions(accountId: kotlin.String, count: kotlin.Int, lt: kotlin.Long, hash: kotlin.String) : GetRawTransactions200Response {
@@ -1153,17 +763,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Get raw transactions
-     * @param accountId account ID
-     * @param count count
-     * @param lt lt
-     * @param hash hash
-     * @return ApiResponse<GetRawTransactions200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getRawTransactionsWithHttpInfo(accountId: kotlin.String, count: kotlin.Int, lt: kotlin.Long, hash: kotlin.String) : ApiResponse<GetRawTransactions200Response?> {
@@ -1174,15 +773,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation getRawTransactions
-     *
-     * @param accountId account ID
-     * @param count count
-     * @param lt lt
-     * @param hash hash
-     * @return RequestConfig
-     */
     fun getRawTransactionsRequestConfig(accountId: kotlin.String, count: kotlin.Int, lt: kotlin.Long, hash: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
@@ -1204,17 +794,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * 
-     * Send raw message to blockchain
-     * @param sendRawMessageRequest Data that is expected
-     * @return SendRawMessage200Response
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun sendRawMessage(sendRawMessageRequest: SendRawMessageRequest) : SendRawMessage200Response {
@@ -1235,14 +814,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         }
     }
 
-    /**
-     * 
-     * Send raw message to blockchain
-     * @param sendRawMessageRequest Data that is expected
-     * @return ApiResponse<SendRawMessage200Response?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun sendRawMessageWithHttpInfo(sendRawMessageRequest: SendRawMessageRequest) : ApiResponse<SendRawMessage200Response?> {
@@ -1253,12 +824,6 @@ class LiteServerApi(basePath: kotlin.String = defaultBasePath, client: OkHttpCli
         )
     }
 
-    /**
-     * To obtain the request config of the operation sendRawMessage
-     *
-     * @param sendRawMessageRequest Data that is expected
-     * @return RequestConfig
-     */
     fun sendRawMessageRequestConfig(sendRawMessageRequest: SendRawMessageRequest) : RequestConfig<SendRawMessageRequest> {
         val localVariableBody = sendRawMessageRequest
         val localVariableQuery: MultiValueMap = mutableMapOf()

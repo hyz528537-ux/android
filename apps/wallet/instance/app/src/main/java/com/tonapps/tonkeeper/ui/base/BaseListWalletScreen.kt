@@ -5,9 +5,17 @@ import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import androidx.annotation.DrawableRes
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.marginBottom
+import androidx.core.view.marginLeft
+import androidx.core.view.marginRight
+import androidx.core.view.marginTop
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.tonapps.uikit.color.backgroundPageColor
 import com.tonapps.uikit.icon.UIKitIcon
 import uikit.R
 import uikit.extensions.applyNavBottomPadding
@@ -37,6 +45,8 @@ abstract class BaseListWalletScreen<C: ScreenContext>(
         headerView = view.findViewById(R.id.header)
         listView = view.findViewById(R.id.list)
 
+        headerView.setBackgroundColor(requireContext().backgroundPageColor)
+
         if (this is SwipeBack) {
             headerView.setIcon(UIKitIcon.ic_chevron_left_16)
             headerView.doOnCloseClick = { finish() }
@@ -51,10 +61,23 @@ abstract class BaseListWalletScreen<C: ScreenContext>(
             headerView.ignoreSystemOffset = false
         }
 
+        if (!headerView.ignoreSystemOffset) {
+            val paddingTop = listView.paddingTop
+            ViewCompat.setOnApplyWindowInsetsListener(view) { _, insets ->
+                val statusInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+                listView.updatePadding(top = paddingTop + statusInsets.top)
+                insets
+            }
+        }
+
         if (hasApplyWindowInsets) {
             listView.applyNavBottomPadding(listView.paddingBottom)
         }
         collectFlow(listView.topScrolled, headerView::setDivider)
+    }
+
+    fun setNestedScrollingEnabled(enabled: Boolean) {
+        listView.isNestedScrollingEnabled = enabled
     }
 
     fun addViewHeader(view: View, params: FrameLayout.LayoutParams? = null) {
@@ -100,6 +123,12 @@ abstract class BaseListWalletScreen<C: ScreenContext>(
         listView.updatePadding(left, top, right, bottom)
     }
 
+    fun setBottomMargin(margin: Int) {
+        listView.updateLayoutParams<FrameLayout.LayoutParams> {
+            bottomMargin = margin
+        }
+    }
+
     fun setActionIcon(@DrawableRes resId: Int, onClick: (view: View) -> Unit) {
         headerView.setAction(resId)
         headerView.doOnActionClick = onClick
@@ -120,6 +149,17 @@ abstract class BaseListWalletScreen<C: ScreenContext>(
 
     fun scrollToTop() {
         listView.scrollToPosition(0)
+    }
+
+    fun applyListMargin(
+        left: Int = listView.marginLeft,
+        top: Int = listView.marginTop,
+        right: Int = listView.marginRight,
+        bottom: Int = listView.marginBottom
+    ) {
+        listView.updateLayoutParams<FrameLayout.LayoutParams> {
+            setMargins(left, top, right, bottom)
+        }
     }
 
 }

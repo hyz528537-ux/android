@@ -18,33 +18,35 @@ package io.tonapi.models
 import io.tonapi.models.AccountAddress
 import io.tonapi.models.JettonPreview
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param sender 
- * @param sendersWallet 
- * @param amount amount in quanta of tokens
- * @param jetton 
- */
 
+@Serializable
 
 data class JettonBurnAction (
 
-    @Json(name = "sender")
+    @SerialName(value = "sender")
     val sender: AccountAddress,
 
-    @Json(name = "senders_wallet")
+    @SerialName(value = "senders_wallet")
     val sendersWallet: kotlin.String,
 
     /* amount in quanta of tokens */
-    @Json(name = "amount")
+    @SerialName(value = "amount")
     val amount: kotlin.String,
 
-    @Json(name = "jetton")
+    @SerialName(value = "jetton")
     val jetton: JettonPreview
 
-)
+) {
+
+
+}
 

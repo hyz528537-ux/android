@@ -16,36 +16,37 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param pool 
- * @param amount 
- * @param pendingDeposit 
- * @param pendingWithdraw 
- * @param readyWithdraw 
- */
 
+@Serializable
 
 data class AccountStakingInfo (
 
-    @Json(name = "pool")
+    @SerialName(value = "pool")
     val pool: kotlin.String,
 
-    @Json(name = "amount")
+    @SerialName(value = "amount")
     val amount: kotlin.Long,
 
-    @Json(name = "pending_deposit")
+    @SerialName(value = "pending_deposit")
     val pendingDeposit: kotlin.Long,
 
-    @Json(name = "pending_withdraw")
+    @SerialName(value = "pending_withdraw")
     val pendingWithdraw: kotlin.Long,
 
-    @Json(name = "ready_withdraw")
+    @SerialName(value = "ready_withdraw")
     val readyWithdraw: kotlin.Long
 
-)
+) {
+
+
+}
 

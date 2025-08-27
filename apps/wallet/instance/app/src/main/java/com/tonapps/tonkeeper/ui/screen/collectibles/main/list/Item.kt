@@ -16,7 +16,8 @@ sealed class Item(type: Int): BaseListItem(type) {
     data class Nft(
         val wallet: WalletEntity,
         val entity: NftEntity,
-        val hiddenBalance: Boolean
+        val hiddenBalance: Boolean,
+        val expiringDomainSoon: Boolean
     ): Item(TYPE_NFT) {
 
         val nftAddress: String

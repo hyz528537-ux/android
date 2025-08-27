@@ -21,10 +21,14 @@ import com.tonapps.tonkeeper.ui.screen.browser.base.BrowserBaseViewModel
 import com.tonapps.tonkeeper.ui.screen.browser.more.BrowserMoreViewModel
 import com.tonapps.tonkeeper.ui.screen.card.CardViewModel
 import com.tonapps.tonkeeper.ui.screen.collectibles.manage.CollectiblesManageViewModel
+import com.tonapps.tonkeeper.ui.screen.dns.renew.DNSRenewViewModel
 import com.tonapps.tonkeeper.ui.screen.events.spam.SpamEventsViewModel
 import com.tonapps.tonkeeper.ui.screen.send.contacts.main.SendContactsViewModel
 import com.tonapps.tonkeeper.ui.screen.purchase.PurchaseViewModel
 import com.tonapps.tonkeeper.ui.screen.nft.NftViewModel
+import com.tonapps.tonkeeper.ui.screen.onramp.main.OnRampViewModel
+import com.tonapps.tonkeeper.ui.screen.onramp.picker.currency.OnRampPickerViewModel
+import com.tonapps.tonkeeper.ui.screen.onramp.picker.provider.OnRampProviderPickerViewModel
 import com.tonapps.tonkeeper.ui.screen.qr.QRViewModel
 import com.tonapps.tonkeeper.ui.screen.send.contacts.add.AddContactViewModel
 import com.tonapps.tonkeeper.ui.screen.send.contacts.edit.EditContactViewModel
@@ -35,6 +39,8 @@ import com.tonapps.tonkeeper.ui.screen.send.transaction.SendTransactionViewModel
 import com.tonapps.tonkeeper.ui.screen.settings.apps.AppsViewModel
 import com.tonapps.tonkeeper.ui.screen.sign.SignDataViewModel
 import com.tonapps.tonkeeper.ui.screen.staking.withdraw.StakeWithdrawViewModel
+import com.tonapps.tonkeeper.ui.screen.swap.omniston.OmnistonViewModel
+import com.tonapps.tonkeeper.ui.screen.swap.picker.SwapPickerViewModel
 import com.tonapps.tonkeeper.ui.screen.transaction.TransactionViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -75,4 +81,10 @@ val viewModelWalletModule = module {
     viewModelOf(::BrowserBaseViewModel)
     viewModelOf(::SpamEventsViewModel)
     viewModelOf(::SignDataViewModel)
+    viewModelOf(::OnRampViewModel)
+    viewModelOf(::OnRampProviderPickerViewModel)
+    viewModelOf(::OnRampPickerViewModel)
+    viewModelOf(::OmnistonViewModel)
+    viewModelOf(::SwapPickerViewModel)
+    viewModelOf(::DNSRenewViewModel)
 }

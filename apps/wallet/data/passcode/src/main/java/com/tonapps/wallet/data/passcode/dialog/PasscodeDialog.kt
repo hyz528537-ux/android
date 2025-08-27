@@ -2,6 +2,7 @@ package com.tonapps.wallet.data.passcode.dialog
 
 import android.content.Context
 import android.os.Bundle
+import android.view.View
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import com.tonapps.wallet.data.passcode.PasscodeHelper
@@ -51,6 +52,7 @@ class PasscodeDialog(
 
     init {
         setContentView(R.layout.dialog_password)
+        findViewById<View>(R.id.container).setOnClickListener { }
         headerView = findViewById(R.id.header)
         headerView.doOnCloseClick = { dismiss() }
 

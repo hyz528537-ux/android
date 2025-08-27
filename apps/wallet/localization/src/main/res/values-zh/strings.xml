@@ -10,6 +10,7 @@
     <string name="staking_pending_withdraw">%1$s 将在 %2$s 内被提取</string>
     <string name="edit_full">编辑</string>
     <string name="safe_mode_tonconnect_description">您可以在钱包的安全设置中更改此设置。</string>
+    <string name="renew_dns_done">域名续期 1 年</string>
     <string name="staking_unstake_cycle">取消质押请求将在 %1$s 的验证周期结束后处理</string>
     <string name="send_transaction_scroll">检查所有详细信息以确认</string>
     <string name="send_transaction_detail">将从您的钱包发送的代币总价值。退款不包含在总价值中。</string>
@@ -29,8 +30,10 @@
     <string name="setup_finish_title">完成设置</string>
     <string name="setup_finish_push">启用交易通知</string>
     <string name="setup_finish_biometry">使用生物识别技术批准交易</string>
-    <string name="setup_finish_backup">备份钱包恢复短语</string>
+    <string name="setup_finish_backup">备份您的恢复助记词</string>
+    <string name="setup_finish_backup_subtitle">没有它，您将无法恢复钱包</string>
     <string name="setup_finish_telegram">加入Tonkeeper频道</string>
+    <string name="setup_onboarding">了解如何使用您的钱包</string>
     <string name="contacts">联系方式</string>
     <string name="step_1">步骤 1</string>
     <string name="step_2">第 2 步</string>
@@ -60,10 +63,14 @@
     <string name="liquid_staking">流动性质押</string>
     <string name="other">其他</string>
     <string name="minimum_amount">最低 %1$s</string>
+    <string name="min_amount">最低金额：%1$s</string>
+    <string name="stake_ethena_description">tsUSDe 代币代表通过 Ethena（一种去中心化的质押服务）持有的 USDe。tsUSDe 会自动累积质押奖励，且锁定时间最少。</string>
+    <string name="stake_ethena_disclaimer">这是根据过去一周的平均协议奖励和平均质押 USDe 数量估算的年化收益。收益按周复利计算，以年化形式呈现。<annotation colorAttr="textSecondaryColor">过往表现不保证未来结果。</annotation> 质押和奖励由第三方服务商 Ethena 提供，并受其<annotation colorAttr="textAccentColor">条款</annotation>约束。</string>
     <string name="stake_tonstakers_description">当您在 Tonstakers 池中质押 TON 时，您会收到一个名为 tsTON 的代币，它代表您在池中的份额。随着池子积累利润，您的 tsTON 代表的 TON 数量会越来越多。</string>
     <string name="edit">编辑</string>
     <string name="pinned">置顶</string>
     <string name="all_assets">所有资产</string>
+    <string name="all_ton_assets">所有 TON 资产</string>
     <string name="sorted_by_price">按价格排序</string>
     <string name="staking_minimum_deposit">最低存款 %1$s。</string>
     <string name="staking_options">选项</string>
@@ -145,6 +152,7 @@
     <string name="unsubscribed">取消订阅</string>
     <string name="subscribed">已订阅</string>
     <string name="received">已接收</string>
+    <string name="on_sale">特价</string>
     <string name="nft_transfer">NFT转移</string>
     <string name="nft_disabled_transfer">NFT目前在市场上出售。要进行转让，您应先将其从销售中移除。</string>
     <string name="continue_action">继续</string>
@@ -168,6 +176,7 @@
     <string name="yesterday">昨天</string>
     <string name="collectibles">收藏品</string>
     <string name="purchases">购买</string>
+    <string name="enter_amount">输入金额</string>
     <string name="call_contract">调用合约</string>
     <string name="contract_address">合约地址</string>
     <string name="about_collection">关于收藏</string>
@@ -183,6 +192,7 @@
     <string name="empty_collectibles_subtitle">获取你的第一个物品！</string>
     <string name="new_wallet">新钱包</string>
     <string name="buy_toncoin">购买Toncoin</string>
+    <string name="buy_or_sell_dot">买入·卖出</string>
     <string name="buy_or_sell">买或卖</string>
     <string name="fiat_open_description">您正在打开一个非由Tonkeeper操作的外部应用程序。</string>
     <string name="buy">购买</string>
@@ -324,6 +334,7 @@
     <string name="logout_confirmation">我有%1$s的恢复短语备份副本</string>
     <string name="last_updated">更新 %1$s</string>
     <string name="back_up_now">备份</string>
+    <string name="confirm_swap">确认交换</string>
     <string name="max">最大</string>
     <string name="confirm_and_send">确认并发送</string>
     <string name="confirm_action">确认操作</string>
@@ -348,7 +359,7 @@
     <string name="system">系统</string>
     <string name="network_fee">网络费用</string>
     <string name="confirm">确认</string>
-    <string name="send_request_comment">您必须包含来自交易所的备注进行转账。否则，您的资金将丢失。</string>
+    <string name="send_request_comment">发送时，请务必包含交易所提供的备注或标签。否则资金将无法入账，且可能丢失。</string>
     <string name="banner_top">您当前正在使用 Tonkeeper 的实验版本。</string>
     <string name="banner_top_button">安装稳定版</string>
     <string name="signer_description">打开签名器 » 选择所需的密钥 » 扫描二维码</string>
@@ -403,7 +414,7 @@
     <string name="battery">电池</string>
     <string name="battery_refill_title">Tonkeeper 电池</string>
     <string name="battery_refill_subtitle">通过 Tonkeeper 交换，发送代币和 NFT。</string>
-    <plurals name="battery_current_charges">
+    <plurals name="battery_charges">
         <item quantity="other">%1$s 次充电</item>
     </plurals>
     <string name="battery_refill_crypto">使用 %1$s 充值</string>
@@ -416,12 +427,12 @@
     <string name="battery_nft">NFT 转账</string>
     <string name="battery_swap">通过 Tonkeeper 交换</string>
     <string name="battery_jetton">代币转账</string>
+    <string name="battery_trc20">USD₮ TRC20 转账</string>
     <string name="battery_swap_single">交换</string>
     <string name="battery_transfer_single">转账</string>
     <plurals name="battery_charges_per_action">
         <item quantity="other">≈ 每 %2$s %1$s 次充电</item>
     </plurals>
-    <string name="will_be_paid_with_battery">将使用电池支付</string>
     <string name="battery_settings_title">电池设置</string>
     <string name="battery_settings_subtitle">选定的交易将由 Tonkeeper 电池支付。</string>
     <string name="battery_recharge_title">充值</string>
@@ -468,6 +479,7 @@
     <string name="name">姓名</string>
     <string name="ledger_blind_signing_error">必须在 Ledger 设置中启用盲签名</string>
     <string name="nothing_to_restore">没什么可恢复的</string>
+    <string name="purchase">购买</string>
     <string name="new_contact">新地址</string>
     <string name="contact_delete_dialog">您确实要从地址簿中删除“%1$s”吗？</string>
     <string name="add_to_contact">添加到地址簿</string>
@@ -497,15 +509,19 @@
     <string name="stories_safemode_2_subtitle">以避免垃圾邮件和假冒物品。</string>
     <string name="stories_safemode_3_title">仅限已验证的代币</string>
     <string name="tx_marked_as_spam">交易被标记为垃圾邮件</string>
+    <string name="exchange_rate">汇率</string>
     <string name="address_prefix">地址：</string>
     <string name="your_address">您的地址：</string>
     <string name="safe_mode_tokens_footer">安全模式已启用。仅可使用经过验证的令牌。<annotation colorAttr="textAccentColor">设置</annotation></string>
     <string name="all">全部</string>
     <string name="report_encrypted_comment">此交易的评论将与报告一起以解密形式发送。</string>
     <string name="select_from_gallery">从画廊中选择</string>
+    <string name="swipe_right">向右滑动</string>
     <string name="open">打开</string>
     <string name="theme_light">光</string>
+    <string name="payment_method">付款方式</string>
     <string name="downloading">正在下载…</string>
+    <string name="emulation_failed_warning">确认后，任何事情都可能发生，包括损失所有资金。所有交易均不可逆转。我们无法模拟该交易，也不知道接下来会发生什么。</string>
     <string name="update_tonkeeper">更新 Tonkeeper</string>
     <string name="update_tonkeeper_subtitle">Tonkeeper 有新版本可用。您现在就可以下载。</string>
     <string name="download_error">下载错误。点击重试。</string>
@@ -524,8 +540,67 @@
     <string name="default_font_size">默认字体大小</string>
     <string name="words12">12 个字</string>
     <string name="words24">24 个字</string>
+    <string name="provider">提供者</string>
     <string name="theme_deep_blue">深蓝</string>
     <string name="theme_dark">黑暗的</string>
     <string name="sign_data_binary_message">您正在盲目签名。请仅从可信赖的来源签名。</string>
     <string name="slide_to_sign">滑动签名</string>
+    <string name="insufficient_battery_charges">电池电量不足</string>
+    <string name="insufficient_balance_charges">手续费所需：%1$s。\n可用余额：%2$s。</string>
+    <string name="receive_tron_description">请仅向此地址发送 %1$s，否则您可能会丢失资金。</string>
+    <string name="open_explorer">在浏览器中打开</string>
+    <string name="out_of_available_charges">已用完 %1$s 可用额度</string>
+    <string name="tron_toggle_text">使用 USD₮ TRC20，无需 TRX。手续费由 Tonkeeper Battery 支付。</string>
+    <string name="trc20">TRC20</string>
+    <string name="copy_phrase">复制助记词</string>
+    <string name="export_tron">导出 TRC20 钱包</string>
+    <string name="phrase_title_tron">TRC20 钱包</string>
+    <string name="phrase_description_tron">请记下这些助记词和对应编号，并妥善保管。</string>
+    <string name="prhase_tron_warning">此助记词仅适用于 TRC20，无法恢复您的 TON 钱包。请使用您的 TON 恢复助记词进行恢复。</string>
+    <string name="battery_required_title">%1$s 需要 Tonkeeper Battery</string>
+    <string name="battery_required_text">电池电量用于支付交易手续费，使转账更简单且更具性价比。</string>
+    <string name="charge_battery">为电池充电</string>
+    <string name="send_wrong_blockchain">该地址属于 %1$s 网络。</string>
+    <string name="send_wrong_blockchain_swap">通过 %3$s 将 USD₮ %1$s 兑换为 USD₮ %2$s 以继续转账。</string>
+    <string name="enable_usdt_tron">启用 USD₮ TRC20</string>
+    <string name="dapp_share_title">分享 %1$s</string>
+    <string name="dapp_share_subtitle">此链接将在 Tonkeeper 中直接打开 %1$s。你可以稍后再次使用或根据需要分享它。</string>
+    <string name="copy_link">复制链接</string>
+    <string name="dapp_disclaimer">你正在打开一个非 Tonkeeper 运营的外部应用。只有在你信任该来源时才继续操作。</string>
+    <string name="sign">符号</string>
+    <string name="ton_assets">TON 资产</string>
+    <string name="pair_not_available">此货币对不可用。请尝试其他货币对。</string>
+    <string name="balance_prefix">余额：%1$s</string>
+    <string name="all_currencies">所有货币</string>
+    <string name="crypto">加密</string>
+    <string name="close">关闭</string>
+    <string name="dapp_safe_modal_title">该链接指向一个诈骗服务</string>
+    <string name="dapp_safe_model_button">如何保证安全</string>
+    <string name="dapp_safe_modal_subtitle">出于安全原因，我们没有打开它</string>
+    <string name="credit_card">信用卡</string>
+    <string name="credit_card_subtitle">Visa或Mastercard</string>
+    <string name="currency_not_found">未找到货币</string>
+    <string name="onrmap_provider_description">其他提供商可提供不同的货币对。</string>
+    <string name="support_title">需要帮助吗？</string>
+    <string name="support_subtitle">在 Telegram 上联系我，我们会尽力提供帮助。</string>
+    <string name="ask_question">提出问题</string>
+    <string name="renew_dns_title">域名到期</string>
+    <string name="renew_dns_expires">%1$d 天后过期</string>
+    <string name="wallet_renew_dns">您有 %1$d 个域名即将过期。请全部续订至 %2$s。</string>
+    <string name="renew_dns_until">全部续订至 %1$s</string>
+    <string name="renew_signel_dns_until">续订至 %1$s</string>
+    <string name="renew_dns_all">全部续订</string>
+    <string name="dns_onsale_error_title">域名现在在市场上出售</string>
+    <string name="dns_onsale_error_desc">要续订域名，您应该先将其从销售中移除。</string>
+    <string name="choose_token">选择代币</string>
+    <string name="about_usde">关于 USDe</string>
+    <string name="empty_history">暂无交易</string>
+    <string name="staked_usde">已质押 USDe</string>
+    <string name="learn_more">了解更多</string>
+    <string name="charging_unavailable">电池充电不可用</string>
+    <string name="ethena_operated_by">由 %1$s 运营</string>
+    <string name="deposit_and_stake">存入并质押</string>
+    <string name="ethena_check_eligibility">检查状态</string>
+    <string name="about_ethena">关于 Ethena</string>
+
 </resources>

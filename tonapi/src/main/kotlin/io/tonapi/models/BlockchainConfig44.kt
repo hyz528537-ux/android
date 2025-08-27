@@ -16,24 +16,28 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * suspended accounts
- *
- * @param accounts 
- * @param suspendedUntil 
- */
 
+@Serializable
 
 data class BlockchainConfig44 (
 
-    @Json(name = "accounts")
+    @SerialName(value = "accounts")
     val accounts: kotlin.collections.List<kotlin.String>,
 
-    @Json(name = "suspended_until")
+    @SerialName(value = "suspended_until")
     val suspendedUntil: kotlin.Int
 
-)
+) {
+
+
+}
 

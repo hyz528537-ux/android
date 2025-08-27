@@ -1,17 +1,21 @@
 package uikit.extensions
 
 import android.content.Context
+import android.graphics.Color
 import android.text.SpannableStringBuilder
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.StyleRes
 import androidx.core.text.inSpans
+import com.tonapps.uikit.color.accentBlueColor
 import com.tonapps.uikit.color.accentGreenColor
 import com.tonapps.uikit.color.accentOrangeColor
 import com.tonapps.uikit.color.accentPurpleColor
+import com.tonapps.uikit.color.accentRedColor
 import com.tonapps.uikit.color.backgroundContentTintColor
 import com.tonapps.uikit.color.textSecondaryColor
 import uikit.span.BadgeSpan
+import uikit.span.ClickableSpanCompat
 import uikit.span.EllipsisSpan
 
 inline fun SpannableStringBuilder.badge(
@@ -63,10 +67,25 @@ inline fun SpannableStringBuilder.badgeGreen(
     builderAction: SpannableStringBuilder.() -> Unit
 ) = badgeAccentColor(context, context.accentGreenColor, builderAction)
 
+inline fun SpannableStringBuilder.badgeRed(
+    context: Context,
+    builderAction: SpannableStringBuilder.() -> Unit
+) = badgeAccentColor(context, context.accentRedColor, builderAction)
+
+inline fun SpannableStringBuilder.badgeBlue(
+    context: Context,
+    builderAction: SpannableStringBuilder.() -> Unit
+) = badgeAccentColor(context, context.accentBlueColor, builderAction)
+
 inline fun SpannableStringBuilder.ellipsis(
     maxWidth: Int,
     ellipsis: String = "…",
     builderAction: SpannableStringBuilder.() -> Unit
 ): SpannableStringBuilder = inSpans(EllipsisSpan(maxWidth, ellipsis), builderAction = builderAction)
 
+inline fun SpannableStringBuilder.clickable(
+    color: Int = Color.TRANSPARENT,
+    noinline onClick: () -> Unit,
+    builderAction: SpannableStringBuilder.() -> Unit
+): SpannableStringBuilder = inSpans(ClickableSpanCompat(color, onClick), builderAction = builderAction)
 

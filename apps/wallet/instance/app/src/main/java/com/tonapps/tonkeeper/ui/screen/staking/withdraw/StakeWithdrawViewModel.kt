@@ -23,6 +23,7 @@ import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.usecase.emulation.Emulated
 import com.tonapps.tonkeeper.usecase.emulation.EmulationUseCase
 import com.tonapps.tonkeeper.usecase.sign.SignUseCase
+import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.SendBlockchainState
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.AccountRepository
@@ -66,6 +67,7 @@ class StakeWithdrawViewModel(
     private val signUseCase: SignUseCase,
     private val emulationUseCase: EmulationUseCase,
     private val accountRepository: AccountRepository,
+    private val api: API
 ): BaseWalletVM(app) {
 
     val taskStateFlow = MutableEffectFlow<ProcessTaskView.State>()
@@ -87,8 +89,8 @@ class StakeWithdrawViewModel(
 
     val amountFormatFlow = amountFlow.map { amount ->
         val fiat = ratesRepository.getTONRates(currency).convertTON(amount)
-        val amountFormat = CurrencyFormatter.format(TokenEntity.TON.symbol, amount, TokenEntity.TON.decimals)
-        val fiatFormat = CurrencyFormatter.formatFiat(currency.code, fiat, currency.decimals, replaceSymbol = false)
+        val amountFormat = CurrencyFormatter.format(TokenEntity.TON.symbol, amount)
+        val fiatFormat = CurrencyFormatter.formatFiat(currency.code, fiat, replaceSymbol = false)
         Pair(amountFormat, fiatFormat)
     }.flowOn(Dispatchers.IO)
 
@@ -96,7 +98,7 @@ class StakeWithdrawViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val tokens = tokenRepository.get(currency, wallet.accountId, wallet.testnet) ?: return@launch
             val staking = stakingRepository.get(wallet.accountId, wallet.testnet)
-            val staked = StakedEntity.create(staking, tokens, currency, ratesRepository)
+            val staked = StakedEntity.create(wallet, staking, tokens, currency, ratesRepository, api)
             val item = staked.find { it.pool.address.equalsAddress(poolAddress) } ?: return@launch
             val details = staking.getDetails(item.pool.implementation) ?: return@launch
             _poolFlow.value = Pair(item, details)
@@ -119,8 +121,8 @@ class StakeWithdrawViewModel(
         val rates = ratesRepository.getTONRates(currency)
         val fee = StakingPool.getTotalFee(extra.value, stake.pool.implementation)
 
-        val amount = CurrencyFormatter.format(TokenEntity.TON.symbol, fee, TokenEntity.TON.decimals)
-        val fiat = CurrencyFormatter.format(currency.code, rates.convertTON(fee), currency.decimals, replaceSymbol = false)
+        val amount = CurrencyFormatter.format(TokenEntity.TON.symbol, fee)
+        val fiat = CurrencyFormatter.format(currency.code, rates.convertTON(fee), replaceSymbol = false)
         Pair(amount, fiat)
     }.flowOn(Dispatchers.IO)
 

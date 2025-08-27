@@ -59,7 +59,7 @@ class SettingsScreen(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AnalyticsHelper.simpleTrackScreenEvent("settings_open", viewModel.installId, from)
+        analytics?.simpleTrackScreenEvent("settings_open", from)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -71,7 +71,7 @@ class SettingsScreen(
     }
 
     private fun onClickItem(item: Item) {
-        AnalyticsHelper.simpleTrackEvent("settings_select", viewModel.installId, hashMapOf(
+        analytics?.simpleTrackEvent("settings_select", hashMapOf(
             "type" to item.name
         ))
         when (item) {
@@ -97,6 +97,7 @@ class SettingsScreen(
             is Item.V4R2 -> viewModel.createV4R2Wallet()
             is Item.Notifications -> navigation?.add(NotificationsManageScreen.newInstance(screenContext.wallet))
             is Item.FAQ -> navigation?.openURL(item.url)
+            is Item.TronToggle -> viewModel.toggleTron()
             else -> return
         }
     }

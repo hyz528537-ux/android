@@ -1,12 +1,12 @@
 package com.tonapps.wallet.api.core
 
-import io.batteryapi.apis.BatteryApi
 import io.tonapi.apis.AccountsApi
 import io.tonapi.apis.BlockchainApi
 import io.tonapi.apis.ConnectApi
 import io.tonapi.apis.DNSApi
 import io.tonapi.apis.EmulationApi
 import io.tonapi.apis.EventsApi
+import io.tonapi.apis.GaslessApi
 import io.tonapi.apis.JettonsApi
 import io.tonapi.apis.LiteServerApi
 import io.tonapi.apis.NFTApi
@@ -14,6 +14,7 @@ import io.tonapi.apis.RatesApi
 import io.tonapi.apis.StakingApi
 import io.tonapi.apis.StorageApi
 import io.tonapi.apis.TracesApi
+import io.tonapi.apis.UtilitiesApi
 import io.tonapi.apis.WalletApi
 import okhttp3.OkHttpClient
 
@@ -49,5 +50,9 @@ class BaseAPI(
     val traces: TracesApi by lazy { TracesApi(basePath, okHttpClient) }
 
     val wallet: WalletApi by lazy { WalletApi(basePath, okHttpClient) }
+
+    val gasless: GaslessApi by lazy { GaslessApi(basePath, okHttpClient) }
+
+    val utilities: UtilitiesApi by lazy { UtilitiesApi(basePath, okHttpClient) }
 
 }

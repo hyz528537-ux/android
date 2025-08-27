@@ -65,23 +65,6 @@ private fun getCurrencyByCountry(country: String): String? {
         return 0
     }*/
 
-val AccountEvent.withTON: Boolean
-    get() {
-        for (action in actions) {
-            val type = action.type
-            if (type == Action.Type.tonTransfer ||
-                type == Action.Type.jettonSwap ||
-                type == Action.Type.electionsDepositStake ||
-                type == Action.Type.electionsRecoverStake ||
-                type == Action.Type.subscribe ||
-                type == Action.Type.unSubscribe ||
-                type == Action.Type.depositStake ||
-                type == Action.Type.withdrawStake) {
-                return true
-            }
-        }
-        return false
-    }
 
 val PoolImplementationType.icon: Int
     get() {
@@ -89,6 +72,7 @@ val PoolImplementationType.icon: Int
             PoolImplementationType.tf -> R.drawable.ic_staking_tf
             PoolImplementationType.whales -> R.drawable.ic_staking_whales
             PoolImplementationType.liquidTF -> R.drawable.ic_staking_tonstakers
+            else -> throw IllegalArgumentException("Unknown PoolImplementationType: $this")
         }
     }
 

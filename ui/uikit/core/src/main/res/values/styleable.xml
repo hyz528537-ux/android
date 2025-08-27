@@ -81,6 +81,11 @@
         <attr name="position"/>
     </declare-styleable>
 
+    <declare-styleable name="ItemLineView">
+        <attr name="android:name" format="string|reference"/>
+        <attr name="android:value" format="string|reference"/>
+    </declare-styleable>
+
     <declare-styleable name="SearchInput">
         <attr name="android:text" format="string|reference"/>
         <attr name="android:hint" format="string|reference"/>

@@ -7,6 +7,7 @@ import com.tonapps.tonkeeper.ui.screen.wallet.main.list.holder.ApkHolder
 import com.tonapps.tonkeeper.ui.screen.wallet.main.list.holder.BalanceHolder
 import com.tonapps.tonkeeper.ui.screen.wallet.main.list.holder.ManageHolder
 import com.tonapps.tonkeeper.ui.screen.wallet.main.list.holder.PushHolder
+import com.tonapps.tonkeeper.ui.screen.wallet.main.list.holder.ReNewDomainsHolder
 import com.tonapps.tonkeeper.ui.screen.wallet.main.list.holder.SetupLinkHolder
 import com.tonapps.tonkeeper.ui.screen.wallet.main.list.holder.SetupSwitchHolder
 import com.tonapps.tonkeeper.ui.screen.wallet.main.list.holder.SetupTitleHolder
@@ -41,6 +42,7 @@ class WalletAdapter: BaseListAdapter() {
             Item.TYPE_SETUP_LINK -> SetupLinkHolder(parent)
             Item.TYPE_STAKED -> StakedHolder(parent)
             Item.TYPE_APK_STATUS -> ApkHolder(parent)
+            Item.TYPE_RENEW_DOMAINS -> ReNewDomainsHolder(parent)
             else -> throw IllegalArgumentException("Unknown view type: $viewType")
         }
     }

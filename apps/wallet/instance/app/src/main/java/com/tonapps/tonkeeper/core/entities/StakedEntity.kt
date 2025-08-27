@@ -1,12 +1,11 @@
 package com.tonapps.tonkeeper.core.entities
 
-import android.util.Log
 import com.tonapps.blockchain.ton.extensions.equalsAddress
-import com.tonapps.blockchain.ton.extensions.toRawAddress
 import com.tonapps.icu.Coins
+import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.entity.BalanceEntity
-import com.tonapps.wallet.api.entity.TokenEntity
-import com.tonapps.wallet.data.core.WalletCurrency
+import com.tonapps.wallet.data.account.entities.WalletEntity
+import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.rates.RatesRepository
 import com.tonapps.wallet.data.staking.StakingPool
 import com.tonapps.wallet.data.staking.entities.PoolEntity
@@ -35,10 +34,12 @@ data class StakedEntity(
     companion object {
 
         suspend fun create(
+            wallet: WalletEntity,
             staking: StakingEntity,
             tokens: List<AccountTokenEntity>,
             currency: WalletCurrency,
-            ratesRepository: RatesRepository
+            ratesRepository: RatesRepository,
+            api: API,
         ): List<StakedEntity> {
             val fiatRates = ratesRepository.getTONRates(currency)
             val list = mutableListOf<StakedEntity>()

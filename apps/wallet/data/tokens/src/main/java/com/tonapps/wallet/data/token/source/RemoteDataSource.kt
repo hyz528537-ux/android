@@ -4,7 +4,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.entity.BalanceEntity
 import com.tonapps.wallet.api.entity.TokenEntity
-import com.tonapps.wallet.data.core.WalletCurrency
+import com.tonapps.wallet.data.core.currency.WalletCurrency
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -41,6 +41,12 @@ internal class RemoteDataSource(
             FirebaseCrashlytics.getInstance().recordException(e)
             null
         }
+    }
+
+    suspend fun loadTronUsdt(
+        tronAddress: String,
+    ): BalanceEntity = withContext(Dispatchers.IO) {
+        api.tron.getTronUsdtBalance(tronAddress)
     }
 
 }

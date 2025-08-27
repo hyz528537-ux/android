@@ -19,28 +19,31 @@ import io.tonapi.models.AccountEvent
 import io.tonapi.models.Risk
 import io.tonapi.models.Trace
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-/**
- * 
- *
- * @param trace 
- * @param risk 
- * @param event 
- */
 
+@Serializable
 
 data class MessageConsequences (
 
-    @Json(name = "trace")
+    @SerialName(value = "trace")
     val trace: Trace,
 
-    @Json(name = "risk")
+    @SerialName(value = "risk")
     val risk: Risk,
 
-    @Json(name = "event")
+    @SerialName(value = "event")
     val event: AccountEvent
 
-)
+) {
+
+
+}
 

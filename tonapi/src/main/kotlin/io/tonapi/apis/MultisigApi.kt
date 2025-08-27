@@ -16,29 +16,31 @@
 package io.tonapi.apis
 
 import java.io.IOException
-import okhttp3.OkHttpClient
+import okhttp3.Call
 import okhttp3.HttpUrl
 
+import io.tonapi.models.InlineObject
 import io.tonapi.models.Multisig
-import io.tonapi.models.StatusDefaultResponse
+import io.tonapi.models.MultisigOrder
 
-import com.squareup.moshi.Json
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-import io.tonapi.infrastructure.ApiClient
-import io.tonapi.infrastructure.ApiResponse
-import io.tonapi.infrastructure.ClientException
-import io.tonapi.infrastructure.ClientError
-import io.tonapi.infrastructure.ServerException
-import io.tonapi.infrastructure.ServerError
-import io.tonapi.infrastructure.MultiValueMap
-import io.tonapi.infrastructure.PartConfig
-import io.tonapi.infrastructure.RequestConfig
-import io.tonapi.infrastructure.RequestMethod
-import io.tonapi.infrastructure.ResponseType
-import io.tonapi.infrastructure.Success
-import io.tonapi.infrastructure.toMultiValue
+import io.infrastructure.ApiClient
+import io.infrastructure.ApiResponse
+import io.infrastructure.ClientException
+import io.infrastructure.ClientError
+import io.infrastructure.ServerException
+import io.infrastructure.ServerError
+import io.infrastructure.MultiValueMap
+import io.infrastructure.PartConfig
+import io.infrastructure.RequestConfig
+import io.infrastructure.RequestMethod
+import io.infrastructure.ResponseType
+import io.infrastructure.Success
+import io.infrastructure.toMultiValue
 
-class MultisigApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient = ApiClient.defaultClient) : ApiClient(basePath, client) {
+class MultisigApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = ApiClient.defaultClient) : ApiClient(basePath, client) {
     companion object {
         @JvmStatic
         val defaultBasePath: String by lazy {
@@ -46,17 +48,6 @@ class MultisigApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
         }
     }
 
-    /**
-     * 
-     * Get multisig account info
-     * @param accountId account ID
-     * @return Multisig
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     * @throws UnsupportedOperationException If the API returns an informational or redirection response
-     * @throws ClientException If the API returns a client error response
-     * @throws ServerException If the API returns a server error response
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun getMultisigAccount(accountId: kotlin.String) : Multisig {
@@ -77,14 +68,6 @@ class MultisigApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
         }
     }
 
-    /**
-     * 
-     * Get multisig account info
-     * @param accountId account ID
-     * @return ApiResponse<Multisig?>
-     * @throws IllegalStateException If the request is not correctly configured
-     * @throws IOException Rethrows the OkHttp execute method exception
-     */
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
     fun getMultisigAccountWithHttpInfo(accountId: kotlin.String) : ApiResponse<Multisig?> {
@@ -95,12 +78,6 @@ class MultisigApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
         )
     }
 
-    /**
-     * To obtain the request config of the operation getMultisigAccount
-     *
-     * @param accountId account ID
-     * @return RequestConfig
-     */
     fun getMultisigAccountRequestConfig(accountId: kotlin.String) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf()
@@ -110,6 +87,52 @@ class MultisigApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClien
         return RequestConfig(
             method = RequestMethod.GET,
             path = "/v2/multisig/{account_id}".replace("{"+"account_id"+"}", encodeURIComponent(accountId.toString())),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = false,
+            body = localVariableBody
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun getMultisigOrder(accountId: kotlin.String) : MultisigOrder {
+        val localVarResponse = getMultisigOrderWithHttpInfo(accountId = accountId)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as MultisigOrder
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()} ${localVarError.body}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun getMultisigOrderWithHttpInfo(accountId: kotlin.String) : ApiResponse<MultisigOrder?> {
+        val localVariableConfig = getMultisigOrderRequestConfig(accountId = accountId)
+
+        return request<Unit, MultisigOrder>(
+            localVariableConfig
+        )
+    }
+
+    fun getMultisigOrderRequestConfig(accountId: kotlin.String) : RequestConfig<Unit> {
+        val localVariableBody = null
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.GET,
+            path = "/v2/multisig/order/{account_id}".replace("{"+"account_id"+"}", encodeURIComponent(accountId.toString())),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = false,

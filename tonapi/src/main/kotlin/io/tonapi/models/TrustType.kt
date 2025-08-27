@@ -16,29 +16,36 @@
 package io.tonapi.models
 
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * 
  *
- * Values: whitelist,graylist,blacklist,none
+ * Values: whitelist,graylist,blacklist,none.unknown
  */
-
-@JsonClass(generateAdapter = false)
+@Serializable(with = TrustTypeSerializer::class)
 enum class TrustType(val value: kotlin.String) {
 
-    @Json(name = "whitelist")
+    @SerialName(value = "whitelist")
     whitelist("whitelist"),
 
-    @Json(name = "graylist")
+    @SerialName(value = "graylist")
     graylist("graylist"),
 
-    @Json(name = "blacklist")
+    @SerialName(value = "blacklist")
     blacklist("blacklist"),
 
-    @Json(name = "none")
-    none("none");
+    @SerialName(value = "none")
+    none("none"),
+
+    @SerialName(value = "unknown")
+    unknown("unknown");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -60,10 +67,24 @@ enum class TrustType(val value: kotlin.String) {
          */
         fun decode(data: kotlin.Any?): TrustType? = data?.let {
           val normalizedData = "$it".lowercase()
-          values().firstOrNull { value ->
+          entries.firstOrNull { value ->
             it == value || normalizedData == "$value".lowercase()
           }
         }
+    }
+}
+
+internal object TrustTypeSerializer : KSerializer<TrustType> {
+    override val descriptor = kotlin.String.serializer().descriptor
+
+    override fun deserialize(decoder: Decoder): TrustType {
+        val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+        return TrustType.entries.firstOrNull { it.value == value }
+            ?: TrustType.unknown
+    }
+
+    override fun serialize(encoder: Encoder, value: TrustType) {
+        encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
     }
 }
 

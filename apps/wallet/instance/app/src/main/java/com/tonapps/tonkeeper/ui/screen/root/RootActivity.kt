@@ -1,5 +1,6 @@
 package com.tonapps.tonkeeper.ui.screen.root
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -14,7 +15,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
+import com.tonapps.blockchain.ton.TonTransferHelper
 import com.tonapps.blockchain.ton.extensions.base64
+import com.tonapps.blockchain.ton.extensions.toAccountId
 import com.tonapps.extensions.currentTimeSeconds
 import com.tonapps.extensions.getStringValue
 import com.tonapps.extensions.isPositive
@@ -24,16 +27,17 @@ import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.DevSettings
 import com.tonapps.tonkeeper.core.entities.TransferEntity
 import com.tonapps.tonkeeper.deeplink.DeepLink
+import com.tonapps.tonkeeper.extensions.getDefaultWalletTransfer
 import com.tonapps.tonkeeper.extensions.hasRefer
 import com.tonapps.tonkeeper.extensions.hasUtmSource
 import com.tonapps.tonkeeper.extensions.isDarkMode
 import com.tonapps.tonkeeper.extensions.toast
 import com.tonapps.tonkeeper.helper.BrowserHelper
-import com.tonapps.tonkeeper.helper.ReferrerClientHelper
 import com.tonapps.tonkeeper.koin.remoteConfig
 import com.tonapps.tonkeeper.ui.base.BaseWalletActivity
 import com.tonapps.tonkeeper.ui.base.QRCameraScreen
 import com.tonapps.tonkeeper.ui.base.WalletFragmentFactory
+import com.tonapps.tonkeeper.ui.component.SnackBarView
 import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppScreen
 import com.tonapps.tonkeeper.ui.screen.init.InitArgs
 import com.tonapps.tonkeeper.ui.screen.init.InitScreen
@@ -43,8 +47,10 @@ import com.tonapps.tonkeeper.ui.screen.send.main.SendScreen
 import com.tonapps.tonkeeper.ui.screen.send.transaction.SendTransactionScreen
 import com.tonapps.tonkeeper.ui.screen.start.StartScreen
 import com.tonapps.tonkeeper.ui.screen.tonconnect.TonConnectScreen
+import com.tonapps.tonkeeper.usecase.emulation.EmulationUseCase
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.color.backgroundPageColor
+import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.core.Theme
 import com.tonapps.wallet.data.core.entity.RawMessageEntity
@@ -54,11 +60,13 @@ import com.tonapps.wallet.data.passcode.PasscodeManager
 import com.tonapps.wallet.data.passcode.ui.PasscodeView
 import com.tonapps.wallet.data.rn.RNLegacy
 import com.tonapps.wallet.data.settings.SettingsRepository
+import com.tonapps.wallet.data.token.TokenRepository
 import com.tonapps.wallet.localization.Localization
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.ton.block.AddrStd
+import org.ton.block.Coins
 import org.ton.cell.Cell
 import uikit.base.BaseFragment
 import uikit.dialog.alert.AlertDialog
@@ -66,8 +74,14 @@ import uikit.extensions.collectFlow
 import uikit.extensions.findFragment
 import uikit.extensions.runAnimation
 import uikit.extensions.withAlpha
+import androidx.core.net.toUri
+import com.tonapps.blockchain.ton.TonSendMode
+import com.tonapps.blockchain.ton.extensions.equalsAddress
+import com.tonapps.tonkeeper.koin.analytics
+import uikit.extensions.gestureNavigationEnabled
+import uikit.extensions.navigationMode
 
-class RootActivity: BaseWalletActivity() {
+class RootActivity : BaseWalletActivity() {
 
     private var cachedRootViewModel: RootViewModel? = null
 
@@ -76,6 +90,9 @@ class RootActivity: BaseWalletActivity() {
 
     private val legacyRN: RNLegacy by inject()
     private val settingsRepository by inject<SettingsRepository>()
+    private val tokenRepository by inject<TokenRepository>()
+    private val accountRepository by inject<AccountRepository>()
+    private val emulationUseCase by inject<EmulationUseCase>()
     private val passcodeManager by inject<PasscodeManager>()
 
     private lateinit var uiHandler: Handler
@@ -102,6 +119,7 @@ class RootActivity: BaseWalletActivity() {
         handleIntent(intent)
 
         lockView = findViewById(R.id.lock)
+        lockView.setOnClickListener {  }
         lockPasscodeView = findViewById(R.id.lock_passcode)
         lockPasscodeView.doOnCheck = {
             passcodeManager.lockscreenCheck(this, it)
@@ -111,7 +129,7 @@ class RootActivity: BaseWalletActivity() {
         lockSignOut.setOnClickListener { signOutAll() }
 
         migrationLoaderContainer = findViewById(R.id.migration_loader_container)
-        migrationLoaderContainer.setOnClickListener {  }
+        migrationLoaderContainer.setOnClickListener { }
         migrationLoaderIcon = findViewById(R.id.migration_loader_icon)
 
         ViewCompat.setOnApplyWindowInsetsListener(lockView) { _, insets ->
@@ -166,7 +184,11 @@ class RootActivity: BaseWalletActivity() {
         } else {
             lockView.visibility = View.VISIBLE
             if (passcodeManager.isBiometricRequest(this)) {
-                if (passcodeManager.confirmationByBiometric(this, getString(Localization.app_name))) {
+                if (passcodeManager.confirmationByBiometric(
+                        this,
+                        getString(Localization.app_name)
+                    )
+                ) {
                     passcodeManager.lockscreenBiometric()
                 } else {
                     toast(Localization.authorization_required)
@@ -228,10 +250,16 @@ class RootActivity: BaseWalletActivity() {
         }
     }
 
-    private fun setAppearanceLight(light: Boolean) {
+    fun setAppearanceLight(light: Boolean) {
+        val isLightTheme = settingsRepository.isLightTheme
+        var lightNavigationBars = light
+        if (isLightTheme && !gestureNavigationEnabled) {
+            lightNavigationBars = true
+        }
+
         with(windowInsetsController) {
             isAppearanceLightStatusBars = light
-            isAppearanceLightNavigationBars = light
+            isAppearanceLightNavigationBars = lightNavigationBars
         }
     }
 
@@ -241,31 +269,54 @@ class RootActivity: BaseWalletActivity() {
 
     fun event(event: RootEvent) {
         when (event) {
-            is RootEvent.Singer -> add(InitScreen.newInstance(if (event.qr) InitArgs.Type.SignerQR else InitArgs.Type.Signer, event.publicKey, event.name))
-            is RootEvent.Ledger -> add(InitScreen.newInstance(type = InitArgs.Type.Ledger, ledgerConnectData = event.connectData, accounts = event.accounts))
-            is RootEvent.Transfer -> openSend(
-                targetAddress = event.address,
-                tokenAddress = event.jettonAddress,
-                amountNano = event.amount,
-                text = event.text,
-                wallet = event.wallet,
-                bin = event.bin,
-                initStateBase64 = event.initStateBase64
+            is RootEvent.Singer -> add(
+                InitScreen.newInstance(
+                    if (event.qr) InitArgs.Type.SignerQR else InitArgs.Type.Signer,
+                    event.publicKey,
+                    event.name
+                )
             )
+
+            is RootEvent.Ledger -> add(
+                InitScreen.newInstance(
+                    type = InitArgs.Type.Ledger,
+                    ledgerConnectData = event.connectData,
+                    accounts = event.accounts
+                )
+            )
+
+            is RootEvent.Transfer -> {
+                lifecycleScope.launch {
+                    openSend(
+                        targetAddress = event.address,
+                        tokenAddress = event.jettonAddress,
+                        amountNano = event.amount,
+                        text = event.text,
+                        wallet = event.wallet,
+                        bin = event.bin,
+                        initStateBase64 = event.initStateBase64,
+                        validUnit = event.validUnit
+                    )
+                }
+            }
+
             is RootEvent.CloseCurrentTonConnect -> closeCurrentTonConnect {}
             is RootEvent.OpenDAppByShortcut -> openDAppByShortcut(event.wallet, event.url)
-            else -> { }
+            else -> {}
         }
     }
 
     private fun openDAppByShortcut(wallet: WalletEntity, uri: Uri) {
         removeByClass({
-            add(DAppScreen.newInstance(
-                wallet = wallet,
-                title = uri.host ?: "unknown",
-                url = uri,
-                source = "shortcut",
-            ))
+            add(
+                DAppScreen.newInstance(
+                    wallet = wallet,
+                    title = uri.host ?: "unknown",
+                    url = uri,
+                    iconUrl = "",
+                    source = "push",
+                )
+            )
         }, DAppScreen::class.java)
     }
 
@@ -273,27 +324,77 @@ class RootActivity: BaseWalletActivity() {
         removeByClass(runnable, SendTransactionScreen::class.java, TonConnectScreen::class.java)
     }
 
-    private fun openSign(
+    private suspend fun getJettonForwardAmount(
+        wallet: WalletEntity,
+        message: RawMessageEntity
+    ): com.tonapps.icu.Coins {
+        try {
+            val transfer = message.getDefaultWalletTransfer(TonSendMode.PAY_GAS_SEPARATELY.value + TonSendMode.IGNORE_ERRORS.value)
+
+            val emulated = emulationUseCase(
+                message = accountRepository.messageBody(wallet, currentTimeSeconds() + 10 * 60, listOf(transfer)),
+                params = true
+            )
+
+            return if (emulated.extra.isRefund) {
+                TransferEntity.BASE_FORWARD_AMOUNT
+            } else {
+                emulated.extra.value + TransferEntity.BASE_FORWARD_AMOUNT
+            }
+        } catch (_: Throwable) {
+            return TransferEntity.POINT_ONE_TON
+        }
+    }
+
+    @SuppressLint("UseKtx")
+    private suspend fun openSign(
         wallet: WalletEntity,
         targetAddress: String,
+        tokenAddress: String?,
         amountNano: Long,
         bin: Cell?,
         initStateBase64: String?,
-        comment: String? = null
+        comment: String? = null,
+        validUnit: Long?
     ) {
-        val request = SignRequestEntity.Builder()
-            .setFrom(wallet.contract.address)
-            .setValidUntil(currentTimeSeconds())
-            .addMessage(RawMessageEntity(
+        val message = if (tokenAddress != null) {
+            val tokens = tokenRepository.get(settingsRepository.currency, wallet.accountId, wallet.testnet) ?: emptyList()
+            val token = tokens.find {
+                it.address.equalsAddress(tokenAddress)
+            }  ?: throw IllegalStateException("Token not found")
+            val message = RawMessageEntity(
+                addressValue = token.balance.walletAddress,
+                amount = TransferEntity.BASE_FORWARD_AMOUNT.toLong(),
+                stateInitValue = initStateBase64,
+                payloadValue = TonTransferHelper.jetton(
+                    coins = Coins.ofNano(amountNano),
+                    toAddress = AddrStd(targetAddress),
+                    responseAddress = wallet.contract.address,
+                    queryId = TransferEntity.newWalletQueryId(),
+                    forwardPayload = bin ?: comment?.let {
+                        TransferEntity.comment(it)
+                    },
+                ).base64()
+            )
+            message.copy(amount = getJettonForwardAmount(wallet, message).toLong())
+        } else {
+            RawMessageEntity(
                 addressValue = targetAddress,
                 amount = amountNano,
                 stateInitValue = initStateBase64,
                 payloadValue = bin?.base64() ?: comment?.let {
                     TransferEntity.comment(it)
                 }?.base64()
-            ))
+            )
+        }
+
+        val validUnitOrDefault = validUnit ?: (currentTimeSeconds() + 10 * 60)
+        val request = SignRequestEntity.Builder()
+            .setFrom(wallet.contract.address)
+            .setValidUntil(validUnitOrDefault)
+            .addMessage(message)
             .setTestnet(wallet.testnet)
-            .build(Uri.parse("tonkeeper://signRaw/"))
+            .build("tonkeeper://signRaw/".toUri())
 
         val screen = SendTransactionScreen.newInstance(wallet, request)
         add(screen)
@@ -305,7 +406,7 @@ class RootActivity: BaseWalletActivity() {
         }, SendScreen::class.java)
     }
 
-    private fun openSend(
+    private suspend fun openSend(
         wallet: WalletEntity,
         targetAddress: String? = null,
         tokenAddress: String?,
@@ -313,7 +414,8 @@ class RootActivity: BaseWalletActivity() {
         text: String? = null,
         nftAddress: String? = null,
         bin: Cell? = null,
-        initStateBase64: String? = null
+        initStateBase64: String? = null,
+        validUnit: Long?
     ) {
         if ((bin != null || initStateBase64 != null) && !amountNano.isPositive()) {
             toast(Localization.invalid_link)
@@ -324,21 +426,29 @@ class RootActivity: BaseWalletActivity() {
 
         if (targetAddress != null && amountNano.isPositive() && nftAddress.isNullOrBlank()) {
             if (bin != null || initStateBase64 != null) {
-                openSign(
-                    wallet = wallet,
-                    targetAddress = targetAddress,
-                    amountNano = amountNano!!,
-                    bin = bin,
-                    initStateBase64 = initStateBase64,
-                    comment = text,
-                )
+                try {
+                    openSign(
+                        wallet = wallet,
+                        targetAddress = targetAddress,
+                        tokenAddress = tokenAddress,
+                        amountNano = amountNano!!,
+                        bin = bin,
+                        initStateBase64 = initStateBase64,
+                        comment = text,
+                        validUnit = validUnit
+                    )
+                } catch (ignored: Throwable) {
+                    toast(Localization.invalid_link)
+                }
             } else {
-                openDirectSend(SendScreen.Companion.Builder(wallet)
-                    .setTargetAddress(targetAddress)
-                    .setTokenAddress(tokenAddress)
-                    .setAmountNano(amountNano)
-                    .setText(text)
-                    .setType(SendScreen.Companion.Type.Direct))
+                openDirectSend(
+                    SendScreen.Companion.Builder(wallet)
+                        .setTargetAddress(targetAddress)
+                        .setTokenAddress(tokenAddress)
+                        .setAmountNano(amountNano)
+                        .setText(text)
+                        .setType(SendScreen.Companion.Type.Direct)
+                )
             }
         } else if (fragment == null) {
             add(
@@ -408,17 +518,21 @@ class RootActivity: BaseWalletActivity() {
         if (0 >= DevSettings.firstLaunchDate) {
             DevSettings.firstLaunchDeeplink = uri?.toString() ?: ""
         } else if (uri?.hasRefer() == true || uri?.hasUtmSource() == true) {
-            AnalyticsHelper.openRefDeeplink(settingsRepository.installId, uri.toString())
+            analytics?.openRefDeeplink(uri.toString())
         }
         val extras = intent.extras
         val dappDeepLink = extras?.getStringValue("dapp_deeplink")?.toUriOrNull()
         if (dappDeepLink != null) {
-            viewModel.openDApp(dappDeepLink)
+            viewModel.openDApp(dappDeepLink, "push")
             return
         } else if (extras != null && !extras.isEmpty && viewModel.processIntentExtras(extras)) {
             return
         } else if (uri != null) {
-            processDeepLink(DeepLink.fixBadUri(uri), false, intent.getStringExtra(Browser.EXTRA_APPLICATION_ID))
+            processDeepLink(
+                DeepLink.fixBadUri(uri),
+                false,
+                intent.getStringExtra(Browser.EXTRA_APPLICATION_ID)
+            )
         }
     }
 

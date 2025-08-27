@@ -1,12 +1,9 @@
 package com.tonapps.tonkeeper.ui.screen.wallet.picker
 
 import android.app.Application
-import android.util.Log
-import androidx.collection.ArrayMap
 import androidx.lifecycle.viewModelScope
 import com.tonapps.extensions.filterList
 import com.tonapps.icu.Coins
-import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.entities.WalletExtendedEntity
 import com.tonapps.tonkeeper.manager.assets.AssetsManager
@@ -16,22 +13,14 @@ import com.tonapps.tonkeeper.ui.screen.wallet.picker.list.Adapter
 import com.tonapps.tonkeeper.ui.screen.wallet.picker.list.Item
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.entities.WalletEntity
-import com.tonapps.wallet.data.core.WalletCurrency
 import com.tonapps.wallet.data.settings.SettingsRepository
-import com.tonapps.wallet.localization.Localization
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flattenConcat
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -45,7 +34,8 @@ class PickerViewModel(
     private val from: String,
     private val accountRepository: AccountRepository,
     private val settingsRepository: SettingsRepository,
-    private val assetsManager: AssetsManager
+    private val assetsManager: AssetsManager,
+    private val analytics: AnalyticsHelper
 ): BaseWalletVM(app) {
 
     private val hiddenBalances = settingsRepository.hiddenBalances
@@ -79,6 +69,9 @@ class PickerViewModel(
         )
     }.flowOn(Dispatchers.IO)
 
+    val isEditModeEnabled: Boolean
+        get() = _editModeFlow.value
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             val wallets = getWallets()
@@ -99,7 +92,7 @@ class PickerViewModel(
         }
 
         uiItemsFlow.take(1).filterList { it is Item.Wallet }.map { it as List<Item.Wallet> }.onEach { wallets ->
-            AnalyticsHelper.simpleTrackEvent("wallet_click", settingsRepository.installId, hashMapOf(
+            analytics.simpleTrackEvent("wallet_click", hashMapOf(
                 "wallet_count" to wallets.size,
                 "wallet_type_list" to wallets.map { it.wallet.version.name }.distinct().joinToString(",")
             ))

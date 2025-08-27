@@ -1,14 +1,10 @@
 package com.tonapps.tonkeeper.ui.base
 
 import android.app.Application
-import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.webkit.WebResourceRequest
 import androidx.annotation.LayoutRes
-import androidx.camera.core.imagecapture.BundlingNode
 import androidx.core.net.toUri
-import androidx.lifecycle.lifecycleScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.extensions.appVersionName
 import com.tonapps.extensions.bestMessage
@@ -38,13 +34,10 @@ import com.tonapps.wallet.data.dapps.entities.AppConnectEntity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
-import uikit.base.BaseFragment
 import uikit.extensions.activity
 import java.util.concurrent.CancellationException
 
@@ -121,7 +114,8 @@ abstract class InjectedTonConnectScreen(@LayoutRes layoutId: Int, wallet: Wallet
 
     suspend fun tonconnect(
         version: Int,
-        request: ConnectRequest
+        request: ConnectRequest,
+        forceConnect: Boolean = false
     ): JSONObject {
         if (version != 2) {
             return JsonBuilder.connectEventError(BridgeError.badRequest("Version $version is not supported"))
@@ -134,7 +128,8 @@ abstract class InjectedTonConnectScreen(@LayoutRes layoutId: Int, wallet: Wallet
         return tonConnectManager.launchConnectFlow(
             activity = activity,
             tonConnect = TonConnect.fromJsInject(request, webView.url?.toUri()),
-            wallet = wallet
+            wallet = wallet,
+            forceConnect = forceConnect,
         )
     }
 
@@ -152,7 +147,7 @@ abstract class InjectedTonConnectScreen(@LayoutRes layoutId: Int, wallet: Wallet
         }
     }
 
-    suspend fun tonconnectSend(array: JSONArray): JSONObject {
+    suspend fun tonconnectSend(array: JSONArray, showLogout: Boolean = true): JSONObject {
         var id = 0L
         try {
             val messages = BridgeEvent.Message.parse(array)
@@ -173,7 +168,9 @@ abstract class InjectedTonConnectScreen(@LayoutRes layoutId: Int, wallet: Wallet
                     val boc = SendTransactionScreen.run(requireContext(), wallet, signRequest)
                     JsonBuilder.responseSendTransaction(id, boc)
                 } catch (e: CancellationException) {
-                    context?.let { tonConnectManager.showLogoutAppBar(wallet, it, uri) }
+                    if (showLogout) {
+                        context?.let { tonConnectManager.showLogoutAppBar(wallet, it, uri) }
+                    }
                     JsonBuilder.responseError(id, BridgeError.userDeclinedTransaction())
                 } catch (e: BridgeException) {
                     JsonBuilder.responseError(id, BridgeError.badRequest(e.bestMessage))
