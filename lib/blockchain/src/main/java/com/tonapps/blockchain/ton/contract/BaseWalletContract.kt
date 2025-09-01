@@ -208,10 +208,9 @@ abstract class BaseWalletContract(
     ): Cell {
         val message = createTransferMessage(address, privateKey, seqNo, unsignedBody)
 
-        val cell = buildCell {
+        return buildCell {
             storeTlb(Message.tlbCodec(AnyTlbConstructor), message)
         }
-        return cell
     }
 
     fun createTransferMessage(

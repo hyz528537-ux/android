@@ -1,6 +1,7 @@
 package com.tonapps.signer.screen.sign
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tonapps.blockchain.ton.TonNetwork
@@ -38,6 +39,7 @@ import org.ton.tlb.constructor.AnyTlbConstructor
 import org.ton.tlb.loadTlb
 import com.tonapps.security.vault.safeArea
 import com.tonapps.uikit.list.ListCell
+import org.ton.cell.loadRef
 import java.math.BigDecimal
 
 class SignViewModel(
@@ -51,6 +53,8 @@ class SignViewModel(
 ): ViewModel() {
 
     val keyEntity = repository.getKey(id).filterNotNull()
+
+    private var normalizedV = v
 
     private val _actionsFlow = MutableStateFlow<List<SignItem>?>(null)
     val actionsFlow = _actionsFlow.asStateFlow().filterNotNull()
@@ -68,8 +72,13 @@ class SignViewModel(
     }.flowOn(Dispatchers.IO).take(1)
 
     fun openEmulate() = keyEntity.map {
-        val contract = BaseWalletContract.create(it.publicKey, v, network.value)
-        val cell = contract.createTransferMessageCell(contract.address, EmptyPrivateKeyEd25519.invoke(), seqno, unsignedBody)
+        val contract = BaseWalletContract.create(it.publicKey, normalizedV, network.value)
+        val cell = contract.createTransferMessageCell(
+            address = contract.address,
+            privateKey = EmptyPrivateKeyEd25519.invoke(),
+            seqNo = seqno,
+            unsignedBody = unsignedBody
+        )
         cell.hex()
     }.flowOn(Dispatchers.IO).take(1)
 
@@ -77,7 +86,7 @@ class SignViewModel(
         return privateKey.sign(unsignedBody.hash().toByteArray())
     }
 
-    private fun parseBoc(): List<SignItem> {
+    private fun parseV4Boc(): List<SignItem> {
         val items = mutableListOf<SignItem>()
         try {
             val slice = unsignedBody.beginParse()
@@ -92,7 +101,48 @@ class SignViewModel(
                 val item = parseMessage(msg, position)
                 items.add(item)
             }
-        } catch (ignored: Throwable) {}
+        } catch (_: Throwable) {}
+        return items
+    }
+
+    private fun parseV5Boc(): List<SignItem> {
+        val items = mutableListOf<SignItem>()
+        try {
+            val slice = unsignedBody.beginParse()
+            val opCode = slice.loadUInt(32)
+            val serialized = slice.loadInt(32)
+            val seqno = slice.loadUInt(32)
+            val validUntil = slice.loadUInt(32)
+
+            var list = slice.loadRef()
+            while (!list.bits.isEmpty() || list.refs.isNotEmpty()) {
+                val cellSlice = list.beginParse()
+
+                val prev = cellSlice.loadRef()
+                val tag = cellSlice.loadUInt(32)
+                val sendMode = cellSlice.loadUInt(8)
+                val msg = cellSlice.loadRef {
+                    loadTlb(MessageRelaxed.tlbCodec(AnyTlbConstructor))
+                }
+                val position = ListCell.getPosition(1, 0)
+                items.add(parseMessage(msg, position))
+
+                list = prev
+            }
+        } catch (_: Throwable) {}
+        return items
+    }
+
+    private fun parseBoc(): List<SignItem> {
+        val items = mutableListOf<SignItem>()
+        items.addAll(parseV4Boc())
+
+        val v5Boc = parseV5Boc()
+        if (!v5Boc.isEmpty()) {
+            items.addAll(parseV5Boc())
+            normalizedV = "v5r1"
+        }
+
         if (items.isEmpty()) {
             items.add(SignItem.Unknown(ListCell.Position.SINGLE))
         }
@@ -101,20 +151,13 @@ class SignViewModel(
 
     private fun parseMessage(msg: MessageRelaxed<Cell>, position: ListCell.Position): SignItem {
         try {
-
             val info = msg.info as CommonMsgInfoRelaxed.IntMsgInfoRelaxed
             val body = getBody(msg.body)
             val opCode = parseOpCode(body)
             val jettonTransfer = parseJettonTransfer(opCode, body)
             val nftTransfer = parseNftTransfer(opCode, body)
 
-            val target = if (nftTransfer != null) {
-                nftTransfer.newOwnerAddress
-            } else if (jettonTransfer != null) {
-                jettonTransfer.toAddress
-            } else {
-                info.dest
-            }
+            val target = nftTransfer?.newOwnerAddress?: (jettonTransfer?.toAddress ?: info.dest)
 
             val value = if (nftTransfer != null) {
                 "NFT"
@@ -137,7 +180,7 @@ class SignViewModel(
                 value2 = value2,
                 extra = nftTransfer != null || jettonTransfer != null
             )
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             return SignItem.Unknown(position)
         }
     }

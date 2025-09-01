@@ -9,10 +9,10 @@ android {
 
     defaultConfig {
         applicationId = Build.namespacePrefix("signer")
-        minSdk = Build.minSdkVersion
+        minSdk = 26
         targetSdk = Build.compileSdkVersion
-        versionCode = 22
-        versionName = "0.2.2"
+        versionCode = 23
+        versionName = "0.2.3"
     }
 
     lint {

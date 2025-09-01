@@ -6,8 +6,11 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.text.method.ScrollingMovementMethod
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import com.tonapps.blockchain.ton.TonNetwork
 import com.tonapps.security.hex
@@ -36,7 +39,9 @@ import org.koin.core.parameter.parametersOf
 import org.ton.cell.Cell
 import uikit.HapticHelper
 import uikit.base.BaseFragment
+import uikit.extensions.bottomBarsOffset
 import uikit.extensions.collectFlow
+import uikit.extensions.pinToBottomInsets
 import uikit.extensions.setColor
 import uikit.navigation.Navigation.Companion.navigation
 import uikit.widget.LoaderView
@@ -129,6 +134,13 @@ class SignFragment: BaseFragment(R.layout.fragment_sign), BaseFragment.Modal {
 
         collectFlow(signViewModel.actionsFlow, adapter::submitList)
         collectFlow(signViewModel.keyEntity, ::setKeyEntity)
+
+        ViewCompat.setOnApplyWindowInsetsListener(view) { view, insets ->
+            actionView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = insets.bottomBarsOffset
+            }
+            insets
+        }
     }
 
     private fun showError() {
@@ -137,7 +149,11 @@ class SignFragment: BaseFragment(R.layout.fragment_sign), BaseFragment.Modal {
     }
 
     private fun copyBody() {
-        requireContext().copyToClipboard(args.bodyHex)
+        signViewModel.openEmulate().catch {
+            navigation?.toast(R.string.unknown_error)
+        }.onEach{
+            requireContext().copyToClipboard(it)
+        }.launchIn(lifecycleScope)
     }
 
     private fun reject() {

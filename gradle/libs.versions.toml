@@ -111,16 +111,16 @@ firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 firebase-performance = { module = "com.google.firebase:firebase-perf" }
 
 [plugins]
-android-application = { id = "com.android.application", version = "8.12.1" }
+android-application = { id = "com.android.application", version = "8.12.2" }
 android-kotlin = { id = "org.jetbrains.kotlin.android", version = "2.2.10" }
-android-library = { id = "com.android.library", version = "8.12.1" }
-android-test = { id = "com.android.test", version = "8.12.1" }
+android-library = { id = "com.android.library", version = "8.12.2" }
+android-test = { id = "com.android.test", version = "8.12.2" }
 android-baselineprofile = { id = "androidx.baselineprofile", version = "1.4.0" }
 
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.2.10" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.2.10" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version = "2.2.10" }
-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version = "8.12.1" }
+kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version = "8.12.2" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version = "2.2.10" }
 
 firebase-services = { id = "com.google.gms.google-services", version = "4.4.3" }

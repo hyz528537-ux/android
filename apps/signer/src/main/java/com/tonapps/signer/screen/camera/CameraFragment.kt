@@ -71,6 +71,8 @@ class CameraFragment: BaseFragment(R.layout.fragment_camera), BaseFragment.Botto
         headerView.background = null
         headerView.doOnCloseClick = { finish() }
 
+        view.findViewById<HeaderView>(R.id.permission_header).doOnCloseClick = { finish() }
+
         cameraView = view.findViewById(R.id.camera)
         flashView = view.findViewById(R.id.flash)
 

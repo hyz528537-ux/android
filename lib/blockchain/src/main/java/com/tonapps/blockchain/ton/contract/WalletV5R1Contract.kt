@@ -17,6 +17,7 @@ import org.ton.boc.BagOfCells
 import org.ton.cell.Cell
 import org.ton.cell.CellBuilder
 import org.ton.cell.buildCell
+import org.ton.cell.storeRef
 import org.ton.contract.wallet.WalletTransfer
 import org.ton.crypto.hex
 import org.ton.tlb.CellRef
@@ -101,9 +102,11 @@ class WalletV5R1Contract(
         signature: BitString,
         unsignedBody: Cell
     ) = CellBuilder.createCell {
-        storeBits(unsignedBody.bits)
+        storeRef(unsignedBody)
         storeBits(signature)
-        storeRefs(unsignedBody.refs)
+        /*storeBits(unsignedBody.bits)
+        storeBits(signature)
+        storeRefs(unsignedBody.refs)*/
     }
 
     override fun getCode(): Cell {
@@ -130,6 +133,7 @@ class WalletV5R1Contract(
             storeUInt(context.serialized, 32)
             storeSeqAndValidUntil(seqNo, validUntil)
             storeBuilder(actions)
+            // storeRef(actions)
         }
     }
 

@@ -2,7 +2,6 @@
 <uikit.widget.ColumnLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="@dimen/offsetMedium"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <uikit.widget.HeaderView
@@ -15,6 +14,7 @@
     <androidx.appcompat.widget.AppCompatTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/offsetMedium"
         android:gravity="center"
         android:text="@string/emulation_qr"
         android:textColor="?attr/textPrimaryColor"
@@ -24,6 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginVertical="@dimen/offsetLarge"
+        android:layout_marginHorizontal="@dimen/offsetMedium"
         android:background="@drawable/bg_qr"
         android:padding="24dp">
         <com.tonapps.qr.ui.QRView
