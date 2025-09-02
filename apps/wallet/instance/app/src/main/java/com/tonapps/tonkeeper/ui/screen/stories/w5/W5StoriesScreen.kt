@@ -3,8 +3,8 @@ package com.tonapps.tonkeeper.ui.screen.stories.w5
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.lifecycleScope
-import com.facebook.common.util.UriUtil
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.tonapps.tonkeeper.extensions.getUriForResourceId
 import com.tonapps.tonkeeper.ui.screen.settings.main.SettingsScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.picker.PickerMode
 import com.tonapps.tonkeeper.ui.screen.wallet.picker.PickerScreen
@@ -32,7 +32,7 @@ class W5StoriesScreen: BaseStoriesScreen() {
         val stories = mutableListOf<Item>()
         for ((index, story) in StoryEntity.all.withIndex()) {
             stories.add(Item(
-                image = UriUtil.getUriForResourceId(story.imageResId),
+                image = getUriForResourceId(story.imageResId),
                 title = getString(story.titleResId),
                 subtitle = getString(story.descriptionResId),
                 button = if (showAddButton && index >= StoryEntity.all.size - 1) getString(Localization.w5_add_wallet) else null
@@ -64,7 +64,6 @@ class W5StoriesScreen: BaseStoriesScreen() {
         private const val ARG_ADD_BUTTON = "add_button"
 
         fun newInstance(addButton: Boolean): W5StoriesScreen {
-            StoryEntity.prefetchImages()
             val fragment = W5StoriesScreen()
             fragment.putBooleanArg(ARG_ADD_BUTTON, addButton)
             return fragment

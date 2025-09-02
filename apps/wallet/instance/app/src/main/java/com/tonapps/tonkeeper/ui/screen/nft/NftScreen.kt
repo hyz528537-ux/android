@@ -2,45 +2,31 @@ package com.tonapps.tonkeeper.ui.screen.nft
 
 import android.graphics.Color
 import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
-import androidx.core.net.toUri
 import androidx.core.widget.NestedScrollView
-import androidx.lifecycle.lifecycleScope
-import com.facebook.drawee.backends.pipeline.Fresco
-import com.facebook.imagepipeline.request.ImageRequest
-import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.tonapps.blockchain.ton.extensions.equalsAddress
-import com.tonapps.extensions.currentTimeSeconds
 import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.extensions.locale
 import com.tonapps.extensions.short4
 import com.tonapps.extensions.toUriOrNull
-import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.extensions.copyWithToast
 import com.tonapps.tonkeeper.extensions.isLightTheme
 import com.tonapps.tonkeeper.extensions.toast
 import com.tonapps.tonkeeper.extensions.toastLoading
 import com.tonapps.tonkeeper.helper.DateHelper
-import com.tonapps.tonkeeper.koin.serverConfig
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.popup.ActionSheet
 import com.tonapps.tonkeeper.ui.base.WalletContextScreen
 import com.tonapps.tonkeeper.ui.component.LottieView
-import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppArgs
 import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppScreen
-import com.tonapps.tonkeeper.ui.screen.dns.renew.DNSRenewScreen
-import com.tonapps.tonkeeper.ui.screen.dns.renew.DNSRenewViewModel
 import com.tonapps.tonkeeper.ui.screen.root.RootViewModel
 import com.tonapps.tonkeeper.ui.screen.send.main.SendScreen
-import com.tonapps.tonkeeper.ui.screen.send.transaction.SendTransactionScreen
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.color.UIKitColor
 import com.tonapps.uikit.color.accentBlueColor
@@ -52,9 +38,7 @@ import com.tonapps.uikit.list.ListCell
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.collectibles.entities.NftEntity
 import com.tonapps.wallet.data.core.Trust
-import com.tonapps.wallet.data.core.entity.SignRequestEntity
 import com.tonapps.wallet.localization.Localization
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.core.parameter.parametersOf
 import uikit.base.BaseFragment
@@ -69,7 +53,7 @@ import uikit.extensions.roundTop
 import uikit.extensions.setRightDrawable
 import uikit.extensions.topScrolled
 import uikit.widget.ColumnLayout
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.HeaderView
 
 class NftScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_nft, wallet), BaseFragment.BottomSheet {
@@ -121,13 +105,10 @@ class NftScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragment_nft
         view.findViewById<Button>(R.id.report_spam).setOnClickListener { reportSpam(true) }
         view.findViewById<Button>(R.id.not_spam).setOnClickListener { reportSpam(false) }
 
-        val imageView = view.findViewById<FrescoView>(R.id.image)
+        val imageView = view.findViewById<AsyncImageView>(R.id.image)
+        imageView.setRoundTop(16f.dp)
 
-        imageView.controller = Fresco.newDraweeControllerBuilder()
-            .setLowResImageRequest(ImageRequest.fromUri(nftEntity.mediumUri))
-            .setImageRequest(ImageRequest.fromUri(nftEntity.bigUri))
-            .setOldController(imageView.controller)
-            .build()
+        imageView.setImageURI(nftEntity.bigUri, this)
 
         val nameView = view.findViewById<AppCompatTextView>(R.id.name)
         nameView.text = nftEntity.name

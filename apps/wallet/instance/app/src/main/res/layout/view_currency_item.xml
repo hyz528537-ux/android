@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingHorizontal="@dimen/offsetMedium">
 
-    <uikit.widget.FrescoView
+    <uikit.widget.AsyncImageView
         android:id="@+id/image"
         android:layout_width="@dimen/iconSize"
         android:layout_height="@dimen/iconSize"
@@ -26,7 +26,7 @@
         android:layout_gravity="center"
         android:visibility="gone">
 
-        <uikit.widget.FrescoView
+        <uikit.widget.AsyncImageView
             android:id="@+id/image1"
             android:layout_width="18dp"
             android:layout_height="18dp"
@@ -34,12 +34,11 @@
             android:layout_marginLeft="10dp"
             app:roundAsCircle="true"/>
 
-        <uikit.widget.FrescoView
+        <uikit.widget.AsyncImageView
             android:id="@+id/image2"
             android:layout_width="21dp"
             android:layout_height="21dp"
             app:roundingBorderWidth="2dp"
-            app:roundingBorderPadding="1dp"
             app:roundingBorderColor="?attr/backgroundContentColor"
             app:roundAsCircle="true"/>
 

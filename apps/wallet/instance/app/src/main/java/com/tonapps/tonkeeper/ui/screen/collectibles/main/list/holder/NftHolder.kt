@@ -2,15 +2,10 @@ package com.tonapps.tonkeeper.ui.screen.collectibles.main.list.holder
 
 import android.graphics.drawable.RippleDrawable
 import android.net.Uri
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
-import com.facebook.drawee.generic.RoundingParams
-import com.facebook.imagepipeline.common.ResizeOptions
-import com.facebook.imagepipeline.postprocessors.BlurPostProcessor
-import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.tonapps.tonkeeper.ui.screen.collectibles.main.list.Item
 import com.tonapps.tonkeeper.ui.screen.nft.NftScreen
 import com.tonapps.tonkeeperx.R
@@ -21,16 +16,17 @@ import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.data.core.Trust
 import com.tonapps.wallet.localization.Localization
+import uikit.compose.components.ResizeOptions
 import uikit.extensions.getDimension
 import uikit.extensions.round
 import uikit.navigation.Navigation
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class NftHolder(parent: ViewGroup): Holder<Item.Nft>(parent, R.layout.view_collectibles) {
 
     private val radius = context.getDimension(uikit.R.dimen.cornerMedium)
 
-    private val imageView = findViewById<FrescoView>(R.id.image)
+    private val imageView = findViewById<AsyncImageView>(R.id.image)
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val collectionView = findViewById<AppCompatTextView>(R.id.collection)
     private val saleBadgeView = findViewById<AppCompatImageView>(R.id.sale_badge)
@@ -40,7 +36,7 @@ class NftHolder(parent: ViewGroup): Holder<Item.Nft>(parent, R.layout.view_colle
         itemView.foreground = RippleDrawable(context.backgroundHighlightedColor.stateList, null, null)
 
         itemView.round(radius.toInt())
-        imageView.hierarchy.roundingParams = RoundingParams.fromCornersRadii(radius, radius, 0f, 0f)
+        imageView.setRoundTop(radius)
     }
 
     override fun onBind(item: Item.Nft) {
@@ -81,11 +77,7 @@ class NftHolder(parent: ViewGroup): Holder<Item.Nft>(parent, R.layout.view_colle
     }
 
     private fun loadImage(uri: Uri, blur: Boolean) {
-        val builder = ImageRequestBuilder.newBuilderWithSource(uri)
-        builder.resizeOptions = ResizeOptions.forSquareSize(512)
-        if (blur) {
-            builder.setPostprocessor(BlurPostProcessor(25, context, 3))
-        }
-        imageView.setImageRequest(builder.build())
+        imageView.blur = blur
+        imageView.setImageURIWithResize(uri, ResizeOptions.forSquareSize(512))
     }
 }

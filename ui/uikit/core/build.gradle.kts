@@ -20,6 +20,7 @@ dependencies {
     api(project(ProjectModules.UIKit.color))
     api(project(ProjectModules.UIKit.icon))
     api(project(ProjectModules.UIKit.list))
+    api(project(ProjectModules.Module.blur))
     api(project(ProjectModules.Module.shimmer))
 
     implementation(libs.kotlinX.coroutines.android)
@@ -31,14 +32,9 @@ dependencies {
     implementation(libs.androidX.splashscreen)
     implementation(libs.flexbox)
     implementation(libs.material)
-    implementation(libs.fresco) {
-        exclude(group = "com.facebook.soloader", module = "soloader")
-        exclude(group = "com.facebook.fresco", module = "soloader")
-        exclude(group = "com.facebook.fresco", module = "nativeimagefilters")
-        exclude(group = "com.facebook.fresco", module = "nativeimagetranscoder")
-        exclude(group = "com.facebook.fresco", module = "memory-type-native")
-        exclude(group = "com.facebook.fresco", module = "imagepipeline-native")
-    }
+
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.foundation)

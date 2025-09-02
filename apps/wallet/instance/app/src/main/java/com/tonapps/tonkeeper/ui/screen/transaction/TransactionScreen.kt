@@ -2,10 +2,8 @@ package com.tonapps.tonkeeper.ui.screen.transaction
 
 import android.content.Context
 import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.os.Bundle
 import android.text.SpannableString
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.widget.AppCompatTextView
@@ -15,9 +13,7 @@ import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.extensions.logError
 import com.tonapps.extensions.max24
 import com.tonapps.extensions.plus
-import com.tonapps.extensions.shortTron
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
-import com.tonapps.tonkeeper.api.shortAddress
 import com.tonapps.tonkeeper.core.history.ActionType
 import com.tonapps.tonkeeper.core.history.HistoryHelper
 import com.tonapps.tonkeeper.core.history.list.item.HistoryItem
@@ -36,7 +32,6 @@ import com.tonapps.uikit.color.textTertiaryColor
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.uikit.list.ListCell
 import com.tonapps.wallet.api.entity.Blockchain
-import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.data.settings.SpamTransactionState
@@ -55,7 +50,7 @@ import uikit.extensions.reject
 import uikit.extensions.setColor
 import uikit.navigation.Navigation.Companion.navigation
 import uikit.widget.ColumnLayout
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import androidx.core.view.isVisible
 import androidx.core.net.toUri
 
@@ -100,12 +95,12 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
     private val historyHelper: HistoryHelper by inject()
 
     private lateinit var iconContainerView: View
-    private lateinit var iconView: FrescoView
-    private lateinit var networkIconView: FrescoView
+    private lateinit var iconView: AsyncImageView
+    private lateinit var networkIconView: AsyncImageView
     private lateinit var moreView: View
     private lateinit var iconSwapView: View
-    private lateinit var iconSwap1View: FrescoView
-    private lateinit var iconSwap2View: FrescoView
+    private lateinit var iconSwap1View: AsyncImageView
+    private lateinit var iconSwap2View: AsyncImageView
     private lateinit var spamView: View
     private lateinit var amountView: AppCompatTextView
     private lateinit var currencyView: AppCompatTextView

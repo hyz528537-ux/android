@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <declare-styleable name="AsyncImageView">
+        <attr name="roundAsCircle" format="boolean"/>
+        <attr name="roundingBorderColor" format="reference|color"/>
+        <attr name="roundingBorderWidth" format="reference|dimension"/>
+        <attr name="roundedCornerRadius" format="reference|dimension"/>
+        <attr name="viewAspectRatio" format="float"/>
+        <attr name="placeholderImage" format="reference"/>
+    </declare-styleable>
+
     <declare-styleable name="HeaderView">
         <attr name="android:icon" format="reference"/>
         <attr name="android:title" format="string|reference"/>

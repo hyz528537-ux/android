@@ -1,6 +1,5 @@
 package com.tonapps.tonkeeper.core.history.list.holder
 
-import android.util.Log
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.net.toUri
@@ -10,13 +9,13 @@ import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.list.ListCell
 import uikit.extensions.drawable
 import uikit.navigation.Navigation
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class HistoryAppHolder(
     parent: ViewGroup
 ): HistoryHolder<HistoryItem.App>(parent, R.layout.view_history_app) {
 
-    private val imageView = itemView.findViewById<FrescoView>(R.id.image)
+    private val imageView = itemView.findViewById<AsyncImageView>(R.id.image)
     private val messageView = itemView.findViewById<AppCompatTextView>(R.id.message)
     private val dataView = itemView.findViewById<AppCompatTextView>(R.id.data)
     private val navigation: Navigation?

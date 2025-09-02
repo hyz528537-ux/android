@@ -6,7 +6,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.tonapps.tonkeeper.ui.screen.notifications.list.Item
 import com.tonapps.tonkeeperx.R
 import uikit.extensions.drawable
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.SwitchView
 
 class AppHolder(
@@ -14,7 +14,7 @@ class AppHolder(
     private val onDAppCallback: (Uri, Boolean) -> Unit
 ): Holder<Item.App>(parent, R.layout.view_notifications_app) {
 
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val pushView = findViewById<SwitchView>(R.id.push)
 

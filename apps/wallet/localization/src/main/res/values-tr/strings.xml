@@ -359,7 +359,7 @@
     <string name="system">Sistem</string>
     <string name="network_fee">Ağ ücreti</string>
     <string name="confirm">Onayla</string>
-    <string name="send_request_comment">Gönderirken borsadan alınan notu veya etiketi eklediğinizden emin olun. Olmazsa, fonlar yatırılmaz ve kaybolabilir.</string>
+    <string name="send_request_comment">Gönderirken borsadan alınan memo veya etiketi mutlaka ekleyin. Onsuz, fonlar yatırılmaz ve kaybolabilir.</string>
     <string name="banner_top">Şu anda Tonkeeper\'ın deneysel bir sürümünü kullanıyorsunuz.</string>
     <string name="banner_top_button">Kararlı sürümü yükle</string>
     <string name="signer_description">Açık İmzalayıcı » Gerekli anahtarı seç » QR kodunu tara</string>

@@ -2,21 +2,17 @@ package com.tonapps.tonkeeper.ui.screen.browser.main.list.explore.banners
 
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatTextView
-import com.facebook.imagepipeline.common.ResizeOptions
-import com.tonapps.tonkeeper.core.AnalyticsHelper
-import com.tonapps.tonkeeper.helper.BrowserHelper
+import androidx.core.view.doOnLayout
 import com.tonapps.tonkeeper.helper.BrowserHelper.openDApp
-import com.tonapps.tonkeeper.koin.installId
-import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppScreen
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.list.BaseListHolder
-import uikit.navigation.Navigation
-import uikit.widget.FrescoView
+import uikit.compose.components.ResizeOptions
+import uikit.widget.AsyncImageView
 
 class BannerHolder(parent: ViewGroup): BaseListHolder<BannerAppItem>(parent, R.layout.view_browser_app_banner) {
 
-    private val bgView = findViewById<FrescoView>(R.id.bg)
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val bgView = findViewById<AsyncImageView>(R.id.bg)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val descriptionView = findViewById<AppCompatTextView>(R.id.description)
 
@@ -25,7 +21,10 @@ class BannerHolder(parent: ViewGroup): BaseListHolder<BannerAppItem>(parent, R.l
             item.app.openDApp(context, item.wallet, "banner", item.country)
         }
 
-        bgView.setImageURI(item.poster, ResizeOptions.forSquareSize(712))
+        bgView.doOnLayout {
+            bgView.setImageURI(item.poster, ResizeOptions(it.width, it.height))
+        }
+
         iconView.setImageURI(item.icon, ResizeOptions.forSquareSize(128))
 
         titleView.setTextColor(item.textColor)

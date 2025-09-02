@@ -12,7 +12,7 @@ import com.tonapps.wallet.data.staking.StakingPool
 import com.tonapps.wallet.data.staking.entities.PoolInfoEntity
 import uikit.extensions.drawable
 import uikit.extensions.withAlpha
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.RadioView
 
 class PoolHolder(
@@ -20,7 +20,7 @@ class PoolHolder(
     private val onClick: (PoolInfoEntity) -> Unit,
 ): Holder<Item.Pool>(parent, R.layout.view_staking_options_pool) {
 
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
     private val nameView = findViewById<AppCompatTextView>(R.id.name)
     private val maxApyView = findViewById<View>(R.id.max_apy)
     private val descriptionView = findViewById<AppCompatTextView>(R.id.description)

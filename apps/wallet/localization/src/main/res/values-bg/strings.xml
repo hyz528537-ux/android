@@ -421,7 +421,7 @@
     <string name="system">Система</string>
     <string name="network_fee">Мрежова такса</string>
     <string name="confirm">Потвърдете</string>
-    <string name="send_request_comment">При изпращане не забравяйте да включите бележката или тагa от борсата. Без него средствата няма да бъдат депозирани и може да бъдат загубени.</string>
+    <string name="send_request_comment">При изпращане не забравяйте да включите memo или таг от борсата. Без него средствата няма да бъдат преведени и може да бъдат изгубени.</string>
     <string name="banner_top">В момента използвате експериментална версия на Tonkeeper.</string>
     <string name="banner_top_button">Инсталирайте стабилната версия</string>
     <string name="signer_description">Отворете Signer » Изберете необходимия ключ » Сканирайте QR код</string>

@@ -3,14 +3,13 @@ package com.tonapps.tonkeeper.ui.screen.qr
 import android.os.Bundle
 import android.widget.Button
 import androidx.lifecycle.lifecycleScope
-import com.tonapps.tonkeeper.koin.settingsRepository
 import com.tonapps.tonkeeperx.R
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import kotlinx.coroutines.launch
 import uikit.base.BaseFragment
 import uikit.dialog.modal.ModalDialog
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.HeaderView
 
 class EnableTronDialog(
@@ -21,8 +20,8 @@ class EnableTronDialog(
     ModalDialog(fragment.requireContext(), R.layout.dialog_enable_tron) {
 
     private lateinit var headerView: HeaderView
-    private lateinit var iconView: FrescoView
-    private lateinit var networkIconView: FrescoView
+    private lateinit var iconView: AsyncImageView
+    private lateinit var networkIconView: AsyncImageView
     private lateinit var buttonView: Button
     private lateinit var laterButtonView: Button
 

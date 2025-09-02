@@ -1,7 +1,6 @@
 package com.tonapps.tonkeeper.ui.screen.onramp.picker.currency.main.list.holder
 
 import android.net.Uri
-import android.util.Log
 import android.util.Size
 import android.view.Gravity
 import android.view.View
@@ -13,7 +12,7 @@ import com.tonapps.tonkeeper.ui.screen.onramp.picker.currency.main.list.Item
 import com.tonapps.tonkeeperx.R
 import uikit.extensions.dp
 import uikit.extensions.hideKeyboard
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.RowLayout
 
 class TitleHolder(parent: ViewGroup): Holder<Item.Title>(parent, R.layout.view_purchase_title) {
@@ -59,8 +58,8 @@ class TitleHolder(parent: ViewGroup): Holder<Item.Title>(parent, R.layout.view_p
         }
     }
 
-    private fun createIconView(uri: Uri): FrescoView {
-        val view = FrescoView(context)
+    private fun createIconView(uri: Uri): AsyncImageView {
+        val view = AsyncImageView(context)
         view.setRound(3f.dp)
         view.setImageURI(uri, null)
         return view

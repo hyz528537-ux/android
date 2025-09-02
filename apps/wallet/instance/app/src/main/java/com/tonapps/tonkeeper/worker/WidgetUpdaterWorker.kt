@@ -14,7 +14,6 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.facebook.drawee.backends.pipeline.Fresco
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.blockchain.ton.extensions.toRawAddress
 import com.tonapps.extensions.circle
@@ -23,7 +22,6 @@ import com.tonapps.extensions.short12
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.extensions.loadDrawable
-import com.tonapps.tonkeeper.extensions.loadSquare
 import com.tonapps.tonkeeper.extensions.setOnClickIntent
 import com.tonapps.tonkeeper.manager.assets.AssetsManager
 import com.tonapps.tonkeeper.manager.widget.WidgetEntity
@@ -44,6 +42,7 @@ import kotlinx.coroutines.withContext
 import uikit.extensions.activity
 import uikit.extensions.dp
 import uikit.extensions.drawable
+import uikit.widget.AsyncImageView
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -137,7 +136,7 @@ class WidgetUpdaterWorker(
         val bitmap = (if (uri.isLocal) {
             uri.loadDrawable(context)?.toBitmap(size, size)?.circle()
         } else {
-            Fresco.getImagePipeline().loadSquare(uri, size)
+            AsyncImageView.loadSquareBitmap(context, uri, size)
         })?.circle()
 
         bitmap ?: Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)

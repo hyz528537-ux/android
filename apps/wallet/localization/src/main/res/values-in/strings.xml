@@ -357,7 +357,7 @@
     <string name="system">Sistem</string>
     <string name="network_fee">Biaya jaringan</string>
     <string name="confirm">Konfirmasi</string>
-    <string name="send_request_comment">Saat mengirim, pastikan untuk menyertakan memo atau tag dari bursa. Tanpanya, dana tidak akan disetorkan dan bisa hilang.</string>
+    <string name="send_request_comment">Saat mengirim, pastikan untuk menyertakan memo atau tag dari exchange. Tanpanya, dana tidak akan masuk dan bisa hilang.</string>
     <string name="banner_top">Anda saat ini menggunakan versi eksperimental dari Tonkeeper.</string>
     <string name="banner_top_button">Instal versi stabil</string>
     <string name="signer_description">Buka Penanda » Pilih kunci yang diperlukan » Pindai kode QR</string>

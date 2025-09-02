@@ -16,12 +16,12 @@ import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.localization.Localization
 import uikit.extensions.drawable
 import uikit.navigation.Navigation.Companion.navigation
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class EthenaBalanceHolder(parent: ViewGroup) :
     Holder<Item.EthenaBalance>(parent, R.layout.view_ethena_balance) {
 
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val apyView = findViewById<AppCompatTextView>(R.id.apy)
     private val balanceView = findViewById<AppCompatTextView>(R.id.balance)

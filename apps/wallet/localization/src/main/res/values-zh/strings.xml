@@ -359,7 +359,7 @@
     <string name="system">系统</string>
     <string name="network_fee">网络费用</string>
     <string name="confirm">确认</string>
-    <string name="send_request_comment">发送时，请务必包含交易所提供的备注或标签。否则资金将无法入账，且可能丢失。</string>
+    <string name="send_request_comment">在发送时，请务必填写交易所提供的 memo 或标签。否则资金将无法到账，并可能丢失。</string>
     <string name="banner_top">您当前正在使用 Tonkeeper 的实验版本。</string>
     <string name="banner_top_button">安装稳定版</string>
     <string name="signer_description">打开签名器 » 选择所需的密钥 » 扫描二维码</string>

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <uikit.widget.FrescoView
+    <uikit.widget.AsyncImageView
         android:id="@+id/icon"
         android:layout_width="36dp"
         android:layout_height="36dp"

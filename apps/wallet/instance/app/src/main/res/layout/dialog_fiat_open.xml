@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingHorizontal="@dimen/offsetMedium"
     android:paddingBottom="@dimen/offsetMedium"
     android:orientation="vertical">
     
-    <com.facebook.drawee.view.SimpleDraweeView
+    <uikit.widget.AsyncImageView
         android:id="@+id/icon"
         android:layout_width="72dp"
         android:layout_height="72dp"

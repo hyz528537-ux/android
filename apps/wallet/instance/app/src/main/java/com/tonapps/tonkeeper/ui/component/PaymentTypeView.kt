@@ -12,10 +12,9 @@ import uikit.widget.RowLayout
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import androidx.core.view.updateLayoutParams
-import com.facebook.drawee.generic.RoundingParams
 import uikit.extensions.dp
 import uikit.extensions.getDimensionPixelSize
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class PaymentTypeView @JvmOverloads constructor(
     context: Context,
@@ -23,7 +22,7 @@ class PaymentTypeView @JvmOverloads constructor(
     defStyle: Int = 0,
 ) : RowLayout(context, attrs, defStyle) {
 
-    private val iconView: FrescoView
+    private val iconView: AsyncImageView
     private val titleView: AppCompatTextView
     private val subtitleView: AppCompatTextView
     private val checkView: AppCompatImageView
@@ -79,11 +78,11 @@ class PaymentTypeView @JvmOverloads constructor(
     fun setRounding(rounding: Boolean) {
         if (rounding) {
             iconView.setScaleTypeCenterCrop()
-            iconView.hierarchy.roundingParams = RoundingParams.fromCornersRadius(4f.dp)
+            iconView.setRound(4f.dp)
             setIconSize(36.dp, 24.dp)
         } else {
             iconView.setScaleTypeCenterInside()
-            iconView.hierarchy.roundingParams = RoundingParams.fromCornersRadius(0f)
+            iconView.setRound(0f)
             setIconSize(36.dp, 36.dp)
         }
     }

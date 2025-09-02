@@ -51,7 +51,7 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"/>
 
-            <uikit.widget.FrescoView
+            <uikit.widget.AsyncImageView
                 android:id="@+id/app_icon"
                 android:layout_width="72dp"
                 android:layout_height="72dp"

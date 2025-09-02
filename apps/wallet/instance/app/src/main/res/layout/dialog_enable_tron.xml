@@ -24,13 +24,13 @@
             android:layout_height="96dp"
             android:layout_gravity="center">
 
-            <uikit.widget.FrescoView
+            <uikit.widget.AsyncImageView
                 android:id="@+id/icon"
                 android:layout_width="96dp"
                 android:layout_height="96dp"
                 app:roundAsCircle="true" />
 
-            <uikit.widget.FrescoView
+            <uikit.widget.AsyncImageView
                 android:id="@+id/network_icon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -39,7 +39,6 @@
                 android:translationY="8dp"
                 app:roundAsCircle="true"
                 app:roundingBorderColor="?attr/backgroundPageColor"
-                app:roundingBorderPadding="1dp"
                 app:roundingBorderWidth="4dp" />
         </FrameLayout>
 

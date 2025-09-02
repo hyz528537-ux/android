@@ -41,7 +41,7 @@
             android:layout_height="64dp"
             android:src="@drawable/ic_ton_with_bg"/>
         
-        <uikit.widget.FrescoView
+        <uikit.widget.AsyncImageView
             app:roundAsCircle="true"
             app:roundingBorderColor="?attr/backgroundPageColor"
             app:roundingBorderWidth="2dp"

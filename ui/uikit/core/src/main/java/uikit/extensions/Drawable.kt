@@ -13,7 +13,6 @@ import android.graphics.drawable.RippleDrawable
 import android.graphics.drawable.VectorDrawable
 import androidx.annotation.ColorRes
 import androidx.core.graphics.createBitmap
-import com.facebook.drawee.drawable.RoundedBitmapDrawable
 import androidx.core.graphics.drawable.toDrawable
 
 fun VectorDrawable.asBitmapDrawable(): BitmapDrawable {

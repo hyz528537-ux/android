@@ -1,7 +1,6 @@
 package com.tonapps.wallet.api.entity
 
 import android.os.Parcelable
-import android.util.Log
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 
@@ -20,7 +19,8 @@ data class FlagsEntity(
     val disableGasless: Boolean,
     val disableUsde: Boolean,
     val disableNativeSwap: Boolean,
-    val disableOnboardingStory: Boolean
+    val disableOnboardingStory: Boolean,
+    val disableNfts: Boolean
 ) : Parcelable {
 
     constructor(json: JSONObject) : this(
@@ -37,7 +37,8 @@ data class FlagsEntity(
         disableGasless = json.optBoolean("disable_gaseless", false),
         disableUsde = json.optBoolean("disable_usde", false),
         disableNativeSwap = json.optBoolean("disable_native_swap", false),
-        disableOnboardingStory = json.optBoolean("disable_onboarding_story", false)
+        disableOnboardingStory = json.optBoolean("disable_onboarding_story", false),
+        disableNfts = json.optBoolean("disable_nfts", false)
     )
 
     constructor() : this(
@@ -54,6 +55,7 @@ data class FlagsEntity(
         disableGasless = false,
         disableUsde = false,
         disableNativeSwap = false,
-        disableOnboardingStory = false
+        disableOnboardingStory = false,
+        disableNfts = false
     )
 }

@@ -16,6 +16,7 @@ import com.tonapps.wallet.data.settings.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class MainViewModel(
@@ -35,6 +36,8 @@ class MainViewModel(
     val childBottomScrolled = _childBottomScrolled.asSharedFlow()
 
     val selectedWalletFlow = accountRepository.selectedWalletFlow
+
+    val disbleNftsFlow = api.configFlow.map { it.flags.disableNfts }
 
     fun setBottomScrolled(value: Boolean) {
         _childBottomScrolled.tryEmit(value)

@@ -3,13 +3,10 @@ package uikit.widget.stories
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.os.Parcelable
-import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.LinearLayoutCompat
@@ -18,22 +15,17 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import uikit.R
 import uikit.base.BaseFragment
-import uikit.extensions.activity
 import uikit.extensions.dp
 import uikit.extensions.getViews
 import uikit.extensions.round
-import uikit.widget.ColumnLayout
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.RowLayout
-import java.util.concurrent.atomic.AtomicInteger
 
 open class BaseStoriesScreen: BaseFragment(R.layout.fragment_stories) {
 
@@ -45,7 +37,7 @@ open class BaseStoriesScreen: BaseFragment(R.layout.fragment_stories) {
     )
 
     private lateinit var contentView: View
-    private lateinit var imageView: FrescoView
+    private lateinit var imageView: AsyncImageView
     private lateinit var linesView: RowLayout
     private lateinit var closeView: View
     private lateinit var titleView: AppCompatTextView

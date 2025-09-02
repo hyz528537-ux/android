@@ -2,13 +2,11 @@ package com.tonapps.tonkeeper.ui.screen.onramp.picker.currency
 
 import android.app.Application
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.viewModelScope
-import com.facebook.common.util.UriUtil
 import com.tonapps.extensions.MutableEffectFlow
-import com.tonapps.extensions.mapList
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.Environment
+import com.tonapps.tonkeeper.extensions.getUriForResourceId
 import com.tonapps.tonkeeper.extensions.onRampDataFlow
 import com.tonapps.tonkeeper.manager.assets.AssetsManager
 import com.tonapps.tonkeeper.os.AndroidCurrency
@@ -178,7 +176,7 @@ class OnRampPickerViewModel(
 
     private fun fiatMethodIcons(keys: List<String>): List<Uri> {
         val icons = getCurrencyIcons(keys, settingsRepository.country.equals("ru", ignoreCase = true))
-        return icons.map { UriUtil.getUriForResourceId(it) }
+        return icons.map { getUriForResourceId(it) }
     }
 
     private fun buildFiatBlock(

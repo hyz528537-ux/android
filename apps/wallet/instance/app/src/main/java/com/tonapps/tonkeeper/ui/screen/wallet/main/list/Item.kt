@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
-import com.facebook.common.util.UriUtil
 import com.tonapps.blockchain.ton.contract.WalletVersion
 import com.tonapps.icu.Coins
 import com.tonapps.extensions.readArrayCompat

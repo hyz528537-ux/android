@@ -22,14 +22,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uikit.extensions.drawable
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import kotlin.time.Duration.Companion.seconds
 
 class StakedHolder(parent: ViewGroup): Holder<Item.Stake>(parent, R.layout.view_wallet_staked) {
 
     private var tickerJob: Job? = null
 
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
     private val nameView = findViewById<AppCompatTextView>(R.id.name)
     private val balanceView = findViewById<AppCompatTextView>(R.id.balance)
     private val balanceFiatView = findViewById<AppCompatTextView>(R.id.balance_fiat)

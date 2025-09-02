@@ -7,14 +7,14 @@ import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.list.BaseListHolder
 import com.tonapps.wallet.data.dapps.entities.AppEntity
 import uikit.navigation.Navigation
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class ConnectedAppHolder(
     parent: ViewGroup,
     private val onLongClick: (AppEntity) -> Unit
 ): BaseListHolder<ConnectedItem>(parent, R.layout.view_browser_app) {
 
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
     private val nameView = findViewById<AppCompatTextView>(R.id.name)
 
     override fun onBind(item: ConnectedItem) {

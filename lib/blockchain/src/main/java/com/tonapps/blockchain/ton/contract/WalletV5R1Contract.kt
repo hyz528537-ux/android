@@ -102,11 +102,8 @@ class WalletV5R1Contract(
         signature: BitString,
         unsignedBody: Cell
     ) = CellBuilder.createCell {
-        storeRef(unsignedBody)
+        storeSlice(unsignedBody.beginParse())
         storeBits(signature)
-        /*storeBits(unsignedBody.bits)
-        storeBits(signature)
-        storeRefs(unsignedBody.refs)*/
     }
 
     override fun getCode(): Cell {

@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:paddingHorizontal="@dimen/offsetMedium">
 
-        <com.facebook.drawee.view.SimpleDraweeView
+        <uikit.widget.AsyncImageView
             android:id="@+id/icon"
             android:layout_width="72dp"
             android:layout_height="72dp"

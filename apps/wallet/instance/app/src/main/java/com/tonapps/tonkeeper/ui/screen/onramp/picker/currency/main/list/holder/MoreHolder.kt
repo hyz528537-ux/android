@@ -9,7 +9,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.tonapps.tonkeeper.ui.screen.onramp.picker.currency.main.list.Item
 import com.tonapps.tonkeeperx.R
 import uikit.extensions.drawable
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class MoreHolder(
     parent: ViewGroup,
@@ -17,7 +17,7 @@ class MoreHolder(
 ): Holder<Item.More>(parent, R.layout.view_currency_item) {
 
     private val imagesView = findViewById<FrameLayout>(R.id.images)
-    private val imageVies = arrayOf<FrescoView>(findViewById(R.id.image1), findViewById(R.id.image2))
+    private val imageVies = arrayOf<AsyncImageView>(findViewById(R.id.image1), findViewById(R.id.image2))
 
     private val iconView = findViewById<AppCompatImageView>(R.id.icon)
     private val symbolView = findViewById<AppCompatTextView>(R.id.symbol)

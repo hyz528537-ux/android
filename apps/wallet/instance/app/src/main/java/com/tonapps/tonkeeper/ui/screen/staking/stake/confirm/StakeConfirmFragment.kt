@@ -25,14 +25,14 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import uikit.extensions.collectFlow
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.HeaderView
 import uikit.widget.ProcessTaskView
 
 class StakeConfirmFragment: BaseHolderWalletScreen.ChildFragment<StakingScreen, StakingViewModel>(R.layout.fragment_stake_confirm) {
 
     private lateinit var headerView: HeaderView
-    private lateinit var iconView: FrescoView
+    private lateinit var iconView: AsyncImageView
     private lateinit var walletView: TransactionDetailView
     private lateinit var recipientView: TransactionDetailView
     private lateinit var amountView: TransactionDetailView

@@ -11,12 +11,12 @@ import com.tonapps.tonkeeperx.R
 import com.tonapps.wallet.localization.Localization
 import uikit.extensions.drawable
 import uikit.navigation.Navigation.Companion.navigation
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class EthenaMethodHolder(parent: ViewGroup) :
     Holder<Item.EthenaMethod>(parent, R.layout.view_ethena_method) {
 
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val apyView = findViewById<AppCompatTextView>(R.id.apy)
     private val openButtonView = findViewById<View>(R.id.button_open)

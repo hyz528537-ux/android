@@ -165,7 +165,6 @@ internal object JsonBuilder {
     private fun features(maxMessages: Int): JSONArray {
         val array = JSONArray()
         array.put("SendTransaction")
-        array.put("SignData")
         array.put(signDataFeature())
         array.put(sendTransactionFeature(maxMessages))
         return array

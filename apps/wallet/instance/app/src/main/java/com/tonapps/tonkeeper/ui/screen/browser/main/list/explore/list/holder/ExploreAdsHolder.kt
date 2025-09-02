@@ -7,14 +7,14 @@ import com.tonapps.tonkeeper.ui.screen.browser.main.list.explore.list.ExploreIte
 import com.tonapps.tonkeeper.ui.screen.root.RootActivity
 import com.tonapps.tonkeeperx.R
 import uikit.extensions.activity
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class ExploreAdsHolder(parent: ViewGroup): ExploreHolder<ExploreItem.Ads>(parent, R.layout.view_browser_ads) {
 
     private val activity: RootActivity?
         get() = context.activity as? RootActivity
 
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val descriptionView = findViewById<AppCompatTextView>(R.id.description)
     private val actionButton = findViewById<Button>(R.id.action)

@@ -15,11 +15,11 @@ import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.localization.Localization
 import uikit.extensions.drawable
 import uikit.navigation.Navigation
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class TokenHolder(parent: ViewGroup): Holder<Item.Token>(parent, R.layout.view_cell_jetton) {
 
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val rateView = findViewById<AppCompatTextView>(R.id.rate)
     private val balanceView = findViewById<AppCompatTextView>(R.id.balance)

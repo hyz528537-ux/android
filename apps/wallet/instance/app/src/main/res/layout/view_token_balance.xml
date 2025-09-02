@@ -37,7 +37,7 @@
         android:layout_width="64dp"
         android:layout_height="64dp">
 
-        <uikit.widget.FrescoView
+        <uikit.widget.AsyncImageView
             android:id="@+id/icon"
             android:layout_width="64dp"
             android:layout_height="64dp"
@@ -45,7 +45,7 @@
             android:backgroundTint="?attr/backgroundContentColor"
             app:roundAsCircle="true" />
 
-        <uikit.widget.FrescoView
+        <uikit.widget.AsyncImageView
             android:id="@+id/network_icon"
             android:layout_width="30dp"
             android:layout_height="30dp"
@@ -55,7 +55,6 @@
             android:visibility="gone"
             app:roundAsCircle="true"
             app:roundingBorderColor="?attr/backgroundPageColor"
-            app:roundingBorderPadding="1dp"
             app:roundingBorderWidth="3dp" />
     </FrameLayout>
 

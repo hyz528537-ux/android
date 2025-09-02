@@ -11,13 +11,13 @@ import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.collectibles.entities.NftEntity
 import uikit.extensions.drawable
 import uikit.navigation.Navigation
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.LoaderView
 
 class ActionHolder(parent: ViewGroup): Holder<Item.Action>(parent, R.layout.view_history_action) {
 
     private val loaderView = findViewById<LoaderView>(R.id.loader)
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val subtitleView = findViewById<AppCompatTextView>(R.id.subtitle)
     private val amountView = findViewById<AppCompatTextView>(R.id.amount)
@@ -27,7 +27,7 @@ class ActionHolder(parent: ViewGroup): Holder<Item.Action>(parent, R.layout.view
 
     private val commentView = findViewById<AppCompatTextView>(R.id.comment)
     private val nftView = findViewById<View>(R.id.nft)
-    private val nftIconView = findViewById<FrescoView>(R.id.nft_icon)
+    private val nftIconView = findViewById<AsyncImageView>(R.id.nft_icon)
     private val nftNameView = findViewById<AppCompatTextView>(R.id.nft_name)
     private val nftCollectionView = findViewById<AppCompatTextView>(R.id.nft_collection)
 

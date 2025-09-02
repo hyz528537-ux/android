@@ -4,8 +4,6 @@ import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatTextView
-import com.facebook.imagepipeline.common.ResizeOptions
-import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.tonapps.extensions.isLocal
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.extensions.buildRateString
@@ -17,14 +15,15 @@ import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.wallet.api.entity.Blockchain
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.localization.Localization
+import uikit.compose.components.ResizeOptions
 import uikit.extensions.drawable
 import uikit.extensions.withDefaultBadge
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class TokenHolder(parent: ViewGroup): Holder<Item.Token>(parent, R.layout.view_cell_jetton) {
 
-    private val iconView = findViewById<FrescoView>(R.id.icon)
-    private val networkIconView = findViewById<FrescoView>(R.id.network_icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
+    private val networkIconView = findViewById<AsyncImageView>(R.id.network_icon)
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val rateView = findViewById<AppCompatTextView>(R.id.rate)
     private val balanceContainerView = findViewById<View>(R.id.balance_container)
@@ -99,9 +98,7 @@ class TokenHolder(parent: ViewGroup): Holder<Item.Token>(parent, R.layout.view_c
         if (uri.isLocal) {
             iconView.setImageURI(uri, null)
         } else {
-            val builder = ImageRequestBuilder.newBuilderWithSource(uri)
-            builder.resizeOptions = ResizeOptions.forSquareSize(256)
-            iconView.setImageRequest(builder.build())
+            iconView.setImageURIWithResize(uri, ResizeOptions.forSquareSize(256))
         }
     }
 

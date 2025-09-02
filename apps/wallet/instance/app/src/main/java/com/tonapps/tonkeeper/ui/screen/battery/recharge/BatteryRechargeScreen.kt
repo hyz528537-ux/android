@@ -12,11 +12,9 @@ import androidx.lifecycle.lifecycleScope
 import com.tonapps.extensions.bestMessage
 import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.icu.CurrencyFormatter
-import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.extensions.hideKeyboard
 import com.tonapps.tonkeeper.extensions.showToast
 import com.tonapps.tonkeeper.extensions.toast
-import com.tonapps.tonkeeper.koin.installId
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.ui.base.BaseListWalletScreen
 import com.tonapps.tonkeeper.ui.base.ScreenContext
@@ -42,7 +40,7 @@ import org.koin.core.parameter.parametersOf
 import uikit.base.BaseFragment
 import uikit.extensions.collectFlow
 import uikit.extensions.setPaddingBottom
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.InputView
 import java.util.UUID
 
@@ -79,7 +77,7 @@ class BatteryRechargeScreen(wallet: WalletEntity) :
     )
 
     private lateinit var listContainer: View
-    private lateinit var tokenIconView: FrescoView
+    private lateinit var tokenIconView: AsyncImageView
     private lateinit var tokenTitleView: AppCompatTextView
 
     private val addressInput: InputView?

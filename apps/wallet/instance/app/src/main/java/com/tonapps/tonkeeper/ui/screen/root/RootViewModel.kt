@@ -631,7 +631,7 @@ class RootViewModel(
             processTransferDeepLink(wallet, route)
         } else if (route is DeepLinkRoute.PickWallet) {
             accountRepository.setSelectedWallet(route.walletId)
-        } else if (route is DeepLinkRoute.Swap) {
+        } else if (route is DeepLinkRoute.Swap && !api.config.flags.disableSwap) {
             _eventFlow.tryEmit(
                 RootEvent.Swap(
                     wallet = wallet,

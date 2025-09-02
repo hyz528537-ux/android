@@ -9,14 +9,14 @@ import com.tonapps.uikit.color.constantWhiteColor
 import uikit.extensions.dp
 import uikit.extensions.drawable
 import uikit.extensions.withAlpha
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class AppHolder(
     parent: ViewGroup,
     private val onClick: (item: FilterItem) -> Unit
 ): Holder<FilterItem.App>(parent) {
 
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
 
     init {
         itemView.updatePadding(

@@ -1,17 +1,13 @@
 package com.tonapps.tonkeeper.ui.screen.staking.stake.amount
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.widget.AppCompatTextView
-import androidx.lifecycle.lifecycleScope
-import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.koin.analytics
 import com.tonapps.tonkeeper.ui.base.BaseHolderWalletScreen
 import com.tonapps.tonkeeper.ui.component.coin.CoinEditText
-import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppScreen
 import com.tonapps.tonkeeper.ui.screen.staking.stake.StakingScreen
 import com.tonapps.tonkeeper.ui.screen.staking.stake.StakingViewModel
 import com.tonapps.tonkeeper.ui.screen.staking.stake.confirm.StakeConfirmFragment
@@ -22,19 +18,16 @@ import com.tonapps.uikit.color.accentRedColor
 import com.tonapps.uikit.color.stateList
 import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
-import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.staking.StakingPool
 import com.tonapps.wallet.data.staking.entities.PoolEntity
 import com.tonapps.wallet.localization.Localization
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import uikit.extensions.collectFlow
 import uikit.extensions.focusWithKeyboard
 import uikit.extensions.hideKeyboard
 import uikit.extensions.withAlpha
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.HeaderView
-import kotlin.collections.map
 import kotlin.collections.plus
 
 class StakeAmountFragment :
@@ -44,7 +37,7 @@ class StakeAmountFragment :
 
     private lateinit var amountView: CoinEditText
     private lateinit var poolItemView: View
-    private lateinit var poolIconView: FrescoView
+    private lateinit var poolIconView: AsyncImageView
     private lateinit var poolTitleView: AppCompatTextView
     private lateinit var poolMaxApyView: View
     private lateinit var poolDescriptionView: AppCompatTextView

@@ -22,13 +22,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import uikit.extensions.collectFlow
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.HeaderView
 import uikit.widget.ProcessTaskView
 
 class UnStakeConfirmFragment: BaseHolderWalletScreen.ChildFragment<UnStakeScreen, UnStakeViewModel>(R.layout.fragment_unstake_confirm) {
 
-    private lateinit var iconView: FrescoView
+    private lateinit var iconView: AsyncImageView
     private lateinit var walletView: TransactionDetailView
     private lateinit var recipientView: TransactionDetailView
     private lateinit var amountView: TransactionDetailView

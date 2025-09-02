@@ -3,6 +3,7 @@ package com.tonapps.tonkeeper.ui.screen.tonconnect
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.tonapps.blockchain.ton.connect.TONProof
+import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.usecase.sign.SignUseCase
 import com.tonapps.wallet.data.account.AccountRepository
@@ -20,7 +21,8 @@ class TonConnectViewModel(
     app: Application,
     private val accountRepository: AccountRepository,
     private val signUseCase: SignUseCase,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val environment: Environment,
 ): BaseWalletVM(app) {
 
     private val _stateFlow = MutableStateFlow<TonConnectScreenState?>(null)
@@ -28,6 +30,9 @@ class TonConnectViewModel(
 
     val installId: String
         get() = settingsRepository.installId
+
+    val pushAvailable: Boolean
+        get() = environment.isGooglePlayServicesAvailable
 
     init {
         viewModelScope.launch(Dispatchers.IO) {

@@ -21,7 +21,6 @@ import com.tonapps.extensions.uri
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.core.Amount
-import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.entities.WalletPurchaseMethodEntity
 import com.tonapps.tonkeeper.extensions.clipboardText
 import com.tonapps.tonkeeper.extensions.copyToClipboard
@@ -78,7 +77,7 @@ import uikit.extensions.hideKeyboard
 import uikit.extensions.setEndDrawable
 import uikit.span.ClickableSpanCompat
 import uikit.widget.ColumnLayout
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.HeaderView
 import uikit.widget.InputView
 import uikit.widget.LoadableButton
@@ -124,8 +123,8 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
     private lateinit var addressActionsView: View
     private lateinit var confirmButton: Button
     private lateinit var processTaskView: ProcessTaskView
-    private lateinit var reviewIconView: FrescoView
-    private lateinit var reviewNetworkIconView: FrescoView
+    private lateinit var reviewIconView: AsyncImageView
+    private lateinit var reviewNetworkIconView: AsyncImageView
     private lateinit var reviewTitleView: AppCompatTextView
     private lateinit var reviewWalletView: TransactionDetailView
     private lateinit var reviewRecipientView: TransactionDetailView

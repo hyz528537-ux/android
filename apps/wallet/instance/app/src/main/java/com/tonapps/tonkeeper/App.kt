@@ -8,11 +8,6 @@ import android.os.StrictMode
 import android.util.Log
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
-import com.facebook.drawee.backends.pipeline.Fresco
-import com.facebook.imagepipeline.core.DownsampleMode
-import com.facebook.imagepipeline.core.ImagePipelineConfig
-import com.facebook.imagepipeline.core.ImageTranscoderType
-import com.facebook.imagepipeline.core.MemoryChunkType
 import com.google.firebase.FirebaseApp
 import com.tonapps.extensions.setLocales
 import com.tonapps.icu.CurrencyFormatter
@@ -83,7 +78,6 @@ class App: Application(), CameraXConfig.Provider, KoinComponent {
             workManagerFactory()
         }
         setLocales(settingsRepository.localeList)
-        initFresco()
     }
 
     fun updateThemes() {
@@ -97,21 +91,6 @@ class App: Application(), CameraXConfig.Provider, KoinComponent {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         applyConfiguration(newConfig)
-    }
-
-    private fun initFresco() {
-        val configBuilder = ImagePipelineConfig.newBuilder(this)
-        configBuilder.setMemoryChunkType(MemoryChunkType.BUFFER_MEMORY)
-        configBuilder.setImageTranscoderType(ImageTranscoderType.JAVA_TRANSCODER)
-        configBuilder.experiment().setNativeCodeDisabled(true)
-        configBuilder.experiment().setPartialImageCachingEnabled(false)
-        configBuilder.setDownsampleMode(DownsampleMode.ALWAYS)
-        if (Build.VERSION_CODES.O > Build.VERSION.SDK_INT) {
-            configBuilder.setBitmapsConfig(Bitmap.Config.ARGB_8888)
-        } else {
-            configBuilder.setBitmapsConfig(Bitmap.Config.ARGB_4444)
-        }
-        Fresco.initialize(this, configBuilder.build())
     }
 
     override fun getCameraXConfig(): CameraXConfig {

@@ -9,14 +9,14 @@ import com.tonapps.tonkeeper.ui.component.CountryFlagView
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.list.BaseListHolder
 import uikit.extensions.drawable
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class Holder(
     parent: ViewGroup,
     val onClick: ((Item) -> Unit)
 ): BaseListHolder<Item>(parent, R.layout.view_currency_item) {
 
-    private val imageView = findViewById<FrescoView>(R.id.image)
+    private val imageView = findViewById<AsyncImageView>(R.id.image)
     private val iconView = findViewById<CountryFlagView>(R.id.icon)
     private val symbolView = findViewById<AppCompatTextView>(R.id.symbol)
     private val nameView = findViewById<AppCompatTextView>(R.id.name)

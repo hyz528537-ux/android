@@ -8,13 +8,11 @@ import android.text.SpannableStringBuilder
 import android.text.style.ImageSpan
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.net.toUri
-import com.facebook.imagepipeline.common.ResizeOptions
-import com.facebook.imagepipeline.postprocessors.BlurPostProcessor
-import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.tonapps.extensions.logError
 import com.tonapps.extensions.max24
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
@@ -42,13 +40,15 @@ import com.tonapps.wallet.localization.Localization
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import uikit.compose.components.ResizeOptions
 import uikit.extensions.clearDrawables
+import uikit.extensions.dp
 import uikit.extensions.drawable
 import uikit.extensions.reject
 import uikit.extensions.setLeftDrawable
 import uikit.navigation.Navigation
 import uikit.navigation.Navigation.Companion.navigation
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.LoaderView
 
 class HistoryActionHolder(
@@ -63,7 +63,7 @@ class HistoryActionHolder(
     private val amountColorTertiary = context.textTertiaryColor
 
     private val loaderView = findViewById<LoaderView>(R.id.loader)
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
     private val titleView = findViewById<AppCompatTextView>(R.id.title)
     private val subtitleView = findViewById<AppCompatTextView>(R.id.subtitle)
     private val commentView = findViewById<AppCompatTextView>(R.id.comment)
@@ -74,7 +74,7 @@ class HistoryActionHolder(
     private val unverifiedTokenView = findViewById<AppCompatTextView>(R.id.unverified_token)
 
     private val nftView = findViewById<View>(R.id.nft)
-    private val nftIconView = findViewById<FrescoView>(R.id.nft_icon)
+    private val nftIconView = findViewById<AsyncImageView>(R.id.nft_icon)
     private val nftNameView = findViewById<AppCompatTextView>(R.id.nft_name)
     private val nftCollectionView = findViewById<AppCompatTextView>(R.id.nft_collection)
     private val lockDrawable: Drawable by lazy {
@@ -129,10 +129,12 @@ class HistoryActionHolder(
         dateView.text = item.date
 
         if (item.failed && !item.pending) {
+            iconView.scaleType = ImageView.ScaleType.CENTER_INSIDE
             iconView.setImageResource(UIKitIcon.ic_exclamationmark_circle_28)
             iconView.imageTintList = context.iconSecondaryColor.stateList
             warningView.visibility = View.VISIBLE
         } else if (item.iconURL.isNullOrEmpty()) {
+            iconView.scaleType = ImageView.ScaleType.CENTER_INSIDE
             iconView.setImageResource(item.action.iconRes)
             iconView.imageTintList = context.iconSecondaryColor.stateList
             warningView.visibility = View.GONE
@@ -153,11 +155,9 @@ class HistoryActionHolder(
     }
 
     private fun loadIcon(uri: Uri) {
+        iconView.scaleType = ImageView.ScaleType.CENTER_CROP
         iconView.imageTintList = null
-
-        val builder = ImageRequestBuilder.newBuilderWithSource(uri)
-        builder.resizeOptions = ResizeOptions.forSquareSize(128)
-        iconView.setImageRequest(builder.build())
+        iconView.setImageURIWithResize(uri, ResizeOptions.forSquareSize(128))
     }
 
     private fun bindPending(pending: Boolean) {
@@ -264,12 +264,9 @@ class HistoryActionHolder(
     }
 
     private fun loadNftImage(uri: Uri, blur: Boolean) {
-        val builder = ImageRequestBuilder.newBuilderWithSource(uri)
-        builder.resizeOptions = ResizeOptions.forSquareSize(320)
-        if (blur) {
-            builder.setPostprocessor(BlurPostProcessor(25, context, 3))
-        }
-        nftIconView.setImageRequest(builder.build())
+        nftIconView.setRoundLeft(12f.dp)
+        nftIconView.blur = blur
+        nftIconView.setImageURIWithResize(uri, ResizeOptions.forSquareSize(320))
     }
 
     @ColorInt

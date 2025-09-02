@@ -69,16 +69,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <uikit.widget.FrescoView
+                    <uikit.widget.AsyncImageView
                         android:id="@+id/image"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:actualImageScaleType="centerCrop"
-                        app:roundedCornerRadius="@dimen/offsetMedium"
-                        app:roundTopLeft="true"
-                        app:roundTopRight="true"
-                        app:roundBottomLeft="false"
-                        app:roundBottomRight="false"
+                        android:scaleType="centerCrop"
                         app:viewAspectRatio="1"/>
 
                 </FrameLayout>

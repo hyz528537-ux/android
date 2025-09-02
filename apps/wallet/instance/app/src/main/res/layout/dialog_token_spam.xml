@@ -46,7 +46,7 @@
 
             </uikit.widget.ColumnLayout>
             
-            <uikit.widget.FrescoView
+            <uikit.widget.AsyncImageView
                 android:id="@+id/icon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"

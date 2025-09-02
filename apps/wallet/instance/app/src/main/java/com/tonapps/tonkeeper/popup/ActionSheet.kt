@@ -5,14 +5,10 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import android.view.animation.DecelerateInterpolator
 import android.widget.PopupWindow
-import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.LinearLayoutCompat
@@ -21,14 +17,11 @@ import com.tonapps.uikit.color.backgroundContentTintColor
 import com.tonapps.uikit.list.ListCell
 import uikit.extensions.dp
 import uikit.extensions.drawable
-import uikit.extensions.findViewByClass
 import uikit.extensions.getDimensionPixelSize
 import uikit.extensions.getDrawable
-import uikit.extensions.getViews
 import uikit.extensions.inflate
 import uikit.extensions.round
-import uikit.extensions.window
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 open class ActionSheet(
     val context: Context
@@ -169,7 +162,7 @@ open class ActionSheet(
         val titleView = itemView.findViewById<AppCompatTextView>(R.id.title)
         val subtitleView = itemView.findViewById<AppCompatTextView>(R.id.subtitle)
         val iconView = itemView.findViewById<AppCompatImageView>(R.id.icon)
-        val imageView = itemView.findViewById<FrescoView>(R.id.image)
+        val imageView = itemView.findViewById<AsyncImageView>(R.id.image)
 
         titleView.text = item.title
         if (item.icon == null) {

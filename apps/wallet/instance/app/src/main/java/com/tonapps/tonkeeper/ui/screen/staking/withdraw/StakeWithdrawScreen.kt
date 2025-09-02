@@ -9,8 +9,6 @@ import com.tonapps.tonkeeper.extensions.getTitle
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.ui.base.WalletContextScreen
 import com.tonapps.tonkeeper.ui.screen.send.main.SendException
-import com.tonapps.tonkeeper.ui.screen.staking.unstake.UnStakeScreen
-import com.tonapps.tonkeeper.ui.screen.staking.viewer.StakeViewerScreen
 import com.tonapps.tonkeeper.view.TransactionDetailView
 import com.tonapps.tonkeeperx.R
 import com.tonapps.wallet.data.account.entities.WalletEntity
@@ -23,10 +21,9 @@ import kotlinx.coroutines.launch
 import org.koin.core.parameter.parametersOf
 import uikit.base.BaseFragment
 import uikit.extensions.applyNavBottomMargin
-import uikit.extensions.applyNavBottomPadding
 import uikit.extensions.collectFlow
 import uikit.extensions.getDimensionPixelSize
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.HeaderView
 import uikit.widget.ProcessTaskView
 
@@ -38,7 +35,7 @@ class StakeWithdrawScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fr
         parametersOf(requireArguments().getString(ARG_POOL_ADDRESS))
     }
 
-    private lateinit var iconView: FrescoView
+    private lateinit var iconView: AsyncImageView
     private lateinit var walletView: TransactionDetailView
     private lateinit var recipientView: TransactionDetailView
     private lateinit var amountView: TransactionDetailView

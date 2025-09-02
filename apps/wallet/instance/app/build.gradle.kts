@@ -130,15 +130,6 @@ dependencies {
 
     implementation(libs.bleManager)
 
-    implementation(libs.fresco) {
-        exclude(group = "com.facebook.soloader", module = "soloader")
-        exclude(group = "com.facebook.fresco", module = "soloader")
-        exclude(group = "com.facebook.fresco", module = "nativeimagefilters")
-        exclude(group = "com.facebook.fresco", module = "nativeimagetranscoder")
-        exclude(group = "com.facebook.fresco", module = "memory-type-native")
-        exclude(group = "com.facebook.fresco", module = "imagepipeline-native")
-    }
-
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.foundation)
     implementation(libs.compose.foundationLayout)

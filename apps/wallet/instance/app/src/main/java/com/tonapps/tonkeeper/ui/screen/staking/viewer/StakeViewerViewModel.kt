@@ -192,15 +192,16 @@ class StakeViewerViewModel(
             )
         )
 
-        val stakingDisabled = !api.config.enabledStaking.contains(staked.pool.implementation.title)
+        val stakingDisabled = !api.config.enabledStaking.contains(staked.pool.implementation.title) || api.config.flags.disableStaking
 
-        uiItems.add(
-            Item.Actions(
-                wallet = wallet,
-                poolAddress = poolAddress,
-                stakeDisabled = stakingDisabled
+        if (!stakingDisabled) {
+            uiItems.add(
+                Item.Actions(
+                    wallet = wallet,
+                    poolAddress = poolAddress,
+                )
             )
-        )
+        }
 
         if (liquidToken != null) {
             val tokenAddress = liquidToken.token.address

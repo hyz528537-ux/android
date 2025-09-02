@@ -6,18 +6,14 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.util.AttributeSet
-import android.util.Log
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.view.setPadding
-import com.tonapps.extensions.isLocal
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.core.currency.WalletCurrency
-import com.tonapps.wallet.localization.Localization
-import uikit.extensions.circle
 import uikit.extensions.dp
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.RowLayout
 
 open class CurrencyPickerView @JvmOverloads constructor(
@@ -60,7 +56,7 @@ open class CurrencyPickerView @JvmOverloads constructor(
         )
     }
 
-    private val iconView: FrescoView
+    private val iconView: AsyncImageView
     private val titleView: AppCompatTextView
 
     open var value = Value(TokenEntity.TON)

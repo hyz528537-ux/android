@@ -7,8 +7,7 @@ import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.ui.screen.staking.viewer.list.Item
 import com.tonapps.tonkeeperx.R
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
-import com.tonapps.wallet.data.staking.StakingPool
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 
 class BalanceHolder(
     parent: ViewGroup,
@@ -16,7 +15,7 @@ class BalanceHolder(
 
     private val balanceView = findViewById<AppCompatTextView>(R.id.balance)
     private val fiatView = findViewById<AppCompatTextView>(R.id.fiat)
-    private val iconView = findViewById<FrescoView>(R.id.icon)
+    private val iconView = findViewById<AsyncImageView>(R.id.icon)
     private val currencyIconView = findViewById<AppCompatImageView>(R.id.currency_icon)
 
     override fun onBind(item: Item.Balance) {

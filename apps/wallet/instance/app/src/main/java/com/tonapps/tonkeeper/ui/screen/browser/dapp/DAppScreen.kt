@@ -24,13 +24,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
-import com.facebook.drawee.backends.pipeline.Fresco
-import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.deeplink.DeepLink
 import com.tonapps.tonkeeper.deeplink.DeepLinkBuilder
 import com.tonapps.tonkeeper.deeplink.DeepLinkRoute
 import com.tonapps.tonkeeper.extensions.copyToClipboard
-import com.tonapps.tonkeeper.extensions.loadSquare
 import com.tonapps.tonkeeper.extensions.setWallet
 import com.tonapps.tonkeeper.extensions.toast
 import com.tonapps.tonkeeper.extensions.withUtmSource
@@ -53,6 +50,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.parameter.parametersOf
 import uikit.drawable.HeaderDrawable
 import uikit.extensions.collectFlow
+import uikit.widget.AsyncImageView
 import uikit.widget.webview.WebViewFixed
 
 class DAppScreen(wallet: WalletEntity) : InjectedTonConnectScreen(R.layout.fragment_dapp, wallet) {
@@ -340,7 +338,7 @@ class DAppScreen(wallet: WalletEntity) : InjectedTonConnectScreen(R.layout.fragm
             try {
                 val app = buildAppEntity()
                 val title = app.name
-                val bitmap = Fresco.getImagePipeline().loadSquare(app.iconUrl.toUri(), 512)
+                val bitmap = AsyncImageView.loadSquareBitmap(requireContext(), app.iconUrl.toUri(), 512)
                     ?: throw IllegalArgumentException("Failed to load icon")
 
                 val targetIntent = Intent(context, RootActivity::class.java).apply {

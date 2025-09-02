@@ -357,7 +357,7 @@
     <string name="system">Система</string>
     <string name="network_fee">Мережевий збір</string>
     <string name="confirm">Підтвердити</string>
-    <string name="send_request_comment">Під час надсилання обов’язково додайте примітку або тег від біржі. Без цього кошти не будуть зараховані й можуть бути втрачені.</string>
+    <string name="send_request_comment">Під час відправлення обов’язково вкажіть memo або тег від біржі. Без нього кошти не надійдуть і можуть бути втрачені.</string>
     <string name="banner_top">Ви використовуєте експериментальну версію Tonkeeper.</string>
     <string name="banner_top_button">Встановити стабільну версію</string>
     <string name="signer_description">Відкрийте Signer » Виберіть потрібний ключ » Скануйте QR-код</string>

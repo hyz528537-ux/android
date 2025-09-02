@@ -357,7 +357,7 @@
     <string name="system">Sistema</string>
     <string name="network_fee">Tarifa de red</string>
     <string name="confirm">Confirmar</string>
-    <string name="send_request_comment">Al enviar, asegúrate de incluir el memo o etiqueta del intercambio. Sin él, los fondos no se depositarán y podrían perderse.</string>
+    <string name="send_request_comment">Al enviar, asegúrate de incluir el memo o etiqueta del exchange. Sin él, los fondos no se acreditarán y pueden perderse.</string>
     <string name="banner_top">Actualmente estás usando una versión experimental de Tonkeeper.</string>
     <string name="banner_top_button">Instalar versión estable</string>
     <string name="signer_description">Abra Signer » Seleccione la clave requerida » Escanee el código QR</string>

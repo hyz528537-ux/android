@@ -160,6 +160,10 @@ class MainScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_main, S
             applyWallet(wallet)
             setFragment(bottomTabsView.selectedItemId, wallet, "wallet",null, false)
         }
+
+        collectFlow(viewModel.disbleNftsFlow) {
+            bottomTabsView.toggleItem(R.id.collectibles, !it)
+        }
     }
 
     override fun onBackPressed(): Boolean {

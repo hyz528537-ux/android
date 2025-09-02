@@ -13,7 +13,6 @@ import com.tonapps.blockchain.ton.connect.TONProof
 import com.tonapps.emoji.ui.EmojiView
 import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.extensions.short4
-import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.ui.component.TonConnectCryptoView
 import com.tonapps.tonkeeper.extensions.debugToast
 import com.tonapps.tonkeeper.extensions.getWalletBadges
@@ -39,7 +38,7 @@ import uikit.extensions.getDimensionPixelSize
 import uikit.extensions.setColor
 import uikit.extensions.setOnClickListener
 import uikit.widget.CheckBoxView
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import uikit.widget.LoaderView
 import uikit.widget.ProcessTaskView
 import java.util.concurrent.CancellationException
@@ -68,7 +67,7 @@ class TonConnectScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_t
     private lateinit var loaderView: LoaderView
     private lateinit var bodyView: View
     private lateinit var cryptoView: TonConnectCryptoView
-    private lateinit var appIconView: FrescoView
+    private lateinit var appIconView: AsyncImageView
     private lateinit var titleView: AppCompatTextView
     private lateinit var descriptionView: AppCompatTextView
     private lateinit var walletPickerView: View
@@ -111,6 +110,11 @@ class TonConnectScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_t
         pushCheckBoxView.checked = true
         pushView.setOnClickListener {
             pushCheckBoxView.toggle()
+        }
+        pushView.visibility = if (viewModel.pushAvailable) {
+            View.VISIBLE
+        } else {
+            View.GONE
         }
 
         warningView.applyNavBottomPadding(requireContext().getDimensionPixelSize(uikit.R.dimen.offsetMedium))
@@ -251,7 +255,7 @@ class TonConnectScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_t
         loaderView.visibility = View.GONE
         bodyView.visibility = View.VISIBLE
 
-        appIconView.setImageURI(args.app.iconUrl)
+        appIconView.setImageURI(args.app.iconUrl, this)
         cryptoView.setKey(state.wallet.address)
         applyAppTitle(args.app.host)
         applyAppDescription(args.app.name, if (!state.hasWalletPicker) {

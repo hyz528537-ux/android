@@ -13,9 +13,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import com.facebook.drawee.drawable.ScalingUtils
-import com.facebook.imagepipeline.common.ResizeOptions
-import uikit.widget.FrescoView
+import uikit.widget.AsyncImageView
 import androidx.core.net.toUri
 
 enum class ImageScale {
@@ -27,6 +25,13 @@ enum class ImageShape {
     RECTANGLE,
     ROUNDED_CORNERS,
     CIRCLE
+}
+
+data class ResizeOptions(val width: Int, val height: Int) {
+
+    companion object {
+        fun forSquareSize(size: Int) = ResizeOptions(size, size)
+    }
 }
 
 @Composable
@@ -60,8 +65,10 @@ fun AsyncImage(
 
     AndroidView(
         factory = { ctx ->
-            FrescoView(ctx).apply {
-                errorDrawable?.let { hierarchy.setFailureImage(it) }
+            AsyncImageView(ctx).apply {
+                errorDrawable?.let {
+                    // hierarchy.setFailureImage(it)
+                }
             }
         },
         modifier = modifier.then(semanticsModifier),
@@ -96,7 +103,9 @@ fun AsyncImage(
                         }
                     } catch (e: Exception) {
                         view.clear(actualCallerContext)
-                        errorDrawable?.let { view.hierarchy.setFailureImage(it, ScalingUtils.ScaleType.CENTER_INSIDE) } // Показываем ошибку
+                        errorDrawable?.let {
+                            // view.hierarchy.setFailureImage(it, ScalingUtils.ScaleType.CENTER_INSIDE)
+                        } // Показываем ошибку
                     }
                 }
                 is Uri -> {
@@ -109,7 +118,9 @@ fun AsyncImage(
                 is Int -> view.setLocalRes(model)
                 else -> {
                     view.clear(actualCallerContext)
-                    errorDrawable?.let { view.hierarchy.setFailureImage(it, ScalingUtils.ScaleType.CENTER_INSIDE) }
+                    errorDrawable?.let {
+                        // view.hierarchy.setFailureImage(it, ScalingUtils.ScaleType.CENTER_INSIDE)
+                    }
                 }
             }
         }

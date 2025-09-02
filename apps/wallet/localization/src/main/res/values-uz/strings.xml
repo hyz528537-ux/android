@@ -360,7 +360,7 @@
     <string name="system">Tizim</string>
     <string name="network_fee">Tarmoq to\'lovi</string>
     <string name="confirm">Tasdiqlash</string>
-    <string name="send_request_comment">Yuborishda birjadan olingan eslatma yoki tegni qo‘shganingizga ishonch hosil qiling. U bo‘lmasa, mablag‘lar tushmaydi va yo‘qolishi mumkin.</string>
+    <string name="send_request_comment">Yuborishda, albatta, birjadan olingan memo yoki tegni kiriting. U holda mablag‘lar tushmaydi va yo‘qolib ketishi mumkin.</string>
     <string name="banner_top">Siz hozirda Tonkeeper-ning tajribaviy versiyasidan foydalanmoqdasiz.</string>
     <string name="banner_top_button">Barqaror versiyani o\'rnating</string>
     <string name="signer_description">Signer-ni oching » Kerakli kalitni tanlang » QR kodni skaner qiling</string>

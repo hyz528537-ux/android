@@ -78,3 +78,7 @@ fun Uri.hasUtmSource(): Boolean {
 fun Uri.hasRefer(): Boolean {
     return containsQuery("referrer") || containsQuery("ref")
 }
+
+fun getUriForResourceId(resourceId: Int): Uri {
+    return Uri.Builder().scheme("res").path(resourceId.toString()).build()
+}

@@ -66,7 +66,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/barHeight">
 
-        <uikit.widget.FrescoView
+        <uikit.widget.AsyncImageView
             android:id="@+id/icon"
             android:layout_width="96dp"
             android:layout_height="96dp"

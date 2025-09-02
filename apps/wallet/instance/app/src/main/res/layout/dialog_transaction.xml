@@ -68,13 +68,13 @@
         android:layout_gravity="center"
         android:layout_marginBottom="22dp">
 
-        <uikit.widget.FrescoView
+        <uikit.widget.AsyncImageView
             android:id="@+id/icon"
             android:layout_width="96dp"
             android:layout_height="96dp"
             app:roundAsCircle="true" />
 
-        <uikit.widget.FrescoView
+        <uikit.widget.AsyncImageView
             android:id="@+id/network_icon"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -84,7 +84,6 @@
             android:visibility="gone"
             app:roundAsCircle="true"
             app:roundingBorderColor="?attr/backgroundPageColor"
-            app:roundingBorderPadding="1dp"
             app:roundingBorderWidth="4dp" />
     </FrameLayout>
 
@@ -95,7 +94,7 @@
         android:layout_gravity="center"
         android:layout_marginBottom="22dp">
 
-        <uikit.widget.FrescoView
+        <uikit.widget.AsyncImageView
             android:id="@+id/icon_swap1"
             android:layout_width="72dp"
             android:layout_height="72dp"
@@ -110,7 +109,7 @@
             android:background="@drawable/bg_oval"
             android:backgroundTint="?attr/backgroundPageColor">
 
-            <uikit.widget.FrescoView
+            <uikit.widget.AsyncImageView
                 android:id="@+id/icon_swap2"
                 android:layout_width="72dp"
                 android:layout_height="72dp"
