@@ -28,15 +28,16 @@ import kotlinx.serialization.encoding.Encoder
 
 @Serializable
 
-data class IncreaseUserBalanceRequest (
+data class GetTonConnectPayloadDefaultResponse (
 
-    /* amount in TON to increase balance by */
-    @SerialName(value = "amount")
-    val amount: kotlin.String,
+    @SerialName(value = "error")
+    val error: kotlin.String,
 
-    /* reason for balance increase */
-    @SerialName(value = "reason")
-    val reason: kotlin.String? = null
+    @SerialName(value = "error-key")
+    val errorKey: kotlin.String? = null,
+
+    @SerialName(value = "error-details")
+    val errorDetails: kotlin.String? = null
 
 ) {
 

@@ -19,6 +19,11 @@ package io.batteryapi.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -50,7 +55,15 @@ data class TronTransactionsListTransactionsInner (
     val timestamp: kotlin.Long,
 
     @SerialName(value = "trongrid_result")
-    val trongridResult: kotlin.Int? = null
+    val trongridResult: kotlin.Int? = null,
+
+    /* Type of fee used for this transaction (battery, ton, etc.) */
+    @SerialName(value = "fee_type")
+    val feeType: kotlin.String? = null,
+
+    /* Fee amount in TON nano units */
+    @SerialName(value = "fee_ton_nano")
+    val feeTonNano: kotlin.Int? = null
 
 ) {
 

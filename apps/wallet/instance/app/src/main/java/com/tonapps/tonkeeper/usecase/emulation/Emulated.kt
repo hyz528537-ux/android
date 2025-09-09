@@ -1,6 +1,5 @@
 package com.tonapps.tonkeeper.usecase.emulation
 
-import android.util.Log
 import com.tonapps.blockchain.ton.extensions.toRawAddress
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
@@ -43,11 +42,11 @@ data class Emulated(
             return if (withBattery && consequences != null) {
                 val extra = consequences.event.extra
                 val chargesBalance = BatteryHelper.getBatteryCharges(wallet, accountRepository, batteryRepository)
+                val batteryConfig = batteryRepository.getConfig(wallet.testnet)
                 val charges = BatteryMapper.calculateChargesAmount(
                     Coins.of(abs(extra)).value,
-                    api.config.batteryMeanFees
+                    batteryConfig.chargeCost
                 )
-                val batteryConfig = batteryRepository.getConfig(wallet.testnet)
                 val excessesAddress = batteryConfig.excessesAddress
                 SendFee.Battery(
                     charges = charges,

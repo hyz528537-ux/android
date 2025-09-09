@@ -11,6 +11,7 @@ import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.battery.BatteryMapper
 import com.tonapps.wallet.data.battery.BatteryRepository
 import com.tonapps.wallet.data.battery.entity.BatteryBalanceEntity
+import com.tonapps.wallet.data.battery.entity.BatteryConfigEntity
 import com.tonapps.wallet.data.settings.BatteryTransaction
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.localization.Localization
@@ -43,8 +44,8 @@ class BatterySettingsViewModel(
     }.flowOn(Dispatchers.IO)
 
     val uiItemsFlow = batteryRepository.balanceUpdatedFlow.map { _ ->
-        val config = api.config
         val batteryBalance = getBatteryBalance(wallet)
+        val batteryConfig = getBatteryConfig(wallet)
         val hasBalance = batteryBalance.balance.isPositive
 
         val uiItems = mutableListOf<Item>()
@@ -62,8 +63,7 @@ class BatterySettingsViewModel(
 
         for ((index, type) in types.withIndex()) {
             val position = ListCell.getPosition(size, index)
-            val meanPrice = getTransactionMeanPrice(config, type)
-            val charges = BatteryMapper.calculateChargesAmount(meanPrice, config.batteryMeanFees)
+            val meanPrice = getTransactionMeanPrice(batteryConfig.meanPrices, type)
             val enabled = settingsRepository.batteryIsEnabledTx(wallet.accountId, type)
             val item = Item.SupportedTransaction(
                 wallet = wallet,
@@ -71,14 +71,12 @@ class BatterySettingsViewModel(
                 supportedTransaction = type,
                 enabled = enabled,
                 showToggle = hasBalance,
-                changes = charges,
+                changes = meanPrice,
             )
             uiItems.add(item)
         }
 
         if (tronUsdtEnabled) {
-            val minCharges = BatteryMapper.calculateChargesAmount(config.batteryMeanPriceTrcMin, config.batteryMeanFees)
-            val maxCharges = BatteryMapper.calculateChargesAmount(config.batteryMeanPriceTrcMax, config.batteryMeanFees)
             uiItems.add(
                 Item.SupportedTransaction(
                     wallet = wallet,
@@ -86,8 +84,7 @@ class BatterySettingsViewModel(
                     supportedTransaction = BatteryTransaction.TRC20,
                     enabled = true,
                     showToggle = hasBalance,
-                    changes = 0,
-                    changesRange = minCharges to maxCharges,
+                    changes = batteryConfig.meanPrices.batteryMeanPriceTronUsdt ?: 0,
                 )
             )
         }
@@ -107,15 +104,21 @@ class BatterySettingsViewModel(
         )
     }
 
+    private suspend fun getBatteryConfig(
+        wallet: WalletEntity
+    ): BatteryConfigEntity {
+        return batteryRepository.getConfig(wallet.testnet)
+    }
+
     private fun getTransactionMeanPrice(
-        config: ConfigEntity,
+        meanPrices: BatteryConfigEntity.MeanPrices,
         transaction: BatteryTransaction
-    ): String {
+    ): Int {
         return when (transaction) {
-            BatteryTransaction.NFT -> config.batteryMeanPriceNft
-            BatteryTransaction.SWAP -> config.batteryMeanPriceSwap
-            BatteryTransaction.JETTON -> config.batteryMeanPriceJetton
-            else -> "0"
+            BatteryTransaction.NFT -> meanPrices.batteryMeanPriceNft
+            BatteryTransaction.SWAP -> meanPrices.batteryMeanPriceSwap
+            BatteryTransaction.JETTON -> meanPrices.batteryMeanPriceJetton
+            else -> 0
         }
     }
 }

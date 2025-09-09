@@ -39,10 +39,10 @@ import io.batteryapi.models.EnterpriseWalletConfig
 import io.batteryapi.models.EstimateGaslessCostRequest
 import io.batteryapi.models.EstimatedTronTx
 import io.batteryapi.models.GaslessEstimation
+import io.batteryapi.models.GetTonConnectPayloadDefaultResponse
 import io.batteryapi.models.GetTronConfig200Response
 import io.batteryapi.models.IOSBatteryPurchaseStatus
 import io.batteryapi.models.IncreaseUserBalanceRequest
-import io.batteryapi.models.InlineObject
 import io.batteryapi.models.IosBatteryPurchaseRequest
 import io.batteryapi.models.PromoCodeBatteryPurchaseRequest
 import io.batteryapi.models.PromoCodeBatteryPurchaseStatus
@@ -684,7 +684,8 @@ class DefaultApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory
      */
      enum class UnitsGetBalance(val value: kotlin.String) {
          @SerialName(value = "usd") usd("usd"),
-         @SerialName(value = "ton") ton("ton");
+         @SerialName(value = "ton") ton("ton"),
+         @SerialName(value = "unknown") unknown("unknown");
 
         /**
          * Override [toString()] to avoid using the enum variable name as the value, and instead use
@@ -1549,8 +1550,8 @@ class DefaultApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory
 
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun tronEstimate(wallet: kotlin.String, energy: kotlin.Int? = null, bandwidth: kotlin.Int? = null) : EstimatedTronTx {
-        val localVarResponse = tronEstimateWithHttpInfo(wallet = wallet, energy = energy, bandwidth = bandwidth)
+    fun tronEstimate(wallet: kotlin.String, xTonConnectAuth: kotlin.String? = null, energy: kotlin.Int? = null, bandwidth: kotlin.Int? = null, enableValidation: kotlin.Boolean? = false) : EstimatedTronTx {
+        val localVarResponse = tronEstimateWithHttpInfo(wallet = wallet, xTonConnectAuth = xTonConnectAuth, energy = energy, bandwidth = bandwidth, enableValidation = enableValidation)
 
         return when (localVarResponse.responseType) {
             ResponseType.Success -> (localVarResponse as Success<*>).data as EstimatedTronTx
@@ -1569,15 +1570,15 @@ class DefaultApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory
 
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun tronEstimateWithHttpInfo(wallet: kotlin.String, energy: kotlin.Int?, bandwidth: kotlin.Int?) : ApiResponse<EstimatedTronTx?> {
-        val localVariableConfig = tronEstimateRequestConfig(wallet = wallet, energy = energy, bandwidth = bandwidth)
+    fun tronEstimateWithHttpInfo(wallet: kotlin.String, xTonConnectAuth: kotlin.String?, energy: kotlin.Int?, bandwidth: kotlin.Int?, enableValidation: kotlin.Boolean?) : ApiResponse<EstimatedTronTx?> {
+        val localVariableConfig = tronEstimateRequestConfig(wallet = wallet, xTonConnectAuth = xTonConnectAuth, energy = energy, bandwidth = bandwidth, enableValidation = enableValidation)
 
         return request<Unit, EstimatedTronTx>(
             localVariableConfig
         )
     }
 
-    fun tronEstimateRequestConfig(wallet: kotlin.String, energy: kotlin.Int?, bandwidth: kotlin.Int?) : RequestConfig<Unit> {
+    fun tronEstimateRequestConfig(wallet: kotlin.String, xTonConnectAuth: kotlin.String?, energy: kotlin.Int?, bandwidth: kotlin.Int?, enableValidation: kotlin.Boolean?) : RequestConfig<Unit> {
         val localVariableBody = null
         val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
             .apply {
@@ -1588,8 +1589,12 @@ class DefaultApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory
                     put("bandwidth", listOf(bandwidth.toString()))
                 }
                 put("wallet", listOf(wallet.toString()))
+                if (enableValidation != null) {
+                    put("enable_validation", listOf(enableValidation.toString()))
+                }
             }
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        xTonConnectAuth?.apply { localVariableHeaders["X-TonConnect-Auth"] = this.toString() }
         localVariableHeaders["Accept"] = "application/json"
 
         return RequestConfig(
@@ -1604,8 +1609,8 @@ class DefaultApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory
 
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun tronSend(xTonConnectAuth: kotlin.String, tronSendRequest: TronSendRequest) : SentTronTx {
-        val localVarResponse = tronSendWithHttpInfo(xTonConnectAuth = xTonConnectAuth, tronSendRequest = tronSendRequest)
+    fun tronSend(tronSendRequest: TronSendRequest, xTonConnectAuth: kotlin.String? = null, userPublicKey: kotlin.String? = null) : SentTronTx {
+        val localVarResponse = tronSendWithHttpInfo(tronSendRequest = tronSendRequest, xTonConnectAuth = xTonConnectAuth, userPublicKey = userPublicKey)
 
         return when (localVarResponse.responseType) {
             ResponseType.Success -> (localVarResponse as Success<*>).data as SentTronTx
@@ -1624,19 +1629,24 @@ class DefaultApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory
 
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun tronSendWithHttpInfo(xTonConnectAuth: kotlin.String, tronSendRequest: TronSendRequest) : ApiResponse<SentTronTx?> {
-        val localVariableConfig = tronSendRequestConfig(xTonConnectAuth = xTonConnectAuth, tronSendRequest = tronSendRequest)
+    fun tronSendWithHttpInfo(tronSendRequest: TronSendRequest, xTonConnectAuth: kotlin.String?, userPublicKey: kotlin.String?) : ApiResponse<SentTronTx?> {
+        val localVariableConfig = tronSendRequestConfig(tronSendRequest = tronSendRequest, xTonConnectAuth = xTonConnectAuth, userPublicKey = userPublicKey)
 
         return request<TronSendRequest, SentTronTx>(
             localVariableConfig
         )
     }
 
-    fun tronSendRequestConfig(xTonConnectAuth: kotlin.String, tronSendRequest: TronSendRequest) : RequestConfig<TronSendRequest> {
+    fun tronSendRequestConfig(tronSendRequest: TronSendRequest, xTonConnectAuth: kotlin.String?, userPublicKey: kotlin.String?) : RequestConfig<TronSendRequest> {
         val localVariableBody = tronSendRequest
-        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
+            .apply {
+                if (userPublicKey != null) {
+                    put("user_public_key", listOf(userPublicKey.toString()))
+                }
+            }
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
-        xTonConnectAuth.apply { localVariableHeaders["X-TonConnect-Auth"] = this.toString() }
+        xTonConnectAuth?.apply { localVariableHeaders["X-TonConnect-Auth"] = this.toString() }
         localVariableHeaders["Content-Type"] = "application/json"
         localVariableHeaders["Accept"] = "application/json"
 

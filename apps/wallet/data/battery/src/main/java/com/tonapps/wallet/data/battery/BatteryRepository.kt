@@ -109,7 +109,8 @@ class BatteryRepository(
         ignoreCache: Boolean = false,
     ): Int = withContext(Dispatchers.IO) {
         val balance = getBalance(tonProofToken, publicKey, testnet, ignoreCache)
-        val charges = BatteryMapper.convertToCharges(balance.balance, api.config.batteryMeanFees)
+        val config = getConfig(testnet, ignoreCache)
+        val charges = BatteryMapper.convertToCharges(balance.balance, config.chargeCost)
         charges
     }
 

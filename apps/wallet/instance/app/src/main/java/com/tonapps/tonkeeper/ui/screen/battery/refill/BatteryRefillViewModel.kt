@@ -92,9 +92,10 @@ class BatteryRefillViewModel(
         promoFlow,
     ) { promoState, iapProducts, isProcessing, _, promoCode ->
         val batteryBalance = getBatteryBalance(wallet)
+        val batteryConfig = getBatteryConfig(wallet)
 
         val uiItems = mutableListOf<Item>()
-        uiItems.add(uiItemBattery(batteryBalance, api.config))
+        uiItems.add(uiItemBattery(batteryBalance, batteryConfig))
         uiItems.add(Item.Space)
 
         if (!api.config.batteryPromoDisable && !isBatteryDisabled) {
@@ -119,6 +120,7 @@ class BatteryRefillViewModel(
                         config = api.config,
                         products = iapProducts,
                         isProcessing = isProcessing,
+                        batteryConfig = batteryConfig,
                     )
                 )
                 uiItems.add(Item.Space)
@@ -180,10 +182,11 @@ class BatteryRefillViewModel(
         config: ConfigEntity,
         products: List<ProductDetails>,
         isProcessing: Boolean,
+        batteryConfig: BatteryConfigEntity,
     ): List<Item.IAPPack> {
         val isBatteryEmpty = batteryBalance.reservedBalance.isZero && batteryBalance.balance.isZero
         val reservedAmount =
-            if (isBatteryEmpty) config.batteryReservedAmount.toBigDecimal() else BigDecimal.ZERO
+            if (isBatteryEmpty) batteryConfig.reservedAmount.toBigDecimal() else BigDecimal.ZERO
 
         val uiItems = mutableListOf<Item.IAPPack>()
 
@@ -194,17 +197,13 @@ class BatteryRefillViewModel(
                 userProceed = iapPackage.userProceed,
                 tonPriceInUsd = tonPriceInUsd,
                 reservedAmount = reservedAmount,
-                meanFees = config.batteryMeanFees.toBigDecimal()
+                meanFees = batteryConfig.chargeCost.toBigDecimal()
             )
 
             val transactions = mapOf(
-                BatteryTransaction.SWAP to charges / BatteryMapper.calculateChargesAmount(
-                    config.batteryMeanPriceSwap, config.batteryMeanFees
-                ), BatteryTransaction.NFT to charges / BatteryMapper.calculateChargesAmount(
-                    config.batteryMeanPriceNft, config.batteryMeanFees
-                ), BatteryTransaction.JETTON to charges / BatteryMapper.calculateChargesAmount(
-                    config.batteryMeanPriceJetton, config.batteryMeanFees
-                )
+                BatteryTransaction.SWAP to charges / batteryConfig.meanPrices.batteryMeanPriceSwap,
+                BatteryTransaction.JETTON to charges / batteryConfig.meanPrices.batteryMeanPriceJetton,
+                BatteryTransaction.NFT to charges / batteryConfig.meanPrices.batteryMeanPriceNft,
             )
 
             val formattedPrice = product?.priceFormatted ?: context.getString(Localization.loading)
@@ -226,9 +225,9 @@ class BatteryRefillViewModel(
 
     private fun uiItemBattery(
         balance: BatteryBalanceEntity,
-        config: ConfigEntity,
+        batteryConfig: BatteryConfigEntity,
     ): Item.Battery {
-        val charges = BatteryMapper.convertToCharges(balance.balance, api.config.batteryMeanFees)
+        val charges = BatteryMapper.convertToCharges(balance.balance, batteryConfig.chargeCost)
         val formattedChanges = CurrencyFormatter.format(value = charges.toBigDecimal())
 
         return Item.Battery(

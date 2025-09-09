@@ -153,7 +153,9 @@ class BatteryRechargeViewModel(
         val shouldMinusReservedAmount =
             batteryBalance.reservedBalance.value == BigDecimal.ZERO || args.isGift
 
-        val batteryReservedAmount = rechargeMethod.fromTon(api.config.batteryReservedAmount)
+        val batteryConfig = getBatteryConfig(wallet)
+
+        val batteryReservedAmount = rechargeMethod.fromTon(batteryConfig.reservedAmount)
 
         if (args.isGift) {
             val addressState = if (destinationLoading) {
@@ -209,7 +211,7 @@ class BatteryRechargeViewModel(
         if (customAmount) {
             val charges = BatteryMapper.calculateCryptoCharges(
                 getRechargeMethod(wallet, token),
-                api.config.batteryMeanFees,
+                batteryConfig.chargeCost,
                 amount.minus(calculateFiatFrom).coerceAtLeast(Coins.ZERO)
             )
             uiItems.add(Item.Space)
@@ -341,7 +343,7 @@ class BatteryRechargeViewModel(
         val amount = _selectedPackTypeFlow.value?.let { packType ->
             rechargeMethod.fromTon(
                 RechargePackEntity.getTonAmount(
-                    api.config.batteryMeanFees,
+                    config.chargeCost,
                     packType
                 )
             )
@@ -544,6 +546,7 @@ class BatteryRechargeViewModel(
                 shouldMinusReservedAmount = shouldMinusReservedAmount,
                 willBePaidManually = willBePaidManually,
                 currency = settingsRepository.currency,
+                batteryConfig = getBatteryConfig(wallet)
             )
         }.filter { it.isAvailableToBuy }
     }

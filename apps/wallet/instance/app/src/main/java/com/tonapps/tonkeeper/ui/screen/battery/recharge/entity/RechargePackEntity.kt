@@ -3,7 +3,7 @@ package com.tonapps.tonkeeper.ui.screen.battery.recharge.entity
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.wallet.api.entity.ConfigEntity
-import com.tonapps.wallet.data.battery.BatteryMapper
+import com.tonapps.wallet.data.battery.entity.BatteryConfigEntity
 import com.tonapps.wallet.data.battery.entity.RechargeMethodEntity
 import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.settings.BatteryTransaction
@@ -20,12 +20,13 @@ data class RechargePackEntity(
     private val willBePaidManually: Boolean,
     private val shouldMinusReservedAmount: Boolean,
     private val currency: WalletCurrency,
+    private val batteryConfig: BatteryConfigEntity,
 ) {
     private val rate: BigDecimal
         get() = rechargeMethod.rate.toBigDecimal()
 
     private val meansFee: BigDecimal
-        get() = config.batteryMeanFees.toBigDecimal()
+        get() = batteryConfig.chargeCost.toBigDecimal()
 
     private val tonAmount: BigDecimal
         get() = getTonAmount(meansFee, type)
@@ -34,7 +35,7 @@ data class RechargePackEntity(
         get() = rechargeMethod.fromTon(tonAmount).value
 
     private val reservedAmount: BigDecimal
-        get() = rechargeMethod.fromTon(config.batteryReservedAmount).value
+        get() = rechargeMethod.fromTon(batteryConfig.reservedAmount).value
 
     val formattedAmount: CharSequence
         get() = CurrencyFormatter.formatFiat(
@@ -66,18 +67,9 @@ data class RechargePackEntity(
 
     val transactions: Map<BatteryTransaction, Int>
         get() = mapOf(
-            BatteryTransaction.SWAP to charges / BatteryMapper.calculateChargesAmount(
-                config.batteryMeanPriceSwap,
-                config.batteryMeanFees
-            ),
-            BatteryTransaction.NFT to charges / BatteryMapper.calculateChargesAmount(
-                config.batteryMeanPriceNft,
-                config.batteryMeanFees
-            ),
-            BatteryTransaction.JETTON to charges / BatteryMapper.calculateChargesAmount(
-                config.batteryMeanPriceJetton,
-                config.batteryMeanFees
-            )
+            BatteryTransaction.SWAP to charges / batteryConfig.meanPrices.batteryMeanPriceSwap,
+            BatteryTransaction.NFT to charges / batteryConfig.meanPrices.batteryMeanPriceNft,
+            BatteryTransaction.JETTON to charges / batteryConfig.meanPrices.batteryMeanPriceJetton
         )
 
     val isAvailableToBuy: Boolean

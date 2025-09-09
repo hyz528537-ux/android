@@ -19,7 +19,7 @@ import java.io.IOException
 import okhttp3.Call
 import okhttp3.HttpUrl
 
-import io.batteryapi.models.InlineObject
+import io.batteryapi.models.GetTonConnectPayloadDefaultResponse
 import io.batteryapi.models.TonConnectProof200Response
 import io.batteryapi.models.TonConnectProofRequest
 

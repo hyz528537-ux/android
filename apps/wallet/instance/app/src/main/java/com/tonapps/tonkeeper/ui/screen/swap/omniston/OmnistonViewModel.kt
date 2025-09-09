@@ -436,7 +436,7 @@ class OmnistonViewModel(
             var canEditFeeMethod = true
             val gasBudget = Coins.ofNano(stateMessages.gasBudget)
             val estimatedGasConsumption = Coins.ofNano(stateMessages.estimatedGasConsumption)
-            val totalTonFee = tx.tonEmulated?.totalFees ?: api.config.meanFeeSwap
+            val totalTonFee = tx.tonEmulated?.totalFees ?: Coins.ZERO
             val maxRequiredFee = listOf(gasBudget, estimatedGasConsumption, totalTonFee).max()
             if (fromCurrency == WalletCurrency.TON && (bidUnits + maxRequiredFee) > tonBalance.balance.value) {
                 val requiredTONBalance = bidUnits + maxRequiredFee
@@ -478,7 +478,6 @@ class OmnistonViewModel(
                 tx = tx,
                 selectedFee = tx.getFeeByMethod(preferredFeeMethod),
                 canEditFeeMethod = canEditFeeMethod,
-                meanFeeSwap = api.config.meanFeeSwap,
                 slippage = stateMessages.slippage
             )
 
@@ -655,7 +654,7 @@ class OmnistonViewModel(
         forEmulation: Boolean,
         batteryEnabled: Boolean
     ): List<WalletTransfer> {
-        val excessesAddress = if (!forEmulation) {
+        val excessesAddress = if (false) { // !forEmulation && batteryEnabled
             batteryRepository.getConfig(wallet.testnet).excessesAddress
         } else null
 

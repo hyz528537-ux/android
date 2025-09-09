@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import org.koin.core.parameter.parametersOf
 import uikit.base.BaseFragment
+import uikit.extensions.circle
 import uikit.extensions.collectFlow
 import uikit.extensions.setPaddingBottom
 import uikit.widget.AsyncImageView
@@ -108,6 +109,7 @@ class BatteryRechargeScreen(wallet: WalletEntity) :
 
         val rightContentView = inflate(context, R.layout.view_battery_recharge_token, null)
         tokenIconView = rightContentView.findViewById(R.id.token_icon)
+        tokenIconView.setCircular()
         tokenTitleView = rightContentView.findViewById(R.id.token_title)
         rightContentView.findViewById<LinearLayoutCompat>(R.id.token)
             .setOnClickListener { openTokenSelector() }

@@ -26,6 +26,7 @@ data class RechargeMethodEntity(
             return when (this) {
                 RechargeMethodsMethodsInner.Type.jetton -> RechargeMethodType.JETTON
                 RechargeMethodsMethodsInner.Type.ton -> RechargeMethodType.TON
+                RechargeMethodsMethodsInner.Type.unknown -> RechargeMethodType.TON
             }
         }
     }

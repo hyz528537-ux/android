@@ -1,9 +1,7 @@
 package com.tonapps.wallet.api.internal
 
 import android.content.Context
-import android.net.Uri
 import android.util.ArrayMap
-import android.util.Log
 import androidx.core.net.toUri
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.extensions.isDebug
@@ -16,15 +14,12 @@ import com.tonapps.wallet.api.entity.EthenaEntity
 import com.tonapps.wallet.api.entity.NotificationEntity
 import com.tonapps.wallet.api.entity.OnRampArgsEntity
 import com.tonapps.wallet.api.entity.StoryEntity
-import com.tonapps.wallet.api.entity.SwapEntity
 import com.tonapps.wallet.api.withRetry
-import io.Serializer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import org.json.JSONObject
-import java.math.BigDecimal
 import java.util.Locale
 
 internal class InternalApi(
@@ -35,6 +30,7 @@ internal class InternalApi(
 
     private var _deviceCountry: String? = null
     private var _storeCountry: String? = null
+    private var _apiEndpoint = "https://api.tonkeeper.com".toUri()
 
     val country: String
         get() = _storeCountry ?: _deviceCountry ?: Locale.getDefault().country.uppercase()
@@ -44,6 +40,10 @@ internal class InternalApi(
         _storeCountry = storeCountry?.uppercase()
     }
 
+    fun setApiUrl(url: String) {
+        _apiEndpoint = url.toUri()
+    }
+
     private fun endpoint(
         path: String,
         testnet: Boolean,
@@ -51,10 +51,16 @@ internal class InternalApi(
         build: String,
         boot: Boolean = false,
         queryParams: Map<String, String> = emptyMap(),
+        bootFallback: Boolean = false,
     ): String = runBlocking {
-        val builder = Uri.Builder()
-        builder.scheme("https")
-            .authority(if (boot) "boot.tonkeeper.com" else "api.tonkeeper.com")
+        val builder = if (boot) {
+            "https://boot.tonkeeper.com".toUri().buildUpon()
+        } else if (bootFallback) {
+            "https://block.tonkeeper.com".toUri().buildUpon()
+        } else {
+            _apiEndpoint.buildUpon()
+        }
+        builder
             .appendEncodedPath(path)
             .appendQueryParameter("lang", context.locale.language)
             .appendQueryParameter("build", build)
@@ -84,8 +90,9 @@ internal class InternalApi(
         locale: Locale,
         boot: Boolean = false,
         queryParams: Map<String, String> = emptyMap(),
+        bootFallback: Boolean = false,
     ): JSONObject {
-        val url = endpoint(path, testnet, platform, build, boot, queryParams)
+        val url = endpoint(path, testnet, platform, build, boot, queryParams, bootFallback)
         val headers = ArrayMap<String, String>()
         headers["Accept-Language"] = locale.toString()
         val body = withRetry {
@@ -180,13 +187,23 @@ internal class InternalApi(
         return data.getJSONObject("data")
     }
 
-    fun downloadConfig(testnet: Boolean): ConfigEntity? {
+    fun downloadConfig(testnet: Boolean, fallback: Boolean = false): ConfigEntity? {
         return try {
-            val json = request("keys", testnet, locale = context.locale, boot = true)
+            val json = request(
+                "keys",
+                testnet,
+                locale = context.locale,
+                boot = true,
+                bootFallback = fallback
+            )
             ConfigEntity(json, context.isDebug)
         } catch (e: Throwable) {
-            FirebaseCrashlytics.getInstance().recordException(e)
-            null
+            if (!fallback) {
+                downloadConfig(testnet, true)
+            } else {
+                FirebaseCrashlytics.getInstance().recordException(e)
+                null
+            }
         }
     }
 

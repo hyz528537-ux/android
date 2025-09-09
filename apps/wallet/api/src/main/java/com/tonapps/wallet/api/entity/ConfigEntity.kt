@@ -37,14 +37,7 @@ data class ConfigEntity(
     val batteryTestnetHost: String,
     val batteryBeta: Boolean,
     val batterySendDisabled: Boolean,
-    val batteryMeanFees: String,
-    val batteryMeanPriceNft: String,
-    val batteryMeanPriceSwap: String,
-    val batteryMeanPriceJetton: String,
-    val batteryMeanPriceTrcMin: String,
-    val batteryMeanPriceTrcMax: String,
     val disableBatteryIapModule: Boolean,
-    val batteryReservedAmount: String,
     val batteryMaxInputAmount: String,
     val batteryRefundEndpoint: String,
     val batteryPromoDisable: Boolean,
@@ -61,6 +54,8 @@ data class ConfigEntity(
     val tronApiUrl: String,
     val enabledStaking: List<String>,
     val qrScannerExtends: List<QRScannerExtendsEntity>,
+    val region: String,
+    val tonkeeperApiUrl: String,
 ): Parcelable {
 
     @IgnoredOnParcel
@@ -77,26 +72,6 @@ data class ConfigEntity(
         val name = apkName ?: return@lazy null
         val url = apkDownloadUrl ?: return@lazy null
         ApkEntity(url, name)
-    }
-
-    @IgnoredOnParcel
-    val meanFees: Coins by lazy {
-        Coins.of(batteryMeanFees)
-    }
-
-    @IgnoredOnParcel
-    val meanFeeNft: Coins by lazy {
-        Coins.of(batteryMeanPriceNft)
-    }
-
-    @IgnoredOnParcel
-    val meanFeeSwap: Coins by lazy {
-        Coins.of(batteryMeanPriceSwap)
-    }
-
-    @IgnoredOnParcel
-    val meanFeeJetton: Coins by lazy {
-        Coins.of(batteryMeanPriceJetton)
     }
 
     constructor(json: JSONObject, debug: Boolean) : this(
@@ -129,14 +104,7 @@ data class ConfigEntity(
         batteryTestnetHost = json.optString("batteryTestnetHost", "https://testnet-battery.tonkeeper.com"),
         batteryBeta = json.optBoolean("battery_beta", true),
         batterySendDisabled = json.optBoolean("disable_battery_send", false),
-        batteryMeanFees = json.optString("batteryMeanFees", "0.0055"),
         disableBatteryIapModule = json.optBoolean("disable_battery_iap_module", false),
-        batteryMeanPriceNft = json.optString("batteryMeanPrice_nft", "0.03"),
-        batteryMeanPriceSwap = json.optString("batteryMeanPrice_swap", "0.22"),
-        batteryMeanPriceJetton = json.optString("batteryMeanPrice_jetton", "0.06"),
-        batteryMeanPriceTrcMin = json.optString("batteryMeanPrice_trc20_min", "0.312"),
-        batteryMeanPriceTrcMax = json.optString("batteryMeanPrice_trc20_max", "0.78"),
-        batteryReservedAmount = json.optString("batteryReservedAmount", "0.3"),
         batteryMaxInputAmount = json.optString("batteryMaxInputAmount", "3"),
         batteryRefundEndpoint = json.optString("batteryRefundEndpoint", "https://battery-refund-app.vercel.app"),
         batteryPromoDisable = json.optBoolean("disable_battery_promo_module", true),
@@ -158,7 +126,9 @@ data class ConfigEntity(
         } ?: emptyList(),
         qrScannerExtends = json.optJSONArray("qr_scanner_extends")?.let { array ->
             QRScannerExtendsEntity.of(array)
-        } ?: emptyList()
+        } ?: emptyList(),
+        region = json.getString("region"),
+        tonkeeperApiUrl = json.optString("tonkeeper_api_url", "https://api.tonkeeper.com")
     )
 
     constructor() : this(
@@ -187,14 +157,7 @@ data class ConfigEntity(
         batteryTestnetHost = "https://testnet-battery.tonkeeper.com",
         batteryBeta = true,
         batterySendDisabled = false,
-        batteryMeanFees = "0.0055",
         disableBatteryIapModule = false,
-        batteryMeanPriceNft = "0.03",
-        batteryMeanPriceSwap = "0.22",
-        batteryMeanPriceJetton = "0.06",
-        batteryMeanPriceTrcMin = "0.312",
-        batteryMeanPriceTrcMax = "0.78",
-        batteryReservedAmount = "0.3",
         batteryMaxInputAmount = "3",
         batteryRefundEndpoint = "https://battery-refund-app.vercel.app",
         batteryPromoDisable = true,
@@ -210,7 +173,9 @@ data class ConfigEntity(
         apkName = null,
         tronApiUrl = "https://api.trongrid.io",
         enabledStaking = emptyList(),
-        qrScannerExtends = emptyList()
+        qrScannerExtends = emptyList(),
+        region = "US",
+        tonkeeperApiUrl = "https://api.tonkeeper.com"
     )
 
     companion object {

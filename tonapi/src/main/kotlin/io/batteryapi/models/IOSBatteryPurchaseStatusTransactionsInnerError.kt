@@ -19,6 +19,11 @@ package io.batteryapi.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -36,9 +41,9 @@ data class IOSBatteryPurchaseStatusTransactionsInnerError (
     /**
      * 
      *
-     * Values: invalidMinusBundleMinusId,invalidMinusProductMinusId,userMinusNotMinusFound,purchaseMinusIsMinusAlreadyMinusUsed,temporaryMinusError,unknown
+     * Values: invalidMinusBundleMinusId,invalidMinusProductMinusId,userMinusNotMinusFound,purchaseMinusIsMinusAlreadyMinusUsed,temporaryMinusError,unknown.unknown
      */
-    @Serializable
+    @Serializable(with = CodeSerializer::class)
     enum class Code(val value: kotlin.String) {
         @SerialName(value = "invalid-bundle-id") invalidMinusBundleMinusId("invalid-bundle-id"),
         @SerialName(value = "invalid-product-id") invalidMinusProductMinusId("invalid-product-id"),
@@ -46,6 +51,20 @@ data class IOSBatteryPurchaseStatusTransactionsInnerError (
         @SerialName(value = "purchase-is-already-used") purchaseMinusIsMinusAlreadyMinusUsed("purchase-is-already-used"),
         @SerialName(value = "temporary-error") temporaryMinusError("temporary-error"),
         @SerialName(value = "unknown") unknown("unknown");
+    }
+
+    internal object CodeSerializer : KSerializer<Code> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): Code {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return Code.entries.firstOrNull { it.value == value }
+                ?: Code.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: Code) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
     }
 
 }

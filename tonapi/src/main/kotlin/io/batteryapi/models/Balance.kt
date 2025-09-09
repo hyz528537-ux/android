@@ -19,6 +19,11 @@ package io.batteryapi.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -40,12 +45,27 @@ data class Balance (
     /**
      * 
      *
-     * Values: usd,ton
+     * Values: usd,ton.unknown
      */
-    @Serializable
+    @Serializable(with = UnitsSerializer::class)
     enum class Units(val value: kotlin.String) {
         @SerialName(value = "usd") usd("usd"),
-        @SerialName(value = "ton") ton("ton");
+        @SerialName(value = "ton") ton("ton"),
+        @SerialName(value = "unknown") unknown("unknown");
+    }
+
+    internal object UnitsSerializer : KSerializer<Units> {
+        override val descriptor = kotlin.String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): Units {
+            val value = decoder.decodeSerializableValue(kotlin.String.serializer())
+            return Units.entries.firstOrNull { it.value == value }
+                ?: Units.unknown
+        }
+
+        override fun serialize(encoder: Encoder, value: Units) {
+            encoder.encodeSerializableValue(kotlin.String.serializer(), value.value)
+        }
     }
 
 }

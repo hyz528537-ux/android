@@ -56,9 +56,10 @@ object BatteryHelper {
             params = true
         )
         val chargesBalance = getBatteryCharges(wallet, accountRepository, batteryRepository)
+        val batteryConfig = batteryRepository.getConfig(wallet.testnet)
         val charges = BatteryMapper.calculateChargesAmount(
             emulated.extra.value.value,
-            api.config.batteryMeanFees
+            batteryConfig.chargeCost
         )
         return if (charges > chargesBalance) null else emulated
     }
@@ -70,11 +71,10 @@ object BatteryHelper {
         accountRepository: AccountRepository,
         batteryRepository: BatteryRepository
     ): Boolean = withContext(Dispatchers.IO) {
-        if (settingsRepository.batteryIsEnabledTx(wallet.accountId, txType)) {
-            getBalance(wallet, accountRepository, batteryRepository).isPositive
-        } else {
-            false
+        if (!settingsRepository.batteryIsEnabledTx(wallet.accountId, txType)) {
+            return@withContext false
         }
+        getBalance(wallet, accountRepository, batteryRepository).isPositive
     }
 
 }

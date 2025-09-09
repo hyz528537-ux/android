@@ -19,6 +19,11 @@ package io.batteryapi.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -35,7 +40,10 @@ data class ConfigMeanPrices (
     val batteryMeanPriceNft: kotlin.Int,
 
     @SerialName(value = "battery_mean_price_tron_usdt")
-    val batteryMeanPriceTronUsdt: kotlin.Int? = null
+    val batteryMeanPriceTronUsdt: kotlin.Int? = null,
+
+    @SerialName(value = "ton_mean_price_tron_usdt")
+    val tonMeanPriceTronUsdt: kotlin.Float? = null
 
 ) {
 

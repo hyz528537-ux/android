@@ -20,7 +20,7 @@ import okhttp3.Call
 import okhttp3.HttpUrl
 
 import io.batteryapi.models.GetTonConnectPayload200Response
-import io.batteryapi.models.InlineObject
+import io.batteryapi.models.GetTonConnectPayloadDefaultResponse
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

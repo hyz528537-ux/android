@@ -31,7 +31,6 @@ data class SwapQuoteState(
     val selectedFee: SendFee? = null,
     val insufficientFunds: InsufficientFundsException? = null,
     val canEditFeeMethod: Boolean = true,
-    val meanFeeSwap: Coins = Coins.ZERO,
     val slippage: Int = 0
 ) {
 
@@ -64,7 +63,7 @@ data class SwapQuoteState(
         )
 
     val totalFee: Coins by lazy {
-        val emulatedFee = tx?.tonEmulated?.totalFees ?: meanFeeSwap
+        val emulatedFee = tx?.tonEmulated?.totalFees ?: Coins.ZERO
         listOf(gasBudget, estimatedGasConsumption, emulatedFee).max()
     }
 

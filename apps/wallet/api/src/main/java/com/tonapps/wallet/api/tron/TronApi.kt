@@ -231,7 +231,7 @@ class TronApi(
             bandwidth = resources.bandwidth,
         )
 
-        batteryApi.tronSend(tonProofToken, request)
+        batteryApi.tronSend(request, tonProofToken)
     }
 
     fun buildSmartContractTransaction(transfer: TronTransfer): TronTransaction {
@@ -261,7 +261,7 @@ class TronApi(
         tronAddress: String,
         tonProofToken: String,
     ) {
-        batteryApi.tronSend(tonProofToken, TronSendRequest(wallet = tronAddress, tx = ""))
+        batteryApi.tronSend(TronSendRequest(wallet = tronAddress, tx = ""), tonProofToken)
     }
 
 }

@@ -21,6 +21,11 @@ import io.batteryapi.models.ConfigMeanPrices
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 @Serializable
@@ -47,7 +52,11 @@ data class Config (
     val gasProxy: kotlin.collections.List<ConfigGasProxyInner>,
 
     @SerialName(value = "mean_prices")
-    val meanPrices: ConfigMeanPrices
+    val meanPrices: ConfigMeanPrices,
+
+    /* reserved amount in TON that is kept for gas fees */
+    @SerialName(value = "battery_reserved_amount")
+    val batteryReservedAmount: kotlin.String
 
 ) {
 

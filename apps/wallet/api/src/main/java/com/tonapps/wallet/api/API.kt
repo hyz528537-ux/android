@@ -220,7 +220,7 @@ class API(
         testnet: Boolean,
         units: DefaultApi.UnitsGetBalance = DefaultApi.UnitsGetBalance.ton
     ): Balance? {
-        return withRetry { battery(testnet).getBalance(tonProofToken, units) }
+        return withRetry { battery(testnet).getBalance(tonProofToken, units, region = config.region) }
     }
 
     fun getAlertNotifications() = withRetry {

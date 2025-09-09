@@ -933,9 +933,10 @@ class SendViewModel(
             val extra = consequences.event.extra
 
             val chargesBalance = getBatteryCharges()
+            val batteryConfig = batteryRepository.getConfig(wallet.testnet)
             val charges = BatteryMapper.calculateChargesAmount(
                 Coins.of(abs(extra)).value,
-                api.config.batteryMeanFees
+                batteryConfig.chargeCost
             )
 
             if (charges > chargesBalance) {
@@ -1209,9 +1210,10 @@ class SendViewModel(
         _uiEventFlow.tryEmit(SendEvent.Loading)
         if (fee is SendFee.Battery) {
             val batteryCharges = getBatteryCharges()
+            val batteryConfig = batteryRepository.getConfig(wallet.testnet)
             val txCharges = BatteryMapper.calculateChargesAmount(
                 getFee().value.value,
-                api.config.batteryMeanFees
+                batteryConfig.chargeCost
             )
             if (txCharges > batteryCharges) {
                 _uiEventFlow.tryEmit(

@@ -39,7 +39,15 @@ internal class RemoteDataSource(
             excessesAccount = config.excessAccount,
             fundReceiver = config.fundReceiver,
             rechargeMethods = rechargeMethods.methods.map(::RechargeMethodEntity),
-            gasProxy = config.gasProxy.map { it.address }
+            gasProxy = config.gasProxy.map { it.address },
+            meanPrices = BatteryConfigEntity.MeanPrices(
+                batteryMeanPriceSwap = config.meanPrices.batteryMeanPriceSwap,
+                batteryMeanPriceJetton = config.meanPrices.batteryMeanPriceJetton,
+                batteryMeanPriceNft = config.meanPrices.batteryMeanPriceNft,
+                batteryMeanPriceTronUsdt = config.meanPrices.batteryMeanPriceTronUsdt
+            ),
+            chargeCost = config.chargeCost,
+            reservedAmount = config.batteryReservedAmount
         )
     }
 
