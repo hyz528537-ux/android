@@ -16,11 +16,12 @@ import org.ton.block.StateInit
 import org.ton.cell.Cell
 import org.ton.tlb.CellRef
 import org.ton.tlb.asRef
+import java.math.BigInteger
 
 @Parcelize
 data class RawMessageEntity(
     val addressValue: String,
-    val amount: Long,
+    val amount: BigInteger,
     val stateInitValue: String?,
     val payloadValue: String?,
     val withBattery: Boolean = false
@@ -75,7 +76,7 @@ data class RawMessageEntity(
 
     companion object {
 
-        fun of(address: String, amount: Long, payload: String?) = RawMessageEntity(
+        fun of(address: String, amount: BigInteger, payload: String?) = RawMessageEntity(
             addressValue = address,
             amount = amount,
             stateInitValue = null,
@@ -83,7 +84,7 @@ data class RawMessageEntity(
         )
 
         fun of(
-            amount: Long,
+            amount: BigInteger,
             address: String,
             payload: Cell?
         ) = RawMessageEntity(
@@ -93,11 +94,11 @@ data class RawMessageEntity(
             payloadValue = payload?.base64()
         )
 
-        private fun parseAmount(value: Any): Long {
+        private fun parseAmount(value: Any): BigInteger {
             if (value is Long) {
-                return value
+                return value.toBigInteger()
             }
-            return value.toString().toLong()
+            return value.toString().toBigInteger()
         }
 
         fun parseArray(array: JSONArray?, withBattery: Boolean): List<RawMessageEntity> {
@@ -108,7 +109,7 @@ data class RawMessageEntity(
             for (i in 0 until array.length()) {
                 val json = array.getJSONObject(i)
                 val raw = RawMessageEntity(json, withBattery)
-                if (0 >= raw.amount) {
+                if (BigInteger.ZERO >= raw.amount) {
                     throw IllegalArgumentException("Invalid amount: ${raw.amount}")
                 }
                 if (!raw.addressValue.isValidTonAddress()) {

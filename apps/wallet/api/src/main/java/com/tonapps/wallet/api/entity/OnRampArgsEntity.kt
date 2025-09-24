@@ -6,7 +6,8 @@ import org.json.JSONObject
 data class OnRampArgsEntity(
     val from: String,
     val to: String,
-    val network: String,
+    val fromNetwork: String?,
+    val toNetwork: String?,
     val wallet: String,
     val purchaseType: String,
     val amount: Coins,
@@ -16,7 +17,12 @@ data class OnRampArgsEntity(
     fun toJSON() = JSONObject().apply {
         put("from", from)
         put("to", to)
-        put("network", network)
+        fromNetwork?.let {
+            put("from_network", it)
+        }
+        toNetwork?.let {
+            put("to_network", it)
+        }
         put("wallet", wallet)
         put("purchase_type", purchaseType)
         put("amount", amount.value.toPlainString())

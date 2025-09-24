@@ -16,11 +16,11 @@ import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.data.core.Trust
 import com.tonapps.wallet.localization.Localization
-import uikit.compose.components.ResizeOptions
 import uikit.extensions.getDimension
 import uikit.extensions.round
 import uikit.navigation.Navigation
 import uikit.widget.AsyncImageView
+import uikit.widget.ResizeOptions
 
 class NftHolder(parent: ViewGroup): Holder<Item.Nft>(parent, R.layout.view_collectibles) {
 

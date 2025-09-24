@@ -3,7 +3,7 @@ package com.tonapps.tonkeeper.ui.screen.token.picker.list
 import android.net.Uri
 import com.tonapps.uikit.list.BaseListItem
 import com.tonapps.uikit.list.ListCell
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.data.token.entities.AccountTokenEntity
 
 sealed class Item(type: Int): BaseListItem(type) {

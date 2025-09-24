@@ -2,9 +2,8 @@ package com.tonapps.tonkeeper.manager.tonconnect
 
 import android.content.Context
 import android.net.Uri
-import android.util.ArrayMap
 import android.util.Log
-import android.view.View
+import androidx.collection.ArrayMap
 import androidx.core.net.toUri
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.blockchain.ton.extensions.equalsAddress
@@ -434,7 +433,7 @@ class TonConnectManager(
         if (response.code != 200) {
             throw ManifestException.NotFound(response.code)
         }
-        val body = response.body?.string() ?: throw ManifestException.FailedParse(NullPointerException())
+        val body = response.body.string()
         try {
             val app = AppEntity(body)
             dAppsRepository.insertApp(app)

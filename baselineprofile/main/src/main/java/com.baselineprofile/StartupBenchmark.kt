@@ -1,5 +1,6 @@
 package com.baselineprofile
 
+import androidx.benchmark.macro.FrameTimingMetric
 import androidx.benchmark.macro.StartupMode
 import androidx.benchmark.macro.StartupTimingMetric
 import androidx.benchmark.macro.junit4.MacrobenchmarkRule
@@ -15,9 +16,12 @@ class StartupBenchmark {
     @Test
     fun startup() = benchmarkRule.measureRepeated(
         packageName = PACKAGE_NAME,
-        metrics = listOf(StartupTimingMetric()),
-        iterations = 15,
-        startupMode = StartupMode.COLD,
+        metrics = listOf(
+            StartupTimingMetric(),
+            FrameTimingMetric()
+        ),
+        iterations = 30,
+        startupMode = StartupMode.HOT,
     ) {
         pressHome()
         startActivityAndWait()

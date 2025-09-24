@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -26,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -38,13 +36,14 @@ import androidx.compose.ui.unit.sp
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.wallet.localization.Localization
-import uikit.compose.AppTheme
-import uikit.compose.Dimens
-import uikit.compose.UIKit
-import uikit.compose.components.Header
-import uikit.compose.components.PrimaryButton
-import uikit.compose.components.SecondaryButton
-import uikit.compose.components.TextHeader
+import ui.components.Header
+import ui.components.TextHeader
+import ui.components.button.TKButton
+import ui.theme.ButtonColorsPrimary
+import ui.theme.ButtonColorsSecondary
+import ui.theme.Dimens
+import ui.theme.Shapes
+import ui.theme.UIKit
 
 @Composable
 fun TelegramIcon(isLightTheme: Boolean) {
@@ -62,30 +61,30 @@ fun TelegramIcon(isLightTheme: Boolean) {
                 .offset((-34).dp, (-6).dp)
                 .border(
                     width = if (isLightTheme) 0.5.dp else 0.dp,
-                    color = UIKit.colors.separatorCommon,
-                    shape = RoundedCornerShape(16.dp)
+                    color = UIKit.colorScheme.separator.common,
+                    shape = Shapes.medium
                 )
-                .clip(RoundedCornerShape(16.dp))
-                .background(if (isLightTheme) Color.White else UIKit.colors.backgroundContentTint),
+                .clip(Shapes.medium)
+                .background(if (isLightTheme) Color.White else UIKit.colorScheme.background.contentTint),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .size(6.dp)
-                    .background(UIKit.colors.iconSecondary, CircleShape)
+                    .background(UIKit.colorScheme.icon.secondary, CircleShape)
             )
             Spacer(modifier = Modifier.width(3.dp))
             Box(
                 modifier = Modifier
                     .size(6.dp)
-                    .background(UIKit.colors.iconSecondary, CircleShape)
+                    .background(UIKit.colorScheme.icon.secondary, CircleShape)
             )
             Spacer(modifier = Modifier.width(3.dp))
             Box(
                 modifier = Modifier
                     .size(6.dp)
-                    .background(UIKit.colors.iconSecondary, CircleShape)
+                    .background(UIKit.colorScheme.icon.secondary, CircleShape)
             )
         }
         Row(
@@ -96,11 +95,11 @@ fun TelegramIcon(isLightTheme: Boolean) {
                 .offset(34.dp, 6.dp)
                 .border(
                     width = if (isLightTheme) 0.5.dp else 0.dp,
-                    color = UIKit.colors.separatorCommon,
-                    shape = RoundedCornerShape(16.dp)
+                    color = UIKit.colorScheme.separator.common,
+                    shape = Shapes.medium
                 )
-                .clip(RoundedCornerShape(16.dp))
-                .background(if (isLightTheme) Color.White else UIKit.colors.backgroundContentTint),
+                .clip(Shapes.medium)
+                .background(if (isLightTheme) Color.White else UIKit.colorScheme.background.contentTint),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -110,7 +109,7 @@ fun TelegramIcon(isLightTheme: Boolean) {
                     fontWeight = FontWeight.Medium,
                     fontSize = 17.sp,
                 ),
-                color = UIKit.colors.textPrimary,
+                color = UIKit.colorScheme.text.primary,
                 textAlign = TextAlign.Center
             )
         }
@@ -152,30 +151,20 @@ fun SupportComposable(
                 )
             }
             Spacer(modifier = Modifier.height(Dimens.offsetLarge))
-            PrimaryButton(
+            TKButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onButtonClick,
-                text = stringResource(id = Localization.ask_question)
+                text = stringResource(id = Localization.ask_question),
+                buttonColors = ButtonColorsPrimary,
             )
             Spacer(modifier = Modifier.height(Dimens.offsetMedium))
-            SecondaryButton(
+            TKButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onCloseClick,
-                text = stringResource(id = Localization.close)
+                text = stringResource(id = Localization.close),
+                buttonColors = ButtonColorsSecondary,
             )
             Spacer(modifier = Modifier.height(Dimens.offsetLarge))
         }
-    }
-}
-
-@Preview
-@Composable
-private fun QrComposablePreviewLight() {
-    UIKit(theme = AppTheme.BLUE) {
-        SupportComposable(
-            isLightTheme = false,
-            onButtonClick = {},
-            onCloseClick = {}
-        )
     }
 }

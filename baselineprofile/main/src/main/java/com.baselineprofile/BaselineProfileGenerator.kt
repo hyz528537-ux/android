@@ -22,8 +22,8 @@ class BaselineProfileGenerator {
     @Test
     fun generate() = rule.collect(
         packageName = PACKAGE_NAME,
-        maxIterations = 15,
-        stableIterations = 3,
+        maxIterations = 30,
+        stableIterations = 5,
         includeInStartupProfile = true,
     ) {
         pressHome()

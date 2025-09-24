@@ -1,6 +1,8 @@
 package com.tonapps.blockchain.ton.tlb
 
 import com.tonapps.blockchain.ton.TONOpCode
+import com.tonapps.blockchain.ton.extensions.loadString
+import com.tonapps.blockchain.ton.extensions.storeMaybeStringTail
 import com.tonapps.blockchain.ton.extensions.storeOpCode
 import org.ton.block.Coins
 import org.ton.block.MsgAddressInt
@@ -54,12 +56,7 @@ private object JettonTransferTlbConstructor : TlbConstructor<JettonTransfer>(
         storeTlb(MsgAddressInt, value.responseAddress)
         storeBit(false)
         storeTlb(Coins, value.forwardAmount)
-        if (value.comment.isNullOrEmpty()) {
-            storeBit(false)
-        } else {
-            storeBit(true)
-            storeTlb(StringTlbConstructor, value.comment)
-        }
+        storeMaybeStringTail(value.comment)
     }
 
     override fun loadTlb(
@@ -72,7 +69,7 @@ private object JettonTransferTlbConstructor : TlbConstructor<JettonTransfer>(
         val responseAddress = loadTlb(MsgAddressInt)
         loadBit()
         val forwardAmount = loadTlb(Coins)
-        val comment = if (loadBit()) loadTlb(StringTlbConstructor) else null
+        val comment = loadString()
         JettonTransfer(queryId, coins, toAddress, responseAddress, forwardAmount, comment)
     }
 }

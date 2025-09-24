@@ -134,11 +134,11 @@ class TransactionManager(
         val tonProofToken = accountRepository.requestTonProofToken(wallet)
             ?: return SendBlockchainState.UNKNOWN_ERROR
         val state = api.sendToBlockchainWithBattery(
-            boc,
-            tonProofToken,
-            wallet.testnet,
-            source,
-            confirmationTime
+            boc = boc,
+            tonProofToken = tonProofToken,
+            testnet = wallet.testnet,
+            source = source,
+            confirmationTime = confirmationTime
         )
         if (state == SendBlockchainState.SUCCESS) {
             batteryRepository.refreshBalanceDelay(

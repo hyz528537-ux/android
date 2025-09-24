@@ -6,6 +6,7 @@ import com.tonapps.blockchain.ton.extensions.cellFromHex
 import com.tonapps.blockchain.ton.extensions.equalsAddress
 import com.tonapps.blockchain.ton.extensions.toRawAddress
 import com.tonapps.wallet.api.R
+import com.tonapps.wallet.api.entity.value.Blockchain
 import io.tonapi.models.JettonBalanceLock
 import io.tonapi.models.JettonInfo
 import io.tonapi.models.JettonPreview

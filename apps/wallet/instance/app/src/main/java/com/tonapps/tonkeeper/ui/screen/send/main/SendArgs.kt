@@ -5,14 +5,16 @@ import com.tonapps.blockchain.ton.extensions.base64
 import com.tonapps.blockchain.ton.extensions.cellFromBase64
 import com.tonapps.blockchain.ton.extensions.toRawAddress
 import com.tonapps.extensions.getEnum
+import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.extensions.putEnum
+import com.tonapps.icu.Coins
 import org.ton.cell.Cell
 import uikit.base.BaseArgs
 
 data class SendArgs(
     val targetAddress: String?,
     val tokenAddress: String?,
-    val amountNano: Long?,
+    val amount: Coins?,
     val text: String?,
     val nftAddress: String,
     val type: SendScreen.Companion.Type,
@@ -28,8 +30,11 @@ data class SendArgs(
         private const val ARG_TYPE = "type"
         private const val ARG_BIN = "bin"
 
-        private fun normalizeAmount(amount: Long): Long {
-            return if (amount < 0) 0 else amount
+        private fun normalizeAmount(amount: Coins?): Coins? {
+            if (amount?.isPositive == true) {
+                return amount
+            }
+            return null
         }
     }
 
@@ -39,7 +44,7 @@ data class SendArgs(
     constructor(bundle: Bundle) : this(
         targetAddress = bundle.getString(ARG_TARGET_ADDRESS),
         tokenAddress = bundle.getString(ARG_TOKEN_ADDRESS),
-        amountNano = normalizeAmount(bundle.getLong(ARG_AMOUNT_NANO)),
+        amount = bundle.getParcelableCompat<Coins>(ARG_AMOUNT_NANO)?.let(::normalizeAmount),
         text = bundle.getString(ARG_TEXT),
         nftAddress = bundle.getString(ARG_NFT_ADDRESS) ?: "",
         type = bundle.getEnum(ARG_TYPE, SendScreen.Companion.Type.Default),
@@ -50,7 +55,7 @@ data class SendArgs(
         val bundle = Bundle()
         targetAddress?.let { bundle.putString(ARG_TARGET_ADDRESS, it) }
         bundle.putString(ARG_TOKEN_ADDRESS, tokenAddress)
-        amountNano?.let { bundle.putLong(ARG_AMOUNT_NANO, it) }
+        amount?.let { bundle.putParcelable(ARG_AMOUNT_NANO, it) }
         text?.let { bundle.putString(ARG_TEXT, it) }
         bundle.putString(ARG_NFT_ADDRESS, nftAddress)
         bundle.putEnum(ARG_TYPE, type)

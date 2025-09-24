@@ -116,7 +116,7 @@ class SendTransactionViewModel(
                         message = message!!,
                         useBattery = false,
                         forceRelayer = false,
-                        params = true
+                        params = !request.ignoreInsufficientBalance
                     )
                 }
 
@@ -128,7 +128,7 @@ class SendTransactionViewModel(
                             emulationUseCase = emulationUseCase,
                             accountRepository = accountRepository,
                             batteryRepository = batteryRepository,
-                            api = api
+                            params = !request.ignoreInsufficientBalance
                         )
                     } else {
                         null
@@ -150,7 +150,7 @@ class SendTransactionViewModel(
                 emulationReadyDate.set(System.currentTimeMillis())
 
                 if (transferTonTotal > tonBalance) {
-                    if (batteryDetails == null) {
+                    if (batteryDetails == null && !request.ignoreInsufficientBalance) {
                         _stateFlow.value = SendTransactionState.InsufficientBalance(
                             wallet = wallet,
                             balance = Amount(tonBalance),
@@ -201,7 +201,7 @@ class SendTransactionViewModel(
                 )
 
                 val tonBalance = getTONBalance()
-                if (tonBalance == Coins.ZERO) {
+                if (tonBalance == Coins.ZERO && !request.ignoreInsufficientBalance) {
                     _stateFlow.value = SendTransactionState.InsufficientBalance(
                         wallet = wallet,
                         balance = Amount(tonBalance),

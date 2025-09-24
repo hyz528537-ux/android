@@ -27,7 +27,7 @@ import kotlinx.serialization.encoding.Encoder
 /**
  * 
  *
- * Values: whitelist,blacklist,none.unknown
+ * Values: whitelist,graylist,blacklist,none.unknown
  */
 @Serializable(with = JettonVerificationTypeSerializer::class)
 enum class JettonVerificationType(val value: kotlin.String) {
@@ -35,14 +35,14 @@ enum class JettonVerificationType(val value: kotlin.String) {
     @SerialName(value = "whitelist")
     whitelist("whitelist"),
 
+    @SerialName(value = "graylist")
+    graylist("graylist"),
+
     @SerialName(value = "blacklist")
     blacklist("blacklist"),
 
     @SerialName(value = "none")
     none("none"),
-
-    @SerialName(value = "graylist")
-    graylist("graylist"),
 
     @SerialName(value = "unknown")
     unknown("unknown");

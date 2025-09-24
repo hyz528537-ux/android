@@ -13,8 +13,9 @@
     <string name="renew_dns_done">Domen 1 yilga uzaytirildi</string>
     <string name="staking_unstake_cycle">Toʻlovni bekor qilish soʻrovi %1$s da tekshirish davri tugaganidan keyin koʻrib chiqiladi</string>
     <string name="send_transaction_scroll">Tasdiqlash uchun barcha tafsilotlarni tekshiring</string>
-    <string name="send_transaction_detail">Hamyoningizdan yuboriladigan tokenlarning umumiy qiymati. To\'lovlar umumiy qiymatga kiritilmagan.</string>
-    <string name="send_transaction_detail_nft">Hamyoningizdan yuboriladigan tokenlarning umumiy qiymati, NFT narxidan tashqari. To\'lovlar umumiy qiymatga kiritilmagan.</string>
+    <string name="send_transaction_detail">Yuborayotgan tokenlaringizning umumiy qiymati.</string>
+    <string name="send_transaction_detail_nft">Yuborayotgan tokenlaringizning umumiy qiymati. NFT ham yuboriladi.</string>
+    <string name="send_transaction_detail_nfts">Yuborayotgan tokenlaringizning umumiy qiymati. NFTlar ham yuboriladi.</string>
     <string name="keystone_sign_step1">QR kodni Keystone bilan skanerlang</string>
     <string name="keystone_sign_step2">Tranzaksiyani Keystone da tasdiqlang</string>
     <string name="keystone_sign_step3">Keystone’dan imzolangan tranzaksiya QR kodini skanerlang</string>
@@ -607,5 +608,10 @@
     <string name="deposit_and_stake">Depozit va stake qilish</string>
     <string name="ethena_check_eligibility">Statusni tekshirish</string>
     <string name="about_ethena">Ethena haqida</string>
+    <string name="swap_disclaimer">Xizmat %1$s tomonidan taqdim etilgan \n%2$s · %3$s</string>
+    <string name="terms_of_use">Foydalanish shartlari</string>
+    <string name="privacy_policy">Maxfiylik siyosati</string>
+    <string name="invalid_address">Hamyon manzili noto‘g‘ri.</string>
+    <string name="scam_address_error">Ushbu manzilga o‘tkazmalar qo‘llab-quvvatlanmaydi.</string>
 
 </resources>

@@ -16,6 +16,8 @@ data class Coins(
 
     companion object {
 
+        fun Coins?.isPositive() = this != null && this.isPositive
+
         val mathContext = MathContext(32, RoundingMode.HALF_EVEN)
 
         @JvmField
@@ -200,10 +202,10 @@ data class Coins(
         scale: Int = decimals,
         roundingMode: RoundingMode = RoundingMode.HALF_EVEN
     ): Coins {
-        try {
+        if (other.isPositive && isPositive) {
             val result = value.divide(other.value, scale, roundingMode)
             return of(result, scale)
-        } catch (e: Throwable) {
+        } else {
             return ZERO
         }
     }
@@ -299,5 +301,8 @@ data class Coins(
         return 0
     }
 
+    override fun toString(): String {
+        return "Coins(value=${value.toPlainString()}, decimals=$decimals)"
+    }
 
 }

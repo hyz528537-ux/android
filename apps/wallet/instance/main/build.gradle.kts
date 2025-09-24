@@ -7,7 +7,6 @@ plugins {
     id("com.google.firebase.crashlytics")
     id("kotlin-parcelize")
     id("kotlinx-serialization")
-    id("kotlin-kapt")
     id("androidx.baselineprofile")
     id("com.google.firebase.firebase-perf")
 }
@@ -25,7 +24,7 @@ android {
         targetSdk = Build.compileSdkVersion
         versionCode = 600
 
-        versionName = "5.4.1" // Format is "major.minor.patch" (e.g. "1.0.0") and only numbers are allowed
+        versionName = "5.4.2" // Format is "major.minor.patch" (e.g. "1.0.0") and only numbers are allowed
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -33,10 +32,17 @@ android {
     flavorDimensions += "version"
 
     productFlavors {
-        create("default") { }
-        create("site") { }
+        create("default") {
+            dimension = "version"
+        }
+        create("site") {
+            dimension = "version"
+            matchingFallbacks += listOf("default")
+        }
         create("uk") {
+            dimension = "version"
             applicationIdSuffix = ".uk"
+            matchingFallbacks += listOf("default")
         }
     }
 
@@ -98,20 +104,22 @@ android {
 baselineProfile {
     saveInSrc = true
     dexLayoutOptimization = true
+    mergeIntoMain = true
+    baselineProfileRulesRewrite = true
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(project(ProjectModules.Wallet.app))
 
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test:core:1.6.1")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidX.test)
+    androidTestImplementation(libs.androidX.test.core)
+    androidTestImplementation(libs.androidX.test.espresso)
+    androidTestImplementation(libs.androidX.test.uiautomator)
 
-    // implementation(Dependence.AndroidX.profileinstaller)
-    // baselineProfile(project(":baselineprofile:main"))
+    implementation(libs.androidX.profileinstaller)
+    baselineProfile(project(":baselineprofile:main"))
 
-    debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
+    debugImplementation(libs.leakcanary)
 }

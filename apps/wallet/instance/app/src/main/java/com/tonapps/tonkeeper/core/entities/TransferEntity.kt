@@ -6,8 +6,8 @@ import com.tonapps.blockchain.ton.TonSendMode
 import com.tonapps.blockchain.ton.TonTransferHelper
 import com.tonapps.blockchain.ton.contract.BaseWalletContract
 import com.tonapps.blockchain.ton.extensions.EmptyPrivateKeyEd25519
+import com.tonapps.blockchain.ton.extensions.asCellRef
 import com.tonapps.blockchain.ton.extensions.storeOpCode
-import com.tonapps.blockchain.ton.extensions.storeStringTail
 import com.tonapps.blockchain.ton.extensions.toAccountId
 import com.tonapps.extensions.toByteArray
 import com.tonapps.icu.Coins
@@ -24,7 +24,6 @@ import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.events.CommentEncryption
 import org.ton.api.pk.PrivateKeyEd25519
 import org.ton.api.pub.PublicKeyEd25519
-import org.ton.bitstring.BitString
 import org.ton.block.AddrStd
 import org.ton.block.StateInit
 import org.ton.cell.Cell
@@ -96,16 +95,11 @@ data class TransferEntity(
             return org.ton.block.Coins.ofNano(amount.toBigInteger())
         }
 
-    private fun getCommentForwardPayload(
-        privateKey: PrivateKeyEd25519? = null
-    ): Cell? {
+    private fun getCommentForwardPayload(privateKey: PrivateKeyEd25519? = null): Cell? {
         if (comment.isNullOrBlank()) {
             return null
         } else if (!commentEncrypted) {
-            return beginCell()
-                .storeUInt(0, 32)
-                .storeStringTail(comment)
-                .endCell()
+            return asCellRef(comment)
         } else {
             privateKey
                 ?: throw IllegalArgumentException("Private key required for encrypted comment")
@@ -409,14 +403,5 @@ data class TransferEntity(
             }
         }
 
-        fun comment(text: String?): Cell? {
-            if (text.isNullOrBlank()) {
-                return null
-            }
-            return beginCell()
-                .storeUInt(0, 32)
-                .storeStringTail(text)
-                .endCell()
-        }
     }
 }

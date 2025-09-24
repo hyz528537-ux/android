@@ -10,8 +10,8 @@ import android.content.IntentFilter
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.ledger.live.ble.BleManager
-import com.ledger.live.ble.BleManagerFactory
+import com.tonapps.ledger.ble.BleManager
+import com.tonapps.ledger.ble.BleManagerFactory
 import com.tonapps.blockchain.ton.contract.WalletVersion
 import com.tonapps.blockchain.ton.extensions.toAccountId
 import com.tonapps.blockchain.ton.extensions.toWalletAddress

@@ -23,19 +23,13 @@
     <color name="buttonPrimaryBackgroundHighlightedLight">#1F8AFF</color>
     <color name="buttonPrimaryForegroundLight">#FFFFFF</color>
 
-    <!--color name="buttonSecondaryBackgroundLight">#29818C99</color-->
     <color name="buttonSecondaryBackgroundLight">#D3D4DB</color>
-    <!--color name="buttonSecondaryBackgroundDisabledLight">#1F818C99</color-->
     <color name="buttonSecondaryBackgroundDisabledLight">#D8D9E0</color>
-    <!--color name="buttonSecondaryBackgroundHighlightedLight">#3D818C99</color-->
     <color name="buttonSecondaryBackgroundHighlightedLight">#C9CAD1</color>
     <color name="buttonSecondaryForegroundLight">#000000</color>
 
-    <!--color name="buttonTertiaryBackgroundLight">#1F818C99</color-->
     <color name="buttonTertiaryBackgroundLight">#D3D4DB</color>
-    <!--color name="buttonTertiaryBackgroundDisabledLight">#14818C99</color-->
     <color name="buttonTertiaryBackgroundDisabledLight">#D8D9E0</color>
-    <!--color name="buttonTertiaryBackgroundHighlightedLight">#33818C99</color-->
     <color name="buttonTertiaryBackgroundHighlightedLight">#C9CAD1</color>
     <color name="buttonTertiaryForegroundLight">#000000</color>
 

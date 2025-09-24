@@ -6,6 +6,8 @@
     <string name="w5beta" translatable="false">W5 Beta</string>
     <string name="fake" translatable="false">FAKE</string>
     <string name="beta" translatable="false">Beta</string>
+    <string name="ston_fi" translatable="false">STON.fi</string>
+    <string name="nft" translatable="false">NFT</string>
     <string name="slippage" translatable="false">Slippage</string>
     <string name="ok" translatable="false">OK</string>
     <string name="usb" translatable="false">USB</string>
@@ -40,6 +42,13 @@
     <string name="theme_light">Light</string>
     <string name="payment_method">Payment Method</string>
     <string name="downloading">Downloading…</string>
+    <string name="more">More</string>
+    <string name="retry">Retry</string>
+    <string name="operation">Operation</string>
+    <string name="description">Description</string>
+    <string name="protocol">Protocol</string>
+
+    <string name="send_transaction_detail_nfts">The total value of the tokens you send. NFTs will also be sent.</string>
     <string name="close">Close</string>
     <string name="dapp_safe_modal_title">The link leads to a scam service</string>
     <string name="dapp_safe_model_button">How to stay safe</string>
@@ -116,8 +125,8 @@
     <string name="staking_unstake_cycle">Unstake request will be processed after the end of the validation cycle in %1$s</string>
 
     <string name="send_transaction_scroll">Check all details to confirm</string>
-    <string name="send_transaction_detail">The total value of tokens that will be sent from your wallet. Refunds are not included in the total value.</string>
-    <string name="send_transaction_detail_nft">The total value of tokens, excluding the cost of NFTs, that will be sent from your wallet. Refunds are not included in the total value.</string>
+    <string name="send_transaction_detail">The total value of tokens you’re sending.</string>
+    <string name="send_transaction_detail_nft">The total value of tokens you’re sending. NFT will also be sent.</string>
     <string name="keystone_sign_step1">Scan the QR code with Keystone</string>
     <string name="keystone_sign_step2">Confirm your transaction in Keystone</string>
     <string name="keystone_sign_step3">Scan signed transaction QR code from Keystone</string>
@@ -594,6 +603,10 @@
     <string name="bluetooth_permissions_alert_message">Please enable Bluetooth permissions in your settings to use this feature</string>
     <string name="bluetooth_permissions_alert_open_settings">Open Settings</string>
 
+    <string name="added_extension">Added Extension</string>
+    <string name="removed_extension">Removed Extension</string>
+    <string name="signature_allowed">Signature Allowed</string>
+    <string name="signature_not_allowed">Signature Not Allowed</string>
     <string name="battery">Battery</string>
     <string name="battery_refill_title">Tonkeeper Battery</string>
     <string name="battery_refill_subtitle">Swap via Tonkeeper, send tokens and NFTs.</string>
@@ -701,4 +714,9 @@
     <string name="ethena" translatable="false">Ethena</string>
     <string name="ethena_check_eligibility">Check Eligibility</string>
     <string name="about_ethena">About Ethena</string>
+    <string name="swap_disclaimer">Service provided by %1$s\n%2$s · %3$s</string>
+    <string name="terms_of_use">Terms of Use</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="invalid_address">Invalid wallet address.</string>
+    <string name="scam_address_error">Transfers to this address are not supported.</string>
 </resources>

@@ -7,6 +7,7 @@ import org.ton.block.MsgAddress
 import org.ton.block.MsgAddressInt
 import org.ton.cell.Cell
 import org.ton.cell.CellSlice
+import org.ton.contract.CellStringTlbConstructor
 import org.ton.tlb.loadTlb
 
 fun CellSlice.loadOpCode(): TONOpCode {
@@ -36,9 +37,17 @@ fun CellSlice.loadMaybeAddress(): MsgAddress? {
 fun CellSlice.loadAddress(): MsgAddressInt {
     // loadTlb(MsgAddressInt.tlbCodec())
     return loadTlb(MsgAddressInt)
-
 }
 
 fun CellSlice.loadCoins(): Coins {
     return loadTlb(Coins)
+}
+
+fun CellSlice.loadString(): String? {
+    if (loadBit()) {
+        val byteString = loadTlb(CellStringTlbConstructor)
+        return byteString.decodeToString()
+    } else {
+        return null
+    }
 }

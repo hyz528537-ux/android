@@ -1,5 +1,6 @@
 package com.tonapps.tonkeeper.koin
 
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.koin.dsl.module
 import com.tonapps.tonkeeper.ui.screen.wallet.main.WalletViewModel
 import com.tonapps.tonkeeper.ui.screen.settings.main.SettingsViewModel
@@ -22,7 +23,9 @@ import com.tonapps.tonkeeper.ui.screen.browser.more.BrowserMoreViewModel
 import com.tonapps.tonkeeper.ui.screen.card.CardViewModel
 import com.tonapps.tonkeeper.ui.screen.collectibles.manage.CollectiblesManageViewModel
 import com.tonapps.tonkeeper.ui.screen.dns.renew.DNSRenewViewModel
+import com.tonapps.tonkeeper.ui.screen.events.compose.details.TxDetailsViewModel
 import com.tonapps.tonkeeper.ui.screen.events.spam.SpamEventsViewModel
+import com.tonapps.tonkeeper.ui.screen.events.compose.history.TxEventsViewModel
 import com.tonapps.tonkeeper.ui.screen.send.contacts.main.SendContactsViewModel
 import com.tonapps.tonkeeper.ui.screen.purchase.PurchaseViewModel
 import com.tonapps.tonkeeper.ui.screen.nft.NftViewModel
@@ -42,7 +45,6 @@ import com.tonapps.tonkeeper.ui.screen.staking.withdraw.StakeWithdrawViewModel
 import com.tonapps.tonkeeper.ui.screen.swap.omniston.OmnistonViewModel
 import com.tonapps.tonkeeper.ui.screen.swap.picker.SwapPickerViewModel
 import com.tonapps.tonkeeper.ui.screen.transaction.TransactionViewModel
-import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 
 val viewModelWalletModule = module {
@@ -87,4 +89,6 @@ val viewModelWalletModule = module {
     viewModelOf(::OmnistonViewModel)
     viewModelOf(::SwapPickerViewModel)
     viewModelOf(::DNSRenewViewModel)
+    viewModelOf(::TxEventsViewModel)
+    viewModelOf(::TxDetailsViewModel)
 }

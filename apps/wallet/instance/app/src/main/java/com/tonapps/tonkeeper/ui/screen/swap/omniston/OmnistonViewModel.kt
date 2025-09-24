@@ -256,6 +256,10 @@ class OmnistonViewModel(
         }.launch()
 
         swapRequestFlow.filterNotNull()
+            .onEach {
+                cancelSwapStream()
+                setButtonState(if (it.isEmpty) UiButtonState.Default(false) else UiButtonState.Loading)
+            }
             .debounce(600)
             .onEach(::startSwapStream)
             .launch()
@@ -615,7 +619,7 @@ class OmnistonViewModel(
             val payload = omnistionTonMessage.payload?.cellFromHex()
             builder.addMessage(RawMessageEntity.of(
                 address = omnistionTonMessage.targetAddress,
-                amount = Coins.ofNano(omnistionTonMessage.sendAmount).toLong(),
+                amount = Coins.ofNano(omnistionTonMessage.sendAmount).toBigInteger(),
                 payload = payload?.base64()
             ))
         }
@@ -644,7 +648,7 @@ class OmnistonViewModel(
         emulationUseCase = emulationUseCase,
         accountRepository = accountRepository,
         batteryRepository = batteryRepository,
-        api = api
+        params = true
     )
 
     private suspend fun getTonBalance() = tokenRepository.getTonBalance(settingsRepository.currency, wallet.accountId, wallet.testnet)
@@ -725,6 +729,7 @@ class OmnistonViewModel(
     }
 
     private fun cancelSwapStream() {
+        lastMessages = null
         cancelResetTimer()
 
         swapStreamJob?.cancel()

@@ -13,8 +13,9 @@
     <string name="renew_dns_done">域名续期 1 年</string>
     <string name="staking_unstake_cycle">取消质押请求将在 %1$s 的验证周期结束后处理</string>
     <string name="send_transaction_scroll">检查所有详细信息以确认</string>
-    <string name="send_transaction_detail">将从您的钱包发送的代币总价值。退款不包含在总价值中。</string>
-    <string name="send_transaction_detail_nft">将从您的钱包中发送的代币总价值（不包括 NFT 成本）。退款不包含在总价值中。</string>
+    <string name="send_transaction_detail">您发送的代币总价值。</string>
+    <string name="send_transaction_detail_nft">您发送的代币总价值。NFT 也将被发送。</string>
+    <string name="send_transaction_detail_nfts">您发送的代币总价值。NFT 也将被发送。</string>
     <string name="keystone_sign_step1">使用 Keystone 扫描二维码</string>
     <string name="keystone_sign_step2">在 Keystone 中确认您的交易</string>
     <string name="keystone_sign_step3">扫描 Keystone 签名的交易二维码</string>
@@ -602,5 +603,10 @@
     <string name="deposit_and_stake">存入并质押</string>
     <string name="ethena_check_eligibility">检查状态</string>
     <string name="about_ethena">关于 Ethena</string>
+    <string name="swap_disclaimer">服务由 %1$s 提供 \n%2$s · %3$s</string>
+    <string name="terms_of_use">使用条款</string>
+    <string name="privacy_policy">隐私政策</string>
+    <string name="invalid_address">钱包地址无效。</string>
+    <string name="scam_address_error">不支持向该地址转账。</string>
 
 </resources>

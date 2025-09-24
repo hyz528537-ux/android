@@ -15,15 +15,15 @@ import com.tonapps.extensions.writeBooleanCompat
 import com.tonapps.extensions.writeCharSequenceCompat
 import com.tonapps.extensions.writeEnum
 import com.tonapps.tonkeeper.core.history.ActionOutStatus
-import com.tonapps.tonkeeper.core.history.ActionType
 import com.tonapps.tonkeeper.helper.DateHelper
 import com.tonapps.tonkeeper.ui.screen.send.main.state.SendFee
 import com.tonapps.uikit.list.BaseListItem
 import com.tonapps.uikit.list.ListCell
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.collectibles.entities.NftEntity
 import com.tonapps.wallet.data.dapps.entities.AppPushEntity
+import com.tonapps.wallet.data.events.ActionType
 import com.tonapps.wallet.data.events.recipient
 import com.tonapps.wallet.data.events.sender
 import com.tonapps.wallet.data.settings.SpamTransactionState

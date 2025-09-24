@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp")
     id("kotlin-parcelize")
     kotlin("plugin.serialization")
 }
@@ -36,4 +37,8 @@ dependencies {
     implementation(libs.google.play.cronet)
     implementation(libs.okhttp)
     implementation(libs.okhttp.sse)
+
+    implementation(libs.androidX.room.runtime)
+    implementation(libs.androidX.room.ktx)
+    ksp(libs.androidX.room.compiler)
 }

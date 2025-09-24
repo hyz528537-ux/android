@@ -13,8 +13,9 @@
     <string name="renew_dns_done">Domain diperpanjang selama 1 tahun</string>
     <string name="staking_unstake_cycle">Permintaan pembatalan taruhan akan diproses setelah akhir siklus validasi dalam %1$s</string>
     <string name="send_transaction_scroll">Periksa semua detail untuk konfirmasi</string>
-    <string name="send_transaction_detail">Nilai total token yang akan dikirim dari dompet Anda. Pengembalian dana tidak termasuk dalam nilai total.</string>
-    <string name="send_transaction_detail_nft">Nilai total token, tidak termasuk biaya NFT, yang akan dikirim dari dompet Anda. Pengembalian dana tidak termasuk dalam nilai total.</string>
+    <string name="send_transaction_detail">Total nilai token yang Anda kirim.</string>
+    <string name="send_transaction_detail_nft">Total nilai token yang Anda kirim. NFT juga akan dikirim.</string>
+    <string name="send_transaction_detail_nfts">Total nilai token yang Anda kirim. NFT juga akan dikirim.</string>
     <string name="keystone_sign_step1">Pindai kode QR dengan Keystone</string>
     <string name="keystone_sign_step2">Konfirmasikan transaksi Anda di Keystone</string>
     <string name="keystone_sign_step3">Pindai kode QR transaksi yang ditandatangani dari Keystone</string>
@@ -602,5 +603,10 @@
     <string name="deposit_and_stake">Deposit &amp; Stake</string>
     <string name="ethena_check_eligibility">Periksa Status</string>
     <string name="about_ethena">Tentang Ethena</string>
+    <string name="swap_disclaimer">Layanan disediakan oleh %1$s\n%2$s · %3$s</string>
+    <string name="terms_of_use">Ketentuan Penggunaan</string>
+    <string name="privacy_policy">Kebijakan Privasi</string>
+    <string name="invalid_address">Alamat dompet tidak valid.</string>
+    <string name="scam_address_error">Transfer ke alamat ini tidak didukung.</string>
 
 </resources>

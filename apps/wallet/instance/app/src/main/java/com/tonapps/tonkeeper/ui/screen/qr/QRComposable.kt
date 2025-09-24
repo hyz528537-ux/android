@@ -38,21 +38,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import coil3.compose.AsyncImage
+import ui.components.image.AsyncImage
 import com.tonapps.qr.ui.QRView
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.icon.UIKitIcon
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.localization.Localization
-import uikit.compose.AppTheme
-import uikit.compose.Dimens
-import uikit.compose.UIKit
-import uikit.compose.components.AsyncImage
-import uikit.compose.components.Header
-import uikit.compose.components.ImageShape
-import uikit.compose.components.TextHeader
+import ui.components.Header
+import ui.components.TextHeader
+import ui.theme.Dimens
+import ui.theme.Shapes
+import ui.theme.UIKit
 
 @Composable
 private fun QrCode(
@@ -83,9 +83,10 @@ private fun QrCode(
             modifier = Modifier.size(46.dp),
         ) {
             AsyncImage(
-                model = tokenImage,
-                modifier = Modifier.size(46.dp),
-                shape = ImageShape.CIRCLE
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(CircleShape),
+                url = tokenImage.toString(),
             )
             if (blockchainImage != null) {
                 Box(
@@ -101,9 +102,11 @@ private fun QrCode(
                             .padding(1.5.dp)
                     ) {
                         AsyncImage(
+                            modifier = Modifier
+                                .size(18.dp)
+                                .clip(CircleShape),
                             model = blockchainImage,
-                            modifier = Modifier.size(18.dp),
-                            shape = ImageShape.CIRCLE
+                            contentDescription = null,
                         )
                     }
                 }
@@ -121,8 +124,8 @@ fun QrContent(
     blockchainImage: Int?,
     onCopyClick: () -> Unit,
 ) {
-    val accentOrangeColor = UIKit.colors.accentOrange
-    val backgroundContentTintColor = UIKit.colors.backgroundContentTint
+    val accentOrangeColor = UIKit.colorScheme.accent.orange
+    val backgroundContentTintColor = UIKit.colorScheme.background.contentTint
 
     val walletSpecificColor = remember(walletType, accentOrangeColor, backgroundContentTintColor) {
         when (walletType) {
@@ -165,8 +168,8 @@ fun QrContent(
             Spacer(modifier = Modifier.height(Dimens.offsetMedium))
 
             Text(
-                text = stringResource(id = Localization.watch_only),
-                style = UIKit.typography.body4Caps,
+                text = stringResource(id = Localization.watch_only).uppercase(),
+                style = UIKit.typography.body4CAPS,
                 color = Color.Black,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
@@ -195,10 +198,10 @@ fun QrActions(
             modifier = Modifier.height(48.dp),
             shape = RoundedCornerShape(24.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = UIKit.colors.buttonSecondaryBackground,
-                contentColor = UIKit.colors.buttonSecondaryForeground,
-                disabledContainerColor = UIKit.colors.buttonSecondaryBackgroundDisabled,
-                disabledContentColor = UIKit.colors.buttonSecondaryForeground.copy(alpha = 0.48f)
+                containerColor = UIKit.colorScheme.buttonSecondary.primaryBackground,
+                contentColor = UIKit.colorScheme.buttonSecondary.primaryForeground,
+                disabledContainerColor = UIKit.colorScheme.buttonSecondary.primaryBackgroundDisable,
+                disabledContentColor = UIKit.colorScheme.buttonSecondary.primaryForeground.copy(alpha = 0.48f)
             ),
             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
             contentPadding = PaddingValues(horizontal = 20.dp)
@@ -207,7 +210,7 @@ fun QrActions(
                 Icon(
                     painter = painterResource(id = UIKitIcon.ic_copy_16),
                     contentDescription = null,
-                    tint = UIKit.colors.iconPrimary
+                    tint = UIKit.colorScheme.icon.primary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -223,12 +226,12 @@ fun QrActions(
             onClick = { onShareClick() },
             modifier = Modifier
                 .size(48.dp)
-                .background(UIKit.colors.buttonSecondaryBackground, CircleShape)
+                .background(UIKit.colorScheme.buttonSecondary.primaryBackground, CircleShape)
         ) {
             Icon(
                 painter = painterResource(id = UIKitIcon.ic_share_16),
                 contentDescription = stringResource(id = Localization.share),
-                tint = UIKit.colors.iconPrimary
+                tint = UIKit.colorScheme.icon.primary
             )
         }
     }
@@ -251,8 +254,8 @@ fun Tabs(
             .wrapContentWidth()
             .height(40.dp)
             .background(
-                shape = RoundedCornerShape(20.dp),
-                color = UIKit.colors.backgroundContent
+                shape = Shapes.large,
+                color = UIKit.colorScheme.background.content
             )
             .padding(4.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -266,16 +269,16 @@ fun Tabs(
                 },
                 modifier = Modifier
                     .defaultMinSize(minHeight = 32.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(Shapes.medium)
                     .background(
-                        if (isSelected) UIKit.colors.buttonPrimaryBackground
+                        if (isSelected) UIKit.colorScheme.buttonPrimary.primaryBackground
                         else Color.Transparent
                     )
                     .wrapContentHeight(align = Alignment.CenterVertically)
                     .padding(horizontal = Dimens.offsetMedium)
                     .clickable { onTabClick(tab) },
-                style = UIKit.typography.label2, // эквивалент TextAppearance.Label2
-                color = UIKit.colors.textPrimary
+                style = UIKit.typography.label2,
+                color = UIKit.colorScheme.text.primary
             )
         }
     }
@@ -359,27 +362,5 @@ fun QrComposable(
                 onCopyClick = { onCopyClick() }
             )
         }
-    }
-}
-
-@Preview
-@Composable
-private fun QrComposablePreviewLight() {
-    val wallet = WalletEntity.EMPTY
-    val token = TokenEntity.TON
-    val qrContent = "ton://transfer/${wallet.address}"
-    UIKit(theme = AppTheme.BLUE) {
-        QrComposable(
-            wallet = wallet,
-            tabsVisible = true,
-            token = token,
-            address = wallet.address,
-            qrContent = qrContent,
-            showBlockchain = true,
-            onFinishClick = {},
-            onShareClick = {},
-            onCopyClick = {},
-            onTabClick = {}
-        )
     }
 }

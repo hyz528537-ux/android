@@ -13,7 +13,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
-import uikit.compose.AppTheme
+import ui.theme.AppColorScheme
+import ui.theme.UIKit
+import ui.theme.appColorSchemeBlue
+import ui.theme.appColorSchemeDark
+import ui.theme.appColorSchemeLight
 import java.util.Locale
 
 class Environment(
@@ -83,13 +87,13 @@ class Environment(
         _countryDataFlow.value = _countryDataFlow.value.copy(byLocale = country?.uppercase())
     }
 
-    val theme: AppTheme
+    val theme: AppColorScheme
         get() {
             return when(settingsRepository.theme.key) {
-                "blue" -> AppTheme.BLUE
-                "dark" -> AppTheme.DARK
-                "light" -> AppTheme.LIGHT
-                else -> if (context.isDarkMode) AppTheme.DARK else AppTheme.LIGHT
+                "blue" -> appColorSchemeBlue()
+                "dark" -> appColorSchemeDark()
+                "light" -> appColorSchemeLight()
+                else -> if (context.isDarkMode) appColorSchemeBlue() else appColorSchemeLight()
             }
         }
 

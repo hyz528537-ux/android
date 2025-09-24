@@ -29,6 +29,7 @@ import com.tonapps.extensions.currentTimeSeconds
 import com.tonapps.extensions.getStringValue
 import com.tonapps.extensions.setLocales
 import com.tonapps.extensions.toUriOrNull
+import com.tonapps.icu.Coins
 import com.tonapps.ledger.ton.LedgerConnectData
 import com.tonapps.tonkeeper.App
 import com.tonapps.tonkeeper.Environment
@@ -90,6 +91,7 @@ import com.tonapps.wallet.api.API
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.browser.BrowserRepository
+import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.core.entity.SignRequestEntity
 import com.tonapps.wallet.data.dapps.DAppsRepository
 import com.tonapps.wallet.data.dapps.entities.AppConnectEntity
@@ -789,12 +791,19 @@ class RootViewModel(
             toast(Localization.expired_link)
             return
         }
+        val decimals = route.jettonAddress?.let {
+            tokenRepository.getToken(wallet.accountId, wallet.testnet, it)
+        }?.decimals ?: WalletCurrency.TON.decimals
+
+        val amount = route.amount?.let {
+            Coins.of(it, decimals)
+        }
 
         _eventFlow.tryEmit(
             RootEvent.Transfer(
                 wallet = wallet,
                 address = route.address,
-                amount = route.amount,
+                amount = amount,
                 text = route.text,
                 jettonAddress = route.jettonAddress,
                 bin = route.bin,

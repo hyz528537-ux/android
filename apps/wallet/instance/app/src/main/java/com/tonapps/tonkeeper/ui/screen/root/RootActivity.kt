@@ -76,10 +76,15 @@ import uikit.extensions.runAnimation
 import uikit.extensions.withAlpha
 import androidx.core.net.toUri
 import com.tonapps.blockchain.ton.TonSendMode
+import com.tonapps.blockchain.ton.extensions.asCellRef
 import com.tonapps.blockchain.ton.extensions.equalsAddress
+import com.tonapps.icu.Coins.Companion.isPositive
+import com.tonapps.tonkeeper.extensions.compose
 import com.tonapps.tonkeeper.koin.analytics
+import ui.theme.LocalAppColorScheme
 import uikit.extensions.gestureNavigationEnabled
 import uikit.extensions.navigationMode
+import java.math.BigInteger
 
 class RootActivity : BaseWalletActivity() {
 
@@ -108,6 +113,7 @@ class RootActivity : BaseWalletActivity() {
         setTheme(theme)
         supportFragmentManager.fragmentFactory = WalletFragmentFactory()
         super.onCreate(savedInstanceState)
+
         if (theme.isSystem) {
             setAppearanceLight(!isDarkMode)
         } else {
@@ -248,6 +254,7 @@ class RootActivity : BaseWalletActivity() {
         } else {
             setTheme(uikit.R.style.Theme_App_Light)
         }
+        LocalAppColorScheme.providesDefault(theme.compose())
     }
 
     fun setAppearanceLight(light: Boolean) {
@@ -290,7 +297,7 @@ class RootActivity : BaseWalletActivity() {
                     openSend(
                         targetAddress = event.address,
                         tokenAddress = event.jettonAddress,
-                        amountNano = event.amount,
+                        amount = event.amount,
                         text = event.text,
                         wallet = event.wallet,
                         bin = event.bin,
@@ -351,7 +358,7 @@ class RootActivity : BaseWalletActivity() {
         wallet: WalletEntity,
         targetAddress: String,
         tokenAddress: String?,
-        amountNano: Long,
+        amountNano: BigInteger,
         bin: Cell?,
         initStateBase64: String?,
         comment: String? = null,
@@ -364,27 +371,23 @@ class RootActivity : BaseWalletActivity() {
             }  ?: throw IllegalStateException("Token not found")
             val message = RawMessageEntity(
                 addressValue = token.balance.walletAddress,
-                amount = TransferEntity.BASE_FORWARD_AMOUNT.toLong(),
+                amount = TransferEntity.BASE_FORWARD_AMOUNT.toBigInteger(),
                 stateInitValue = initStateBase64,
                 payloadValue = TonTransferHelper.jetton(
                     coins = Coins.ofNano(amountNano),
                     toAddress = AddrStd(targetAddress),
                     responseAddress = wallet.contract.address,
                     queryId = TransferEntity.newWalletQueryId(),
-                    forwardPayload = bin ?: comment?.let {
-                        TransferEntity.comment(it)
-                    },
+                    forwardPayload = bin ?: asCellRef(comment),
                 ).base64()
             )
-            message.copy(amount = getJettonForwardAmount(wallet, message).toLong())
+            message.copy(amount = getJettonForwardAmount(wallet, message).toBigInteger())
         } else {
             RawMessageEntity(
                 addressValue = targetAddress,
                 amount = amountNano,
                 stateInitValue = initStateBase64,
-                payloadValue = bin?.base64() ?: comment?.let {
-                    TransferEntity.comment(it)
-                }?.base64()
+                payloadValue = bin?.base64() ?: asCellRef(comment)?.base64()
             )
         }
 
@@ -410,28 +413,28 @@ class RootActivity : BaseWalletActivity() {
         wallet: WalletEntity,
         targetAddress: String? = null,
         tokenAddress: String?,
-        amountNano: Long?,
+        amount: com.tonapps.icu.Coins?,
         text: String? = null,
         nftAddress: String? = null,
         bin: Cell? = null,
         initStateBase64: String? = null,
         validUnit: Long?
     ) {
-        if ((bin != null || initStateBase64 != null) && !amountNano.isPositive()) {
+        if ((bin != null || initStateBase64 != null) && !amount.isPositive()) {
             toast(Localization.invalid_link)
             return
         }
 
         val fragment = supportFragmentManager.findFragment<SendScreen>()
 
-        if (targetAddress != null && amountNano.isPositive() && nftAddress.isNullOrBlank()) {
+        if (targetAddress != null && amount.isPositive() && nftAddress.isNullOrBlank()) {
             if (bin != null || initStateBase64 != null) {
                 try {
                     openSign(
                         wallet = wallet,
                         targetAddress = targetAddress,
                         tokenAddress = tokenAddress,
-                        amountNano = amountNano!!,
+                        amountNano = amount?.toBigInteger()!!,
                         bin = bin,
                         initStateBase64 = initStateBase64,
                         comment = text,
@@ -445,7 +448,7 @@ class RootActivity : BaseWalletActivity() {
                     SendScreen.Companion.Builder(wallet)
                         .setTargetAddress(targetAddress)
                         .setTokenAddress(tokenAddress)
-                        .setAmountNano(amountNano)
+                        .setAmount(amount)
                         .setText(text)
                         .setType(SendScreen.Companion.Type.Direct)
                 )
@@ -456,7 +459,7 @@ class RootActivity : BaseWalletActivity() {
                     wallet = wallet,
                     targetAddress = targetAddress,
                     tokenAddress = tokenAddress,
-                    amountNano = amountNano,
+                    amount = amount,
                     text = text,
                     nftAddress = nftAddress,
                     bin = bin,
@@ -468,7 +471,7 @@ class RootActivity : BaseWalletActivity() {
                 fragment.initializeArgs(
                     targetAddress = targetAddress,
                     tokenAddress = tokenAddress,
-                    amountNano = amountNano,
+                    amount = amount,
                     text = text,
                     bin = bin,
                     type = SendScreen.Companion.Type.Default

@@ -164,7 +164,7 @@ class TokenScreen(wallet: WalletEntity) :
                 wallet = screenContext.wallet,
                 targetAddress = viewModel.burnAddress,
                 tokenAddress = token.address,
-                amountNano = token.balance.value.toLong(),
+                amount = token.balance.value,
                 type = SendScreen.Companion.Type.Default
             )
         )

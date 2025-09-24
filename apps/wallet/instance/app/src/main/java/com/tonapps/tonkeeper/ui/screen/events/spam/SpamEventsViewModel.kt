@@ -6,6 +6,7 @@ import com.tonapps.tonkeeper.core.history.ActionOptions
 import com.tonapps.tonkeeper.core.history.HistoryHelper
 import com.tonapps.tonkeeper.core.history.list.item.HistoryItem
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
+import com.tonapps.wallet.api.entity.value.Timestamp
 import com.tonapps.wallet.api.tron.entity.TronEventEntity
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.entities.WalletEntity
@@ -47,9 +48,9 @@ class SpamEventsViewModel(
     private val _tronEventsList: List<TronEventEntity>
         get() = _tronEventsFlow.value ?: emptyList()
 
-    private fun getTronLastLt(): Long? {
+    private fun getTronLastTimestamp(): Timestamp? {
         val lt = _tronEventsFlow.value?.lastOrNull { !it.inProgress }?.timestamp ?: return null
-        if (0 >= lt) {
+        if (Timestamp.zero >= lt) {
             return null
         }
         return lt
@@ -107,8 +108,7 @@ class SpamEventsViewModel(
         val tronAddress = if (wallet.hasPrivateKey && !wallet.testnet && tronEnabled) {
             accountRepository.getTronAddress(wallet.id)
         } else null
-        _tronEventsFlow.value =
-            tronAddress?.let { eventsRepository.getTronLocal(tronAddress) } ?: emptyList()
+        _tronEventsFlow.value = emptyList()
 
         if (tronAddress != null) {
             val tonProofToken = accountRepository.requestTonProofToken(wallet) ?: ""
@@ -153,12 +153,12 @@ class SpamEventsViewModel(
         val tonProofToken = accountRepository.requestTonProofToken(wallet) ?: ""
         val currentEvents = (_tronEventsFlow.value ?: emptyList())
         try {
-            val tronLastLt = getTronLastLt()
-            if (tronLastLt != null) {
+            val tronLastTimestamp = getTronLastTimestamp()
+            if (tronLastTimestamp != null) {
                 val tronEvents = eventsRepository.loadTronEvents(
                     tronAddress,
                     tonProofToken,
-                    beforeLt = tronLastLt
+                    maxTimestamp = tronLastTimestamp.value
                 ) ?: throw IllegalStateException("Failed to load tron events")
                 val events = (currentEvents + tronEvents).distinctBy { it.transactionHash }
                     .sortedBy { it.timestamp }.reversed()

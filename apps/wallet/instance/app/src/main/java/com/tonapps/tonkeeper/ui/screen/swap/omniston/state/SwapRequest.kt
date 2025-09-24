@@ -15,7 +15,6 @@ data class SwapRequest(
     val isEmpty: Boolean
         get() = !amount.isPositive
 
-
     val fromParam: SwapAssetParam by lazy {
         val amount = if (type == TwinInput.Type.Send) amount.toNano(from.decimals) else null
         SwapAssetParam(from.address, amount)

@@ -17,9 +17,12 @@ import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.annotation.ColorInt
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
 import androidx.core.content.ContextCompat
 import androidx.work.WorkManager
+import coil3.compose.LocalPlatformContext
 import com.tonapps.blockchain.ton.contract.WalletVersion
 import com.tonapps.extensions.bestMessage
 import com.tonapps.tonkeeper.koin.settingsRepository
@@ -29,10 +32,24 @@ import com.tonapps.uikit.color.accentGreenColor
 import com.tonapps.uikit.color.accentRedColor
 import com.tonapps.uikit.color.backgroundContentTintColor
 import com.tonapps.uikit.color.textSecondaryColor
+import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.localization.Localization
+import ui.ComposeIcon
 import uikit.navigation.Navigation
 import uikit.navigation.Navigation.Companion.navigation
+
+fun Context.externalDrawableUrl(@DrawableRes resId: Int): String {
+    return "android.resource://$packageName/$resId"
+}
+
+fun Context.composeIcon(
+    @DrawableRes resId: Int,
+    tintColor: Int? = null
+) = ComposeIcon(
+    url = externalDrawableUrl(resId),
+    tintColor = tintColor
+)
 
 val Context.workManager: WorkManager
     get() = WorkManager.getInstance(this)

@@ -38,7 +38,10 @@ data class UnSubscriptionAction (
     val subscription: kotlin.String,
 
     @SerialName(value = "beneficiary")
-    val beneficiary: AccountAddress
+    val beneficiary: AccountAddress,
+
+    @SerialName(value = "admin")
+    val admin: AccountAddress
 
 ) {
 

@@ -1,6 +1,7 @@
 package com.tonapps.tonkeeper.ui.screen.main
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
@@ -8,10 +9,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.extensions.query
-import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.extensions.isLightTheme
 import com.tonapps.tonkeeper.extensions.removeAllFragments
-import com.tonapps.tonkeeper.koin.serverConfig
 import com.tonapps.tonkeeper.koin.serverFlags
 import com.tonapps.tonkeeper.ui.base.BaseWalletScreen
 import com.tonapps.tonkeeper.ui.base.ScreenContext
@@ -21,6 +20,7 @@ import com.tonapps.tonkeeperx.R
 import com.tonapps.tonkeeper.ui.screen.root.RootViewModel
 import com.tonapps.tonkeeper.ui.screen.collectibles.main.CollectiblesScreen
 import com.tonapps.tonkeeper.ui.screen.events.main.EventsScreen
+import com.tonapps.tonkeeper.ui.screen.events.compose.history.TxEventsScreen
 import com.tonapps.tonkeeper.ui.screen.wallet.picker.PickerScreen
 import com.tonapps.tonkeeper.ui.screen.root.RootEvent
 import com.tonapps.tonkeeper.ui.screen.swap.SwapScreen
@@ -218,7 +218,8 @@ class MainScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_main, S
     private fun createFragment(itemId: Int, wallet: WalletEntity): Fragment {
         val fragment = when(itemId) {
             R.id.wallet -> WalletScreen.newInstance(wallet)
-            R.id.activity -> EventsScreen.newInstance(wallet)
+            // R.id.activity -> EventsScreen.newInstance(wallet)
+            R.id.activity -> TxEventsScreen.newInstance(wallet)
             R.id.collectibles -> CollectiblesScreen.newInstance(wallet)
             R.id.browser -> BrowserBaseScreen.newInstance(wallet)
             else -> throw IllegalArgumentException("Unknown itemId: $itemId")
@@ -277,7 +278,9 @@ class MainScreen: BaseWalletScreen<ScreenContext.None>(R.layout.fragment_main, S
         }
         try {
             transaction.commitNow()
+            Log.d("MainScreenLog", "Set fragment: $fragment")
         } catch (e: Throwable) {
+            Log.e("MainScreenLog", "Failed to set fragment", e)
             FirebaseCrashlytics.getInstance().recordException(e)
             postDelayed(1000) {
                 setFragment(fragment, forceScrollUp, from,extra, attempt + 1)

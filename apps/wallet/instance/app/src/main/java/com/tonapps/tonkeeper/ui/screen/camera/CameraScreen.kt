@@ -2,7 +2,6 @@ package com.tonapps.tonkeeper.ui.screen.camera
 
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.activity.result.PickVisualMediaRequest
@@ -14,10 +13,9 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.mlkit.vision.common.InputImage
 import com.tonapps.blockchain.ton.extensions.isValidTonAddress
 import com.tonapps.blockchain.tron.isValidTronAddress
-import com.tonapps.extensions.filterList
 import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.extensions.toUriOrNull
-import com.tonapps.tonkeeper.core.AnalyticsHelper
+import com.tonapps.icu.Coins
 import com.tonapps.tonkeeper.deeplink.DeepLink
 import com.tonapps.tonkeeper.deeplink.DeepLinkRoute
 import com.tonapps.tonkeeper.extensions.toast
@@ -29,16 +27,14 @@ import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.color.constantWhiteColor
 import com.tonapps.uikit.color.stateList
 import com.tonapps.wallet.api.API
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.api.entity.QRScannerExtendsEntity
+import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.localization.Localization
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -49,7 +45,6 @@ import uikit.extensions.collectFlow
 import uikit.extensions.pinToBottomInsets
 import uikit.extensions.withAlpha
 import uikit.navigation.Navigation.Companion.navigation
-import kotlin.getValue
 
 class CameraScreen : QRCameraScreen(R.layout.fragment_camera), BaseFragment.BottomSheet {
 
@@ -162,7 +157,11 @@ class CameraScreen : QRCameraScreen(R.layout.fragment_camera), BaseFragment.Bott
     }
 
     private fun createUri(value: String): Uri? {
-        var uri = value.toUriOrNull() ?: createTransferUri(value)
+        var uri = if (value.startsWith("tron:", ignoreCase = true)) {
+            createTransferUri(value)
+        } else {
+            value.toUriOrNull() ?: createTransferUri(value)
+        }
         if (uri == null) {
             uri = qrScannerExtends.firstNotNullOfOrNull {
                 val url = it.buildUrl(value) ?: return@firstNotNullOfOrNull null
@@ -173,12 +172,38 @@ class CameraScreen : QRCameraScreen(R.layout.fragment_camera), BaseFragment.Bott
     }
 
     private fun createTransferUri(value: String): Uri? {
-        if (chains.contains(Blockchain.TON) && value.isValidTonAddress()) {
-            return "tonkeeper://transfer/$value".toUri()
-        } else if (chains.contains(Blockchain.TRON) && value.isValidTronAddress()) {
-            return "tonkeeper://transfer/$value".toUri()
+        return when {
+            chains.contains(Blockchain.TON) && value.isValidTonAddress() -> {
+                "tonkeeper://transfer/$value".toUri()
+            }
+            chains.contains(Blockchain.TRON) && value.isValidTronAddress() -> {
+                "tonkeeper://transfer/$value".toUri()
+            }
+            chains.contains(Blockchain.TRON) && value.startsWith("tron:", ignoreCase = true) -> {
+                val withoutScheme = value.removePrefix("tron:")
+                val address = withoutScheme.substringBefore("?")
+                val query = withoutScheme.substringAfter("?", "")
+                var amountNano: String? = null
+                if (query.isNotEmpty()) {
+                    val params = query.split("&")
+                    val amountStr = params.firstOrNull { it.startsWith("amount=") }?.substringAfter("=")
+                    if (!amountStr.isNullOrEmpty()) {
+                        amountNano = try {
+                            Coins.of(amountStr).toNano(TokenEntity.TRON_USDT.decimals)
+                        } catch (_: Exception) {
+                            null
+                        }
+                    }
+                }
+                val builder = "tonkeeper://transfer/$address".toUri().buildUpon()
+                builder.appendQueryParameter("jettonAddress", TokenEntity.TRON_USDT.address)
+                if (amountNano != null) {
+                    builder.appendQueryParameter("amount", amountNano)
+                }
+                builder.build()
+            }
+            else -> null
         }
-        return null
     }
 
     companion object {

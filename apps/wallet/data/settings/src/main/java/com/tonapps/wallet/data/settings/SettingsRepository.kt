@@ -74,8 +74,7 @@ class SettingsRepository(
     val languageFlow = _languageFlow.stateIn(scope, SharingStarted.Eagerly, null).filterNotNull()
 
     private val _hiddenBalancesFlow = MutableEffectFlow<Boolean>()
-    val hiddenBalancesFlow =
-        _hiddenBalancesFlow.stateIn(scope, SharingStarted.Eagerly, null).filterNotNull()
+    val hiddenBalancesFlow = _hiddenBalancesFlow.stateIn(scope, SharingStarted.Eagerly, false)
 
     private val _countryFlow = MutableEffectFlow<String>()
 

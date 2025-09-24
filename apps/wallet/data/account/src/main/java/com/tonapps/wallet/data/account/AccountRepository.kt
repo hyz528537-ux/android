@@ -13,6 +13,8 @@ import com.tonapps.blockchain.ton.extensions.toAccountId
 import com.tonapps.blockchain.tron.KeychainTrxAccountsProvider
 import com.tonapps.ledger.ton.LedgerAccount
 import com.tonapps.wallet.api.API
+import com.tonapps.wallet.api.entity.value.Blockchain
+import com.tonapps.wallet.api.entity.value.BlockchainAddress
 import com.tonapps.wallet.data.account.entities.MessageBodyEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.account.source.DatabaseSource
@@ -271,6 +273,15 @@ class AccountRepository(
     suspend fun getTronAddress(id: String): String? {
         val trxAccountsProvider = getTrxAccountsProvider(id) ?: return null
         return trxAccountsProvider.getAddress()
+    }
+
+    suspend fun getTronBlockchainAddress(id: String): BlockchainAddress? {
+        val address = getTronAddress(id) ?: return null
+        return BlockchainAddress(
+            value = address,
+            testnet = false,
+            blockchain = Blockchain.TRON
+        )
     }
 
     suspend fun getTronPrivateKey(id: String): BigInteger? {

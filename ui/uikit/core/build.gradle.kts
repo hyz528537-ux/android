@@ -23,6 +23,8 @@ dependencies {
     api(project(ProjectModules.Module.blur))
     api(project(ProjectModules.Module.shimmer))
 
+    implementation(project(ProjectModules.KMP.ui))
+
     implementation(libs.kotlinX.coroutines.android)
     implementation(libs.androidX.core)
     implementation(libs.androidX.webkit)
@@ -40,7 +42,4 @@ dependencies {
     implementation(libs.compose.foundation)
     implementation(libs.compose.foundationLayout)
     implementation(libs.compose.ui)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.preview)
-    debugImplementation(libs.compose.debugTooling)
 }

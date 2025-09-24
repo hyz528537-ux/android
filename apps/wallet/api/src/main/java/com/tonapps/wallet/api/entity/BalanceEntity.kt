@@ -1,8 +1,8 @@
 package com.tonapps.wallet.api.entity
 
 import android.os.Parcelable
-import android.util.Log
 import com.tonapps.icu.Coins
+import com.tonapps.wallet.api.entity.value.Blockchain
 import io.tonapi.models.JettonBalance
 import io.tonapi.models.TokenRates
 import kotlinx.parcelize.IgnoredOnParcel

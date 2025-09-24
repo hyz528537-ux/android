@@ -12,13 +12,13 @@ import com.tonapps.tonkeeper.ui.screen.wallet.main.list.Item
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.color.accentOrangeColor
 import com.tonapps.uikit.color.textSecondaryColor
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.localization.Localization
-import uikit.compose.components.ResizeOptions
 import uikit.extensions.drawable
 import uikit.extensions.withDefaultBadge
 import uikit.widget.AsyncImageView
+import uikit.widget.ResizeOptions
 
 class TokenHolder(parent: ViewGroup): Holder<Item.Token>(parent, R.layout.view_cell_jetton) {
 

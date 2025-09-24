@@ -21,16 +21,14 @@ import com.tonapps.extensions.writeNullableInt
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.manager.apk.APKManager
 import com.tonapps.tonkeeper.view.BatteryView
-import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.list.BaseListItem
 import com.tonapps.uikit.list.ListCell
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.api.entity.NotificationEntity
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.collectibles.entities.DnsExpiringEntity
-import com.tonapps.wallet.data.dapps.entities.AppEntity
 import com.tonapps.wallet.data.dapps.entities.AppPushEntity
 import com.tonapps.wallet.data.staking.StakingPool
 import com.tonapps.wallet.data.token.entities.AccountTokenEntity

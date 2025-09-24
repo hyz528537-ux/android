@@ -1,16 +1,15 @@
 package com.tonapps.signer.screen.sign
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tonapps.blockchain.ton.TonNetwork
 import com.tonapps.blockchain.ton.contract.BaseWalletContract
 import com.tonapps.blockchain.ton.extensions.EmptyPrivateKeyEd25519
 import com.tonapps.blockchain.ton.extensions.hex
+import com.tonapps.blockchain.ton.extensions.loadString
 import com.tonapps.blockchain.ton.tlb.JettonTransfer
 import com.tonapps.blockchain.ton.tlb.NftTransfer
-import com.tonapps.blockchain.ton.tlb.StringTlbConstructor
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.signer.core.repository.KeyRepository
 import com.tonapps.signer.password.Password
@@ -229,7 +228,7 @@ class SignViewModel(
         } else if (nftTransfer != null) {
             nftTransfer.comment
         } else {
-            cell?.parse { loadTlb(StringTlbConstructor) }
+            cell?.parse { loadString() }
         }
         if (string != null) {
             return string

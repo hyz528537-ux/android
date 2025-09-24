@@ -52,8 +52,8 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = A
 
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
-    fun dnsResolve(domainName: kotlin.String) : DnsRecord {
-        val localVarResponse = dnsResolveWithHttpInfo(domainName = domainName)
+    fun dnsResolve(domainName: kotlin.String, filter: kotlin.Boolean? = false) : DnsRecord {
+        val localVarResponse = dnsResolveWithHttpInfo(domainName = domainName, filter = filter)
 
         return when (localVarResponse.responseType) {
             ResponseType.Success -> (localVarResponse as Success<*>).data as DnsRecord
@@ -72,17 +72,22 @@ class DNSApi(basePath: kotlin.String = defaultBasePath, client: Call.Factory = A
 
     @Suppress("UNCHECKED_CAST")
     @Throws(IllegalStateException::class, IOException::class)
-    fun dnsResolveWithHttpInfo(domainName: kotlin.String) : ApiResponse<DnsRecord?> {
-        val localVariableConfig = dnsResolveRequestConfig(domainName = domainName)
+    fun dnsResolveWithHttpInfo(domainName: kotlin.String, filter: kotlin.Boolean?) : ApiResponse<DnsRecord?> {
+        val localVariableConfig = dnsResolveRequestConfig(domainName = domainName, filter = filter)
 
         return request<Unit, DnsRecord>(
             localVariableConfig
         )
     }
 
-    fun dnsResolveRequestConfig(domainName: kotlin.String) : RequestConfig<Unit> {
+    fun dnsResolveRequestConfig(domainName: kotlin.String, filter: kotlin.Boolean?) : RequestConfig<Unit> {
         val localVariableBody = null
-        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, kotlin.collections.List<kotlin.String>>()
+            .apply {
+                if (filter != null) {
+                    put("filter", listOf(filter.toString()))
+                }
+            }
         val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         localVariableHeaders["Accept"] = "application/json"
 

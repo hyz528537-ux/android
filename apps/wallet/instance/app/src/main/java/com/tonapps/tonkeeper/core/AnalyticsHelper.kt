@@ -269,7 +269,7 @@ class AnalyticsHelper(
         sellAsset: String,
         buyAsset: String,
         countryCode: String,
-        paymentMethod: String,
+        paymentMethod: String?,
         providerName: String,
         providerDomain: String
     ) {
@@ -289,7 +289,7 @@ class AnalyticsHelper(
             "sell_asset" to sellAsset,
             "buy_asset" to buyAsset,
             "country_code" to countryCode,
-            "payment_method" to fixPaymentMethodName(paymentMethod),
+            "payment_method" to (paymentMethod?.let(::fixPaymentMethodName) ?: "unknown"),
             "provider_name" to providerName,
             "provider_domain" to providerDomain
         )

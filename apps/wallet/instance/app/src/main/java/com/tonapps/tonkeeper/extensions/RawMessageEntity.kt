@@ -124,7 +124,7 @@ private fun rebuildJettonTransferWithCustomPayload(
         return payload
     }
 
-    val forwardAmount = slice.loadCoins().amount.toLong()
+    val forwardAmount = slice.loadCoins()
     val forwardBody = slice.loadMaybeRef()
 
     return TonTransferHelper.jetton(

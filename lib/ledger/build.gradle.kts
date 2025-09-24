@@ -31,6 +31,6 @@ dependencies {
     api(libs.ton.contract)
     implementation(libs.androidX.core)
     implementation(libs.kotlinX.coroutines.android)
-    implementation(libs.bleManager)
+    implementation(libs.timber)
     implementation(project(ProjectModules.Lib.blockchain))
 }

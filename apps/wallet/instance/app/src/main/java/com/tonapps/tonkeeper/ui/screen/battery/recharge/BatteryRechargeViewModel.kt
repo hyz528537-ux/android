@@ -2,6 +2,7 @@ package com.tonapps.tonkeeper.ui.screen.battery.recharge
 
 import android.app.Application
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.tonapps.blockchain.ton.TonAddressTags
 import com.tonapps.blockchain.ton.TonNetwork
@@ -65,6 +66,8 @@ import kotlinx.coroutines.withContext
 import org.ton.block.AddrStd
 import uikit.extensions.collectFlow
 import java.math.BigDecimal
+import androidx.core.net.toUri
+import io.tonapi.models.AccountStatus
 
 class BatteryRechargeViewModel(
     app: Application,
@@ -383,20 +386,27 @@ class BatteryRechargeViewModel(
             else -> false
         }
 
+        val account = api.resolveAccount(wallet.address, wallet.testnet)
+        val accountStatus = account?.status ?: AccountStatus.unknown
+        val stateInit = if (accountStatus == AccountStatus.nonexist || accountStatus == AccountStatus.uninit) {
+            wallet.contract.stateInitCell()
+        } else null
+
         if (token.isTon) {
             val request = SignRequestEntity.Builder()
                 .setFrom(wallet.contract.address)
                 .setValidUntil(validUntil)
+                .setIgnoreInsufficientBalance(true)
                 .addMessage(
                     RawMessageEntity(
                         addressValue = fundReceiver,
-                        amount = amount.toLong(),
-                        stateInitValue = null,
+                        amount = amount.toBigInteger(),
+                        stateInitValue = stateInit?.base64(),
                         payloadValue = payload.base64()
                     )
                 )
                 .setNetwork(network)
-                .build(Uri.parse("https://battery.tonkeeper.com/"))
+                .build("https://battery.tonkeeper.com/".toUri())
 
             _eventFlow.tryEmit(BatteryRechargeEvent.Sign(request, forceRelayer))
         } else {
@@ -408,10 +418,10 @@ class BatteryRechargeViewModel(
             }
 
             val jettonPayload = TonTransferHelper.jetton(
+                queryId = queryId,
                 coins = amount.toGrams(),
                 toAddress = AddrStd.parse(fundReceiver),
                 responseAddress = wallet.contract.address,
-                queryId = queryId,
                 forwardPayload = payload,
                 customPayload = customPayload?.customPayload
             )
@@ -419,16 +429,17 @@ class BatteryRechargeViewModel(
             val request = SignRequestEntity.Builder()
                 .setFrom(wallet.contract.address)
                 .setValidUntil(validUntil)
+                .setIgnoreInsufficientBalance(true)
                 .addMessage(
                     RawMessageEntity(
                         addressValue = token.balance.walletAddress,
-                        amount = Coins.of(0.1).toLong(),
-                        stateInitValue = null,
+                        amount = Coins.of(0.1).toBigInteger(),
+                        stateInitValue = stateInit?.base64(),
                         payloadValue = jettonPayload.base64()
                     )
                 )
                 .setNetwork(network)
-                .build(Uri.parse("https://battery.tonkeeper.com/"))
+                .build("https://battery.tonkeeper.com/".toUri())
 
             _eventFlow.tryEmit(BatteryRechargeEvent.Sign(request, forceRelayer))
         }

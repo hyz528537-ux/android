@@ -31,17 +31,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import coil3.compose.AsyncImage
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.localization.Localization
-import uikit.compose.AppTheme
-import uikit.compose.Dimens
-import uikit.compose.UIKit
-import uikit.compose.components.AsyncImage
-import uikit.compose.components.Header
-import uikit.compose.components.PrimaryButton
-import uikit.compose.components.SecondaryButton
-import uikit.compose.components.TextHeader
+import ui.components.Header
+import ui.components.TextHeader
+import ui.components.button.TKButton
+import ui.theme.ButtonColorsSecondary
+import ui.theme.Dimens
+import ui.theme.Shapes
+import ui.theme.UIKit
 
 @Composable
 fun UrlView(
@@ -52,8 +52,8 @@ fun UrlView(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(UIKit.colors.fieldBackground)
+            .clip(Shapes.medium)
+            .background(UIKit.colorScheme.field.background)
             .padding(horizontal = Dimens.offsetMedium),
         contentAlignment = Alignment.Center
     ) {
@@ -61,7 +61,7 @@ fun UrlView(
             text = url.toString().removePrefix("${url.scheme}://"),
             style = UIKit.typography.body1,
             maxLines = 1,
-            color = UIKit.colors.textPrimary,
+            color = UIKit.colorScheme.text.primary,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.clickable { onCopy() }
         )
@@ -71,7 +71,7 @@ fun UrlView(
                 .height(56.dp)
                 .background(
                     brush = Brush.horizontalGradient(
-                        colors = listOf(Color.Transparent, UIKit.colors.fieldBackground)
+                        colors = listOf(Color.Transparent, UIKit.colorScheme.field.background)
                     )
                 )
                 .align(Alignment.CenterEnd)
@@ -88,7 +88,7 @@ fun DAppIcon(
             modifier = Modifier
                 .size(96.dp)
                 .clip(RoundedCornerShape(24.dp))
-                .background(UIKit.colors.backgroundContent),
+                .background(UIKit.colorScheme.background.content),
             contentAlignment = Alignment.Center
         ) {
             Box(
@@ -98,12 +98,13 @@ fun DAppIcon(
                 Image(
                     painter = painterResource(id = UIKitIcon.ic_globe_56),
                     contentDescription = null,
-                    colorFilter = ColorFilter.tint(UIKit.colors.iconSecondary)
+                    colorFilter = ColorFilter.tint(UIKit.colorScheme.icon.secondary)
                 )
                 if (icon != null) {
                     AsyncImage(
                         model = icon,
-                        modifier = Modifier.size(96.dp)
+                        modifier = Modifier.size(96.dp),
+                        contentDescription = null
                     )
                 }
             }
@@ -114,13 +115,13 @@ fun DAppIcon(
                 .size(32.dp)
                 .offset(6.dp, 6.dp)
                 .clip(RoundedCornerShape(22.dp))
-                .background(UIKit.colors.accentBlue),
+                .background(UIKit.colorScheme.accent.blue),
             contentAlignment = Alignment.Center
         ) {
             Image(
                 painter = painterResource(id = UIKitIcon.ic_link_outline_28),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(UIKit.colors.iconPrimary)
+                colorFilter = ColorFilter.tint(UIKit.colorScheme.icon.primary)
             )
         }
     }
@@ -166,33 +167,19 @@ fun DAppShareComposable(
             Spacer(modifier = Modifier.height(Dimens.offsetLarge))
             UrlView(url = url, onCopy = onCopy)
             Spacer(modifier = Modifier.height(Dimens.offsetMedium))
-            PrimaryButton(
+            TKButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onCopy,
                 text = stringResource(id = Localization.copy_link)
             )
             Spacer(modifier = Modifier.height(Dimens.offsetMedium))
-            SecondaryButton(
+            TKButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onShare,
-                text = stringResource(id = Localization.share)
+                text = stringResource(id = Localization.share),
+                buttonColors = ButtonColorsSecondary
             )
             Spacer(modifier = Modifier.height(Dimens.offsetLarge))
         }
-    }
-}
-
-@Preview
-@Composable
-private fun DAppShareComposablePreview() {
-    val wallet = WalletEntity.EMPTY
-    UIKit(theme = AppTheme.BLUE) {
-        DAppShareComposable(
-            url = "https://app.tonkeeper.com/https%3A%2F%2Fapp.ston.fi%2Fswap%3FchartVisible%3Dfalse%26ft%3DTON%26tt%3DSTON".toUri(),
-            name = "Demo DApp",
-            onCopy = {},
-            onShare = {},
-            onFinishClick = {},
-        )
     }
 }

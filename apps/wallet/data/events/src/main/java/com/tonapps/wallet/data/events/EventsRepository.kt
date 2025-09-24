@@ -4,34 +4,54 @@ import android.content.Context
 import android.util.Log
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.entity.TokenEntity
+import com.tonapps.wallet.api.entity.value.BlockchainAddress
+import com.tonapps.wallet.api.entity.value.Timestamp
 import com.tonapps.wallet.api.tron.entity.TronEventEntity
-import com.tonapps.wallet.data.events.entities.AccountEventsResult
+import com.tonapps.wallet.data.collectibles.CollectiblesRepository
 import com.tonapps.wallet.data.events.entities.LatestRecipientEntity
 import com.tonapps.wallet.data.events.source.LocalDataSource
 import com.tonapps.wallet.data.events.source.RemoteDataSource
-import io.tonapi.models.AccountAddress
+import com.tonapps.wallet.data.events.tx.TxActionMapper
+import com.tonapps.wallet.data.events.tx.TxFetchQuery
+import com.tonapps.wallet.data.events.tx.TxPage
+import com.tonapps.wallet.data.events.tx.db.TxDatabase
+import com.tonapps.wallet.data.rates.RatesRepository
 import io.tonapi.models.AccountEvent
 import io.tonapi.models.AccountEvents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
+import kotlin.collections.emptyList
 
 class EventsRepository(
     scope: CoroutineScope,
     context: Context,
-    private val api: API
+    private val api: API,
+    private val collectiblesRepository: CollectiblesRepository,
+    private val ratesRepository: RatesRepository
 ) {
+
+    private val txDatabase = TxDatabase.instance(context)
 
     private val localDataSource: LocalDataSource by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         LocalDataSource(scope, context)
     }
 
-    private val remoteDataSource = RemoteDataSource(api)
+    private val txActionMapper = TxActionMapper(collectiblesRepository, ratesRepository, api)
+    private val remoteDataSource = RemoteDataSource(api, txActionMapper)
 
-    val decryptedCommentFlow = localDataSource.decryptedCommentFlow
+    val decryptedCommentFlow: Flow<Map<String, String>>
+        get() = localDataSource.decryptedCommentFlow
+
+    private val _hiddenTxIdsFlow = MutableStateFlow<Set<String>>(emptySet())
+    val hiddenTxIdsFlow = _hiddenTxIdsFlow.stateIn(scope, SharingStarted.WhileSubscribed(), emptySet())
 
     fun getDecryptedComment(txId: String) = localDataSource.getDecryptedComment(txId)
 
@@ -39,12 +59,25 @@ class EventsRepository(
         localDataSource.saveDecryptedComment(txId, comment)
     }
 
+    fun clearTxEvents(account: BlockchainAddress) {
+        localDataSource.clearTxEvents(account)
+    }
+
+    suspend fun fetch(query: TxFetchQuery): TxPage {
+        val events = remoteDataSource.events(query).take(query.limit)
+        return TxPage(
+            source = TxPage.Source.REMOTE,
+            events = events,
+            beforeTimestamp = query.beforeTimestamp,
+            afterTimestamp = query.afterTimestamp,
+            limit = query.limit
+        )
+    }
+
     suspend fun tronLatestSentTransactions(
         tronWalletAddress: String, tonProofToken: String
     ): List<TronEventEntity> {
-        val events =
-            getTronLocal(tronWalletAddress) ?: loadTronEvents(tronWalletAddress, tonProofToken)
-            ?: emptyList()
+        val events = loadTronEvents(tronWalletAddress, tonProofToken) ?: return emptyList()
 
         val sentTransactions =
             events.filter { it.from == tronWalletAddress && it.to != tronWalletAddress }
@@ -70,17 +103,6 @@ class EventsRepository(
 
     suspend fun getSingle(eventId: String, testnet: Boolean) = remoteDataSource.getSingle(eventId, testnet)
 
-    suspend fun getLast(
-        accountId: String,
-        testnet: Boolean
-    ): AccountEvents? = withContext(Dispatchers.IO) {
-        try {
-            remoteDataSource.get(accountId, testnet, limit = 2)
-        } catch (e: Throwable) {
-            null
-        }
-    }
-
     suspend fun loadForToken(
         tokenAddress: String,
         accountId: String,
@@ -101,37 +123,21 @@ class EventsRepository(
     suspend fun loadTronEvents(
         tronWalletAddress: String,
         tonProofToken: String,
-        beforeLt: Long? = null,
+        maxTimestamp: Long? = null,
         limit: Int = 30
     ) = withContext(Dispatchers.IO) {
         try {
-            val events = api.tron.getTronHistory(tronWalletAddress, tonProofToken, limit, beforeLt)
+            val events = api.tron.getTronHistory(tronWalletAddress, tonProofToken, limit, maxTimestamp?.let { Timestamp.from(it) })
 
-            if (beforeLt == null) {
+            if (maxTimestamp == null) {
                 localDataSource.setTronEvents(tronWalletAddress, events)
             }
 
             events
         } catch (e: Throwable) {
-            Log.d("API", "loadTronEvents: error", e)
             null
         }
     }
-
-    fun getFlow(
-        accountId: String,
-        testnet: Boolean
-    ) = flow {
-        try {
-            val local = getLocal(accountId, testnet)
-            if (local != null && local.events.isNotEmpty()) {
-                emit(AccountEventsResult(cache = true, events = local))
-            }
-
-            val remote = getRemote(accountId, testnet) ?: return@flow
-            emit(AccountEventsResult(cache = false, events = remote))
-        } catch (ignored: Throwable) { }
-    }.cancellable()
 
     suspend fun get(
         accountId: String,
@@ -175,6 +181,9 @@ class EventsRepository(
     ) = withContext(Dispatchers.IO) {
         val events = getSingle(eventId, testnet) ?: return@withContext
         localDataSource.addSpam(accountId, testnet, events)
+        _hiddenTxIdsFlow.update {
+            it.plus(eventId)
+        }
     }
 
     suspend fun removeSpam(
@@ -183,6 +192,9 @@ class EventsRepository(
         eventId: String,
     ) = withContext(Dispatchers.IO) {
         localDataSource.removeSpam(accountId, testnet, eventId)
+        _hiddenTxIdsFlow.update {
+            it.minus(eventId)
+        }
     }
 
     suspend fun getRemoteSpam(
@@ -210,12 +222,6 @@ class EventsRepository(
         val spamList = list.filter { it.isScam }
         localDataSource.addSpam(accountId, testnet, spamList)
         spamList
-    }
-
-    suspend fun getTronLocal(
-        tronWalletAddress: String,
-    ): List<TronEventEntity>? = withContext(Dispatchers.IO) {
-        localDataSource.getTronEvents(tronWalletAddress)
     }
 
     suspend fun getLocal(

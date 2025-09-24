@@ -211,7 +211,7 @@ class WalletViewModel(
                         battery = State.Battery(
                             balance = batteryBalance,
                             beta = api.config.batteryBeta,
-                            disabled = (api.config.flags.disableBattery && batteryBalance.value == BigDecimal.ZERO),
+                            disabled = (api.config.flags.disableBattery && batteryBalance.value == BigDecimal.ZERO || !wallet.hasPrivateKey),
                             viewed = settingsRepository.batteryViewed,
                         ),
                         lt = currentLt,

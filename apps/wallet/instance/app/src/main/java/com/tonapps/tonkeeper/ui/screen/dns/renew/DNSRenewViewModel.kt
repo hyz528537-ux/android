@@ -128,7 +128,7 @@ class DNSRenewViewModel(
             }
 
             return RawMessageEntity.of(
-                amount = Coins.of("0.02").toLong(),
+                amount = Coins.of("0.02").toBigInteger(),
                 address = address,
                 payload = payload,
             )

@@ -39,7 +39,7 @@ class EditNameScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         editorView.emoji = screenContext.wallet.label.emoji
         editorView.color = screenContext.wallet.label.color
 
-        view.doKeyboardAnimation { offset, progress, _ ->
+        view.doKeyboardAnimation { offset, progress, showKeyboard ->
             editorView.setBottomOffset(offset, progress)
         }
     }

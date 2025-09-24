@@ -8,6 +8,7 @@ import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.core.currency.WalletCurrency
+import com.tonapps.wallet.data.events.ActionType
 import com.tonapps.wallet.data.rates.RatesRepository
 import io.tonapi.models.Action
 import io.tonapi.models.JettonSwapAction
@@ -59,11 +60,11 @@ val ActionType.iconRes: Int
         ActionType.Send, ActionType.NftSend, ActionType.AuctionBid -> UIKitIcon.ic_tray_arrow_up_28
         ActionType.CallContract, ActionType.DepositStake, ActionType.Unknown -> UIKitIcon.ic_gear_28
         ActionType.Swap -> R.drawable.ic_swap_horizontal_alternative_28
-        ActionType.DeployContract, ActionType.WithdrawStakeRequest, ActionType.WithdrawStake -> UIKitIcon.ic_donemark_28
+        ActionType.SetSignatureAllowed, ActionType.AddExtension, ActionType.DeployContract, ActionType.WithdrawStakeRequest, ActionType.WithdrawStake -> UIKitIcon.ic_donemark_28
         ActionType.DomainRenewal -> R.drawable.ic_return_28
         ActionType.NftPurchase, ActionType.Purchase -> R.drawable.ic_shopping_bag_28
-        ActionType.JettonBurn -> R.drawable.ic_fire_28
-        ActionType.UnSubscribe -> R.drawable.ic_xmark_28
+        ActionType.JettonBurn, ActionType.GasRelay -> R.drawable.ic_fire_28
+        ActionType.SetSignatureNotAllowed, ActionType.RemoveExtension, ActionType.UnSubscribe -> R.drawable.ic_xmark_28
         ActionType.Subscribe -> R.drawable.ic_bell_28
         ActionType.Fee, ActionType.Refund -> R.drawable.ic_ton_28
     }
@@ -90,4 +91,9 @@ val ActionType.nameRes: Int
         ActionType.Fee -> Localization.network_fee
         ActionType.Refund -> Localization.refund
         ActionType.Purchase -> Localization.purchase
+        ActionType.GasRelay -> Localization.battery
+        ActionType.AddExtension -> Localization.added_extension
+        ActionType.RemoveExtension -> Localization.removed_extension
+        ActionType.SetSignatureAllowed -> Localization.signature_allowed
+        ActionType.SetSignatureNotAllowed -> Localization.signature_not_allowed
     }

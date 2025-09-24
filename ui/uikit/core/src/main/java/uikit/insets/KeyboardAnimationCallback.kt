@@ -57,14 +57,18 @@ abstract class KeyboardAnimationCallback(
 
         if (lastOffset == offset) {
             if (offset == initOffset) {
-                val hide = 0 > (offset - lastOffset)
+                val hide = navigationOffset >= offset || 0 > (offset - lastOffset)
                 onKeyboardOffsetChanged(offset, 0f, !hide)
             }
             return
         }
 
-        val hide = 0 > (offset - lastOffset)
-        val progress = if (hide) 1 - fraction else fraction
+        val hide = navigationOffset >= offset || 0 > (offset - lastOffset)
+        val progress = when {
+            navigationOffset >= offset -> 0f
+            hide -> 1 - fraction
+            else -> fraction
+        }
         onKeyboardOffsetChanged(offset, progress, !hide)
         lastOffset = offset
     }

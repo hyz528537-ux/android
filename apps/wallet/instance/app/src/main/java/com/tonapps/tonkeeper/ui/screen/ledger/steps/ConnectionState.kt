@@ -1,6 +1,6 @@
 package com.tonapps.tonkeeper.ui.screen.ledger.steps
 
-import com.ledger.live.ble.model.BleError
+import com.tonapps.ledger.ble.model.BleError
 
 sealed class ConnectionState {
     data object Idle: ConnectionState()

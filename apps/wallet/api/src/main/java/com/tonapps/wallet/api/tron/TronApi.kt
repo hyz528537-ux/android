@@ -1,5 +1,7 @@
 package com.tonapps.wallet.api.tron
 
+import android.net.Uri
+import androidx.collection.arrayMapOf
 import androidx.core.net.toUri
 import com.tonapps.blockchain.tron.TronTransaction
 import com.tonapps.blockchain.tron.TronTransfer
@@ -12,6 +14,7 @@ import com.tonapps.network.postJSON
 import com.tonapps.wallet.api.entity.BalanceEntity
 import com.tonapps.wallet.api.entity.ConfigEntity
 import com.tonapps.wallet.api.entity.TokenEntity
+import com.tonapps.wallet.api.entity.value.Timestamp
 import com.tonapps.wallet.api.tron.entity.TronEstimationEntity
 import com.tonapps.wallet.api.tron.entity.TronEventEntity
 import com.tonapps.wallet.api.tron.entity.TronResourcesEntity
@@ -19,6 +22,7 @@ import com.tonapps.wallet.api.withRetry
 import io.batteryapi.apis.DefaultApi
 import io.batteryapi.models.TronSendRequest
 import io.ktor.util.encodeBase64
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import okhttp3.OkHttpClient
@@ -39,13 +43,33 @@ class TronApi(
 
     private var safetyMargin: Double? = null
 
+    private val tronApiKey: String?
+        get() = config.tronApiKey?.ifBlank { null }
+
+    private fun headers() = arrayMapOf<String, String>().apply {
+        tronApiKey?.let {
+            put("TRON-PRO-API-KEY", it)
+        }
+    }
+
+    private fun post(
+        uri: Uri,
+        body: JsonObject
+    ) = tronRetry {
+        okHttpClient.postJSON(uri.toString(), body.toString(), headers())
+    } ?: throw Exception("tron api failed")
+
+    private fun get(uri: Uri) = tronRetry {
+        okHttpClient.get(uri.toString(), headers())
+    } ?: throw Exception("tron api failed")
+
     fun getTronUsdtBalance(
         tronAddress: String,
     ): BalanceEntity {
         try {
             val builder = config.tronApiUrl.toUri().buildUpon()
                 .appendEncodedPath("wallet/triggersmartcontract")
-            val url = builder.build().toString()
+            val url = builder.build()
 
             val requestBody = buildJsonObject {
                 put("owner_address", tronAddress.tronHex())
@@ -54,10 +78,8 @@ class TronApi(
                 put("parameter", tronAddress.encodeTronAddress())
             }
 
-            val response = withRetry {
-                okHttpClient.postJSON(url, requestBody.toString())
-            } ?: throw Exception("tron api failed")
-            val body = response.body?.string() ?: throw Exception("empty response")
+            val response = post(url, requestBody)
+            val body = response.body.string()
             val json = JSONObject(body)
 
             val constantResultArray = json.optJSONArray("constant_result")
@@ -78,36 +100,36 @@ class TronApi(
         }
     }
 
-
     private fun getTronBlockchainHistory(
         tronAddress: String,
         limit: Int,
-        beforeLt: Long? = null
+        beforeTimestamp: Timestamp?,
+        afterTimestamp: Timestamp?,
     ): List<TronEventEntity> {
         val builder = config.tronApiUrl.toUri().buildUpon()
             .appendEncodedPath("v1/accounts/$tronAddress/transactions/trc20")
             .appendQueryParameter("limit", limit.toString())
-        beforeLt?.let {
-            builder.appendQueryParameter("max_timestamp", (it * 1000 - 1).toString())
+        beforeTimestamp?.toLong()?.let {
+            builder.appendQueryParameter("max_timestamp", (it - 1).toString())
         }
-        val url = builder.build().toString()
+        afterTimestamp?.toLong()?.let {
+            builder.appendQueryParameter("min_timestamp", it.toString())
+        }
 
-        val body = withRetry {
-            okHttpClient.get(url)
-        } ?: throw Exception("tron api failed")
+        val body = get(builder.build())
         val json = JSONObject(body).getJSONArray("data")
-        val events = json.map { TronEventEntity(it) }
-
-        return events
+        return json.map { TronEventEntity(it) }
     }
 
     private fun getBatteryTransfersHistory(
         batteryAuthToken: String,
         limit: Int,
-        beforeLt: Long? = null
+        beforeTimestamp: Timestamp?,
     ): List<TronEventEntity> {
-        val maxTimestamp = beforeLt?.let { it * 1000 - 1 }
-        val response = batteryApi.getTronTransactions(batteryAuthToken, limit, maxTimestamp);
+        val maxTimestamp = beforeTimestamp?.toLong()?.let { it - 1 }
+        val response = withRetry {
+            batteryApi.getTronTransactions(batteryAuthToken, limit, maxTimestamp)
+        } ?: return emptyList()
 
         return response.transactions.filter { it.txid.isNotEmpty() }.map { TronEventEntity(it) }
     }
@@ -116,12 +138,14 @@ class TronApi(
         tronAddress: String,
         tonProofToken: String,
         limit: Int,
-        beforeLt: Long?,
+        beforeTimestamp: Timestamp?,
+        afterTimestamp: Timestamp? = null,
     ): List<TronEventEntity> {
-        val blockchainEvents = getTronBlockchainHistory(tronAddress, limit, beforeLt)
-        val batteryEvents = getBatteryTransfersHistory(tonProofToken, limit, beforeLt)
+        val blockchainEvents = getTronBlockchainHistory(tronAddress, limit, beforeTimestamp, afterTimestamp)
+        val batteryEvents = getBatteryTransfersHistory(tonProofToken, limit, beforeTimestamp)
 
-        return (batteryEvents + blockchainEvents).distinctBy { it.transactionHash }
+        return (batteryEvents + blockchainEvents)
+            .distinctBy { it.transactionHash }
             .sortedByDescending { it.timestamp }
     }
 
@@ -129,7 +153,7 @@ class TronApi(
         val builder =
             config.tronApiUrl.toUri().buildUpon()
                 .appendEncodedPath("wallet/triggerconstantcontract")
-        val url = builder.build().toString()
+        val url = builder.build()
 
         val requestBody = buildJsonObject {
             put("owner_address", transfer.from)
@@ -139,10 +163,8 @@ class TronApi(
             put("visible", true)
         }
 
-        val response = withRetry {
-            okHttpClient.postJSON(url, requestBody.toString())
-        } ?: throw Exception("tron api failed")
-        val body = response.body?.string() ?: throw Exception("empty response")
+        val response = post(url, requestBody)
+        val body = response.body.string()
         val json = JSONObject(body)
 
         val resultObj = json.optJSONObject("result")
@@ -183,11 +205,8 @@ class TronApi(
     private fun getAccountBandwidth(tronAddress: String): Int {
         val builder =
             config.tronApiUrl.toUri().buildUpon().appendEncodedPath("v1/accounts/$tronAddress")
-        val url = builder.build().toString()
 
-        val body = withRetry {
-            okHttpClient.get(url)
-        } ?: throw Exception("tron api failed")
+        val body = get(builder.build())
         val json = JSONObject(body)
 
         val dataArray = json.optJSONArray("data")
@@ -237,7 +256,7 @@ class TronApi(
     fun buildSmartContractTransaction(transfer: TronTransfer): TronTransaction {
         val builder = config.tronApiUrl.toUri().buildUpon()
             .appendEncodedPath("wallet/triggersmartcontract")
-        val url = builder.build().toString()
+        val url = builder.build()
 
         val requestBody = buildJsonObject {
             put("contract_address", transfer.contractAddress.tronHex())
@@ -248,13 +267,17 @@ class TronApi(
             put("fee_limit", 150000000)
         }
 
-        val response = withRetry {
-            okHttpClient.postJSON(url, requestBody.toString())
-        } ?: throw Exception("tron api failed")
-        val body = response.body?.string() ?: throw Exception("empty response")
+        val response = post(url, requestBody)
+        val body = response.body.string()
         val json = JSONObject(body)
 
         return TronTransaction(json = json.getJSONObject("transaction"))
+    }
+
+    private fun <R> tronRetry(retryBlock: () -> R) = withRetry(
+        delay = (1000L..3000L).random()
+    ) {
+        retryBlock()
     }
 
     fun activateWallet(

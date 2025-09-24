@@ -12,5 +12,5 @@ data class DeviceModel(
     val usbOnly: Boolean,
     val memorySize: Int,
     val masks: List<Int>,
-    val bluetoothSpec: List<BluetoothSpec>? = null
+    val bluetoothSpec: BluetoothSpec? = null
 ): Parcelable

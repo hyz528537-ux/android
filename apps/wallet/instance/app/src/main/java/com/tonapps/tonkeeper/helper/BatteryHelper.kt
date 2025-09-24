@@ -47,16 +47,18 @@ object BatteryHelper {
         emulationUseCase: EmulationUseCase,
         accountRepository: AccountRepository,
         batteryRepository: BatteryRepository,
-        api: API
+        params: Boolean
     ): Emulated? {
+        val chargesBalance = getBatteryCharges(wallet, accountRepository, batteryRepository)
+        val batteryConfig = batteryRepository.getConfig(wallet.testnet)
+
         val emulated = emulationUseCase(
             message = message,
             useBattery = true,
-            forceRelayer = true,
-            params = true
+            forceRelayer = chargesBalance > 0,
+            params = params
         )
-        val chargesBalance = getBatteryCharges(wallet, accountRepository, batteryRepository)
-        val batteryConfig = batteryRepository.getConfig(wallet.testnet)
+
         val charges = BatteryMapper.calculateChargesAmount(
             emulated.extra.value.value,
             batteryConfig.chargeCost

@@ -15,7 +15,7 @@ import com.tonapps.tonkeeper.ui.screen.onramp.picker.currency.main.list.Item
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.list.ListCell
 import com.tonapps.wallet.api.API
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.core.currency.WalletCurrency
@@ -175,7 +175,7 @@ class OnRampPickerViewModel(
     }
 
     private fun fiatMethodIcons(keys: List<String>): List<Uri> {
-        val icons = getCurrencyIcons(keys, settingsRepository.country.equals("ru", ignoreCase = true))
+        val icons = getCurrencyIcons(keys, environment.country.equals("ru", ignoreCase = true))
         return icons.map { getUriForResourceId(it) }
     }
 

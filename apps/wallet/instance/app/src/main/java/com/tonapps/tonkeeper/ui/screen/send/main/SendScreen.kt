@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.text.method.LinkMovementMethod
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -13,20 +12,22 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
+import com.tonapps.blockchain.tron.isValidTronAddress
 import com.tonapps.extensions.getParcelableCompat
 import com.tonapps.extensions.getUserMessage
-import com.tonapps.extensions.isPositive
 import com.tonapps.extensions.shortTron
 import com.tonapps.extensions.uri
+import com.tonapps.icu.Coins
+import com.tonapps.icu.Coins.Companion.isPositive
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.core.Amount
-import com.tonapps.tonkeeper.core.entities.WalletPurchaseMethodEntity
 import com.tonapps.tonkeeper.extensions.clipboardText
 import com.tonapps.tonkeeper.extensions.copyToClipboard
 import com.tonapps.tonkeeper.extensions.getTitle
 import com.tonapps.tonkeeper.extensions.hideKeyboard
 import com.tonapps.tonkeeper.helper.BrowserHelper
+import com.tonapps.tonkeeper.koin.serverConfig
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.popup.ActionSheet
 import com.tonapps.tonkeeper.ui.base.WalletContextScreen
@@ -52,7 +53,7 @@ import com.tonapps.uikit.color.fieldErrorBorderColor
 import com.tonapps.uikit.color.textAccentColor
 import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.uikit.icon.UIKitIcon
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.collectibles.entities.NftEntity
@@ -76,8 +77,8 @@ import uikit.extensions.getDimensionPixelSize
 import uikit.extensions.hideKeyboard
 import uikit.extensions.setEndDrawable
 import uikit.span.ClickableSpanCompat
-import uikit.widget.ColumnLayout
 import uikit.widget.AsyncImageView
+import uikit.widget.ColumnLayout
 import uikit.widget.HeaderView
 import uikit.widget.InputView
 import uikit.widget.LoadableButton
@@ -280,9 +281,13 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
         collectFlow(viewModel.destinationFlow) { destination ->
             when (destination) {
                 is SendDestination.TokenError -> {
-                    collectFlow(viewModel.swapMethodFlow) {
-                        applyTokenError(destination, it)
-                    }
+                    applyTokenError(destination)
+                }
+                is SendDestination.NotFound -> {
+                    applyInvalidAddressError()
+                }
+                is SendDestination.Scam -> {
+                    applyScamAddressError()
                 }
 
                 else -> {
@@ -326,7 +331,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
 
         initializeArgs(
             args.targetAddress,
-            args.amountNano,
+            args.amount,
             args.text,
             args.tokenAddress,
             args.bin,
@@ -342,10 +347,17 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
         return super.onBackPressed()
     }
 
-    private fun applyTokenError(
-        error: SendDestination.TokenError,
-        swapMethod: WalletPurchaseMethodEntity?
-    ) {
+    private fun applyInvalidAddressError() {
+        addressErrorView.setText(Localization.invalid_address)
+        addressErrorView.visibility = View.VISIBLE
+    }
+
+    private fun applyScamAddressError() {
+        addressErrorView.setText(Localization.scam_address_error)
+        addressErrorView.visibility = View.VISIBLE
+    }
+
+    private fun applyTokenError(error: SendDestination.TokenError) {
         val addressBlockchainRes = if (error.addressBlockchain == Blockchain.TON) {
             Localization.ton
         } else {
@@ -361,7 +373,9 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
             Localization.send_wrong_blockchain,
             getString(addressBlockchainRes),
         )
-        val swapTitle = swapMethod?.method?.title ?: ""
+
+        val swapTitle = context?.serverConfig?.tronSwapTitle ?: ""
+
         val swapText = getString(
             Localization.send_wrong_blockchain_swap,
             getString(selectedBlockchainRes),
@@ -371,7 +385,9 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
 
         val isUsdt = error.selectedToken.isTrc20 || error.selectedToken.isUsdt
 
-        if (swapMethod != null && isUsdt && !viewModel.isTronDisabled) {
+        val swapUrl = context?.serverConfig?.tronSwapUrl
+
+        if (swapUrl != null && isUsdt && !viewModel.isTronDisabled) {
             val spannableString = SpannableString("$errorText $swapText")
             val start = spannableString.indexOf(swapTitle)
             spannableString.setSpan(
@@ -383,7 +399,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
             addressErrorView.setTextColor(requireContext().textSecondaryColor)
             addressErrorView.text = spannableString
             addressErrorView.setOnClickListener {
-                BrowserHelper.openPurchase(requireContext(), swapMethod)
+                BrowserHelper.open(requireContext(), swapUrl)
             }
         } else {
             addressErrorView.setTextColor(requireContext().accentRedColor)
@@ -431,7 +447,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
 
     fun initializeArgs(
         targetAddress: String?,
-        amountNano: Long?,
+        amount: Coins?,
         text: String?,
         tokenAddress: String?,
         bin: Cell? = null,
@@ -439,7 +455,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
     ) {
         viewModel.initializeTokenAndAmount(
             tokenAddress = tokenAddress,
-            amountNano = amountNano,
+            amount = amount,
             type = type
         )
 
@@ -449,14 +465,14 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
 
         if (targetAddress != null) {
             lifecycleScope.launch(Dispatchers.Main) {
-                if (viewModel.isNeedMemoAddress(targetAddress)) {
+                if (viewModel.isNeedMemoAddress(targetAddress) || targetAddress.isValidTronAddress()) {
                     showReviewState()
                     commentInput.focus()
-                } else if (type == Type.Direct && amountNano.isPositive()) {
+                } else if (type == Type.Direct && amount.isPositive()) {
                     showDirectState()
                 }
             }
-        } else if (type == Type.Direct && amountNano.isPositive()) {
+        } else if (type == Type.Direct && amount.isPositive()) {
             showDirectState()
         } else {
             showReviewState()
@@ -906,7 +922,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
         class Builder(val wallet: WalletEntity) {
             private var targetAddress: String? = null
             private var tokenAddress: String? = null
-            private var amountNano: Long? = null
+            private var amount: Coins? = null
             private var text: String? = null
             private var nftAddress: String? = null
             private var type: Type = Type.Default
@@ -920,8 +936,8 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
                 this.tokenAddress = tokenAddress
             }
 
-            fun setAmountNano(amountNano: Long?) = apply {
-                this.amountNano = amountNano
+            fun setAmount(amount: Coins?) = apply {
+                this.amount = amount
             }
 
             fun setText(text: String?) = apply {
@@ -944,7 +960,7 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
                 wallet,
                 targetAddress,
                 tokenAddress,
-                amountNano,
+                amount,
                 text,
                 nftAddress,
                 type,
@@ -960,17 +976,16 @@ class SendScreen(wallet: WalletEntity) : WalletContextScreen(R.layout.fragment_s
             wallet: WalletEntity,
             targetAddress: String? = null,
             tokenAddress: String? = null,
-            amountNano: Long? = null,
+            amount: Coins? = null,
             text: String? = null,
             nftAddress: String? = null,
             type: Type,
             bin: Cell? = null
         ): SendScreen {
-            Log.d("SendScreen", "newInstance: $targetAddress, $tokenAddress, $amountNano, $text")
             val args = SendArgs(
                 targetAddress = targetAddress,
                 tokenAddress = tokenAddress,
-                amountNano = amountNano,
+                amount = amount,
                 text = text, nftAddress = nftAddress ?: "",
                 type = type,
                 bin = bin

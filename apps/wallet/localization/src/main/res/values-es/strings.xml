@@ -13,8 +13,9 @@
     <string name="renew_dns_done">Dominio extendido por 1 año</string>
     <string name="staking_unstake_cycle">La solicitud de cancelación de participación se procesará después del final del ciclo de validación en %1$s</string>
     <string name="send_transaction_scroll">Verifique todos los detalles para confirmar</string>
-    <string name="send_transaction_detail">El valor total de los tokens que se enviarán desde su billetera. Los reembolsos no están incluidos en el valor total.</string>
-    <string name="send_transaction_detail_nft">El valor total de los tokens, sin incluir el costo de los NFT, que se enviarán desde su billetera. Los reembolsos no están incluidos en el valor total.</string>
+    <string name="send_transaction_detail">El valor total de los tokens que envías.</string>
+    <string name="send_transaction_detail_nft">El valor total de los tokens que envías. También se enviará el NFT.</string>
+    <string name="send_transaction_detail_nfts">El valor total de los tokens que envías. También se enviarán los NFT.</string>
     <string name="keystone_sign_step1">Escanee el código QR con Keystone</string>
     <string name="keystone_sign_step2">Confirme su transacción en Keystone</string>
     <string name="keystone_sign_step3">Escanee el código QR de la transacción firmada desde Keystone</string>
@@ -607,5 +608,10 @@
     <string name="deposit_and_stake">Depositar y hacer staking</string>
     <string name="ethena_check_eligibility">Comprobar estado</string>
     <string name="about_ethena">Acerca de Ethena</string>
+    <string name="swap_disclaimer">Servicio proporcionado por %1$s\n%2$s · %3$s</string>
+    <string name="terms_of_use">Condiciones de uso</string>
+    <string name="privacy_policy">Política de privacidad</string>
+    <string name="invalid_address">Dirección de billetera no válida.</string>
+    <string name="scam_address_error">Las transferencias a esta dirección no están permitidas.</string>
 
 </resources>

@@ -3,6 +3,7 @@ package com.tonapps.tonkeeper.ui.screen.name.base
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -34,6 +35,7 @@ import uikit.extensions.runAnimation
 import uikit.extensions.withAlpha
 import uikit.widget.InputView
 import uikit.widget.LoaderView
+import androidx.core.view.isGone
 
 abstract class NameFragment(mode: NameMode): BaseWalletScreen<ScreenContext.None>(R.layout.fragment_name, ScreenContext.None) {
 
@@ -133,7 +135,7 @@ abstract class NameFragment(mode: NameMode): BaseWalletScreen<ScreenContext.None
         overView.alpha = alpha
         if (overView.alpha == 0f) {
             overView.visibility = View.GONE
-        } else if (overView.visibility == View.GONE) {
+        } else if (overView.isGone) {
             overView.visibility = View.VISIBLE
             stopScroll()
         }

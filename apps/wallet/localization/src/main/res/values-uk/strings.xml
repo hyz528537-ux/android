@@ -13,8 +13,9 @@
     <string name="renew_dns_done">Домен продовжено на 1 рік</string>
     <string name="staking_unstake_cycle">Запит на скасування ставки буде оброблено після завершення циклу перевірки в %1$s</string>
     <string name="send_transaction_scroll">Перевірте всі деталі для підтвердження</string>
-    <string name="send_transaction_detail">Загальна вартість токенів, які будуть надіслані з вашого гаманця. Відшкодування не входять до загальної вартості.</string>
-    <string name="send_transaction_detail_nft">Загальна вартість токенів, за винятком вартості NFT, які будуть надіслані з вашого гаманця. Відшкодування не входять до загальної вартості.</string>
+    <string name="send_transaction_detail">Загальна вартість токенів, які ви надсилаєте.</string>
+    <string name="send_transaction_detail_nft">Загальна вартість токенів, які ви надсилаєте. NFT також буде надіслано.</string>
+    <string name="send_transaction_detail_nfts">Загальна вартість токенів, які ви надсилаєте. NFT також будуть надіслані.</string>
     <string name="keystone_sign_step1">Відскануйте QR-код за допомогою Keystone</string>
     <string name="keystone_sign_step2">Підтвердьте свою транзакцію в Keystone</string>
     <string name="keystone_sign_step3">Відскануйте QR-код підписаної транзакції з Keystone</string>
@@ -617,5 +618,10 @@
     <string name="deposit_and_stake">Депозит і стейкінг</string>
     <string name="ethena_check_eligibility">Перевірити статус</string>
     <string name="about_ethena">Про Ethena</string>
+    <string name="swap_disclaimer">Послуга надається %1$s\n%2$s · %3$s</string>
+    <string name="terms_of_use">Умови</string>
+    <string name="privacy_policy">Політика</string>
+    <string name="invalid_address">Неправильна адреса гаманця.</string>
+    <string name="scam_address_error">Перекази на цю адресу не підтримуються.</string>
 
 </resources>

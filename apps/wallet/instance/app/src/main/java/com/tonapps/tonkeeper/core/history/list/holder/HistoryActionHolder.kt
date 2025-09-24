@@ -16,7 +16,6 @@ import androidx.core.net.toUri
 import com.tonapps.extensions.logError
 import com.tonapps.extensions.max24
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
-import com.tonapps.tonkeeper.core.history.ActionType
 import com.tonapps.tonkeeper.core.history.HistoryHelper
 import com.tonapps.tonkeeper.core.history.iconRes
 import com.tonapps.tonkeeper.core.history.list.item.HistoryItem
@@ -36,11 +35,11 @@ import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.uikit.color.textTertiaryColor
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
+import com.tonapps.wallet.data.events.ActionType
 import com.tonapps.wallet.localization.Localization
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import uikit.compose.components.ResizeOptions
 import uikit.extensions.clearDrawables
 import uikit.extensions.dp
 import uikit.extensions.drawable
@@ -50,6 +49,7 @@ import uikit.navigation.Navigation
 import uikit.navigation.Navigation.Companion.navigation
 import uikit.widget.AsyncImageView
 import uikit.widget.LoaderView
+import uikit.widget.ResizeOptions
 
 class HistoryActionHolder(
     parent: ViewGroup,

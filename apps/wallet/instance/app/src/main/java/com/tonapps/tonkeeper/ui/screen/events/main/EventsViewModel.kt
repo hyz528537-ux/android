@@ -17,6 +17,7 @@ import com.tonapps.tonkeeper.manager.tx.TransactionManager
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.events.main.filters.FilterItem
 import com.tonapps.wallet.api.API
+import com.tonapps.wallet.api.entity.value.Timestamp
 import com.tonapps.wallet.api.tron.entity.TronEventEntity
 import com.tonapps.wallet.data.account.AccountRepository
 import com.tonapps.wallet.data.account.entities.WalletEntity
@@ -293,8 +294,7 @@ class EventsViewModel(
 
             if (isFirstLoad.get()) {
                 val cached = cache().toTypedArray()
-                _tronEventsFlow.value =
-                    tronAddress?.let { eventsRepository.getTronLocal(tronAddress) } ?: emptyList()
+                _tronEventsFlow.value = emptyList()
                 if (cached.isNotEmpty()) {
                     _eventsFlow.value = cached
                 }
@@ -362,7 +362,7 @@ class EventsViewModel(
             val tronLastLt = getTronLastLt()
             if (tronLastLt != null) {
                 val tronEvents = eventsRepository.loadTronEvents(
-                    tronAddress, tonProofToken, beforeLt = tronLastLt
+                    tronAddress, tonProofToken, maxTimestamp = tronLastLt.value
                 ) ?: throw IllegalStateException("Failed to load tron events")
 
                 _tronEventsFlow.update { currentEvents ->
@@ -405,9 +405,9 @@ class EventsViewModel(
         _triggerFlow.emit(Unit)
     }
 
-    private fun getTronLastLt(): Long? {
+    private fun getTronLastLt(): Timestamp? {
         val lt = _tronEventsFlow.value.lastOrNull { !it.inProgress }?.timestamp ?: return null
-        if (0 >= lt) {
+        if (Timestamp.zero >= lt) {
             return null
         }
         return lt

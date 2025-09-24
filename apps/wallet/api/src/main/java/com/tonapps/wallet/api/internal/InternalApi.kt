@@ -1,7 +1,7 @@
 package com.tonapps.wallet.api.internal
 
 import android.content.Context
-import android.util.ArrayMap
+import androidx.collection.ArrayMap
 import androidx.core.net.toUri
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tonapps.extensions.isDebug
@@ -53,10 +53,10 @@ internal class InternalApi(
         queryParams: Map<String, String> = emptyMap(),
         bootFallback: Boolean = false,
     ): String = runBlocking {
-        val builder = if (boot) {
-            "https://boot.tonkeeper.com".toUri().buildUpon()
-        } else if (bootFallback) {
+        val builder = if (bootFallback) {
             "https://block.tonkeeper.com".toUri().buildUpon()
+        } else if (boot) {
+            "https://boot.tonkeeper.com".toUri().buildUpon()
         } else {
             _apiEndpoint.buildUpon()
         }
@@ -102,7 +102,9 @@ internal class InternalApi(
     }
 
     private fun swapEndpoint(path: String): String {
-        val builder = "https://swap.tonkeeper.com".toUri().buildUpon()
+        // val host = "dev-swap.tonkeeper.com"
+        val host = "swap.tonkeeper.com"
+        val builder = "https://$host".toUri().buildUpon()
             .appendEncodedPath(path)
         _deviceCountry?.let {
             builder.appendQueryParameter("device_country_code", _deviceCountry)
@@ -123,7 +125,7 @@ internal class InternalApi(
         okHttpClient.get(swapEndpoint("v2/onramp/currencies"))
     }
 
-    fun getOnRampPaymentMethods() = withRetry {
+    fun getOnRampPaymentMethods(currency: String) = withRetry {
         okHttpClient.get(swapEndpoint("v2/onramp/payment_methods"))
     }
 

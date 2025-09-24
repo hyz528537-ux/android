@@ -13,8 +13,9 @@
     <string name="renew_dns_done">Alan adı 1 yıl uzatıldı</string>
     <string name="staking_unstake_cycle">Paydan çıkarma isteği, %1$s\'deki doğrulama döngüsünün bitiminden sonra işlenecektir.</string>
     <string name="send_transaction_scroll">Onaylamak için tüm ayrıntıları kontrol edin</string>
-    <string name="send_transaction_detail">Cüzdanınızdan gönderilecek tokenların toplam değeri. İadeler toplam değere dahil değildir.</string>
-    <string name="send_transaction_detail_nft">Cüzdanınızdan gönderilecek tokenların toplam değeri, NFT maliyeti hariç. Geri ödemeler toplam değere dahil değildir.</string>
+    <string name="send_transaction_detail">Gönderdiğiniz tokenların toplam değeri.</string>
+    <string name="send_transaction_detail_nft">Gönderdiğiniz tokenların toplam değeri. NFT de gönderilecektir.</string>
+    <string name="send_transaction_detail_nfts">Gönderdiğiniz tokenların toplam değeri. NFT\'ler de gönderilecektir.</string>
     <string name="keystone_sign_step1">QR kodunu Keystone ile tarayın</string>
     <string name="keystone_sign_step2">İşleminizi Keystone\'da onaylayın</string>
     <string name="keystone_sign_step3">İmzalı işlem QR kodunu Keystone\'dan tarayın</string>
@@ -607,5 +608,10 @@
     <string name="deposit_and_stake">Yatır &amp; Stake et</string>
     <string name="ethena_check_eligibility">Durumu Kontrol Et</string>
     <string name="about_ethena">Ethena Hakkında</string>
+    <string name="swap_disclaimer">Hizmet %1$s tarafından sağlandı \n%2$s · %3$s</string>
+    <string name="terms_of_use">Kullanım Şartları</string>
+    <string name="privacy_policy">Gizlilik Politikası</string>
+    <string name="invalid_address">Geçersiz cüzdan adresi.</string>
+    <string name="scam_address_error">Bu adrese transferler desteklenmiyor.</string>
 
 </resources>

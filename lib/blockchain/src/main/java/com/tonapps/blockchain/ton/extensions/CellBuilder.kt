@@ -7,6 +7,9 @@ import org.ton.block.MsgAddressInt
 import org.ton.cell.Cell
 import org.ton.cell.CellBuilder
 import org.ton.cell.CellBuilder.Companion.beginCell
+import org.ton.contract.CellStringTlbConstructor
+import org.ton.tl.ByteString
+import org.ton.tl.ByteString.Companion.toByteString
 import org.ton.tlb.CellRef
 import org.ton.tlb.TlbCodec
 import org.ton.tlb.storeRef
@@ -37,8 +40,16 @@ fun CellBuilder.storeSeqAndValidUntil(seqNo: Int, validUntil: Long) = apply {
     storeUInt(seqNo, 32)
 }
 
+fun asCellRef(src: String?): Cell? {
+    if (src.isNullOrEmpty()) {
+        return null
+    }
+    return beginCell().storeUInt(0, 32).storeStringTail(src).endCell()
+}
+
 fun CellBuilder.storeStringTail(src: String) = apply {
-    writeBytes(src.toByteArray(), this)
+    val bytes = src.encodeToByteArray()
+    storeTlb(CellStringTlbConstructor, bytes.toByteString())
 }
 
 fun CellBuilder.storeMaybeStringTail(src: String?) = apply {

@@ -2,7 +2,7 @@ package com.tonapps.wallet.api
 
 import android.content.Context
 import android.net.Uri
-import android.util.ArrayMap
+import androidx.collection.ArrayMap
 import com.tonapps.blockchain.ton.contract.BaseWalletContract
 import com.tonapps.blockchain.ton.contract.WalletVersion
 import com.tonapps.blockchain.ton.extensions.EmptyPrivateKeyEd25519
@@ -30,10 +30,12 @@ import com.tonapps.wallet.api.entity.OnRampArgsEntity
 import com.tonapps.wallet.api.entity.OnRampMerchantEntity
 import com.tonapps.wallet.api.entity.SwapEntity
 import com.tonapps.wallet.api.entity.TokenEntity
+import com.tonapps.wallet.api.entity.value.Timestamp
 import com.tonapps.wallet.api.internal.ConfigRepository
 import com.tonapps.wallet.api.internal.InternalApi
 import com.tonapps.wallet.api.internal.SwapApi
 import com.tonapps.wallet.api.tron.TronApi
+import com.tonapps.wallet.api.tron.entity.TronEventEntity
 import io.Serializer
 import io.batteryapi.apis.DefaultApi
 import io.batteryapi.models.Balance
@@ -191,7 +193,7 @@ class API(
 
     fun getOnRampData() = internalApi.getOnRampData()
 
-    fun getOnRampPaymentMethods() = internalApi.getOnRampPaymentMethods()
+    fun getOnRampPaymentMethods(currency: String) = internalApi.getOnRampPaymentMethods(currency)
 
     fun getOnRampMerchants() = internalApi.getOnRampMerchants()
 
@@ -199,7 +201,7 @@ class API(
         swapApi.getSwapAssets()?.let(::JSONArray)
     }.getOrNull() ?: JSONArray()
 
-    @kotlin.Throws
+    @Throws
     suspend fun calculateOnRamp(args: OnRampArgsEntity): OnRampMerchantEntity.Data = withContext(Dispatchers.IO) {
         val data = internalApi.calculateOnRamp(args) ?: throw Exception("Empty response")
         val json = JSONObject(data)
@@ -323,6 +325,35 @@ class API(
             subjectOnly = true
         )
     }
+
+    fun fetchTonEvents(
+        accountId: String,
+        testnet: Boolean,
+        beforeLt: Long? = null,
+        beforeTimestamp: Timestamp? = null,
+        afterTimestamp: Timestamp? = null,
+        limit: Int,
+    ): List<AccountEvent> {
+        val response = withRetry {
+            accounts(testnet).getAccountEvents(
+                accountId = accountId,
+                beforeLt = beforeLt,
+                endDate = beforeTimestamp?.seconds(),
+                startDate = afterTimestamp?.seconds(),
+                limit = limit,
+                subjectOnly = true,
+            )
+        } ?: throw Exception("Failed to get events")
+        return response.events
+    }
+
+    fun fetchTronTransactions(
+        tronAddress: String,
+        tonProofToken: String,
+        beforeTimestamp: Timestamp? = null,
+        afterTimestamp: Timestamp? = null,
+        limit: Int
+    ) = tron.getTronHistory(tronAddress, tonProofToken, limit, beforeTimestamp, afterTimestamp)
 
     suspend fun getTransactionByHash(
         accountId: String,

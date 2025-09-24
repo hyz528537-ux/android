@@ -64,7 +64,10 @@ data class Subscription (
     val address: kotlin.String? = null,
 
     @SerialName(value = "beneficiary")
-    val beneficiary: AccountAddress? = null
+    val beneficiary: AccountAddress? = null,
+
+    @SerialName(value = "admin")
+    val admin: AccountAddress? = null
 
 ) {
 

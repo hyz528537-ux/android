@@ -37,6 +37,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -50,6 +51,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.single
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.io.IOException
@@ -97,18 +99,18 @@ class OnRampViewModel(
     private val _stepFlow = MutableStateFlow(UiState.Step.Input)
     val stepFlow = _stepFlow.asStateFlow()
 
+    private val twinInput = TwinInput(viewModelScope)
+
     private val onRampDataFlow = purchaseRepository.onRampDataFlow(environment)
 
-    private val paymentMerchantsFlow = environment.countryFlow.map { purchaseRepository.getPaymentMethods() }
+    private val paymentMerchantsFlow = twinInput.stateFlow
+        .map { it.sendCurrency.code.uppercase() }
+        .distinctUntilChanged()
+        .map(purchaseRepository::getPaymentMethods)
 
     private val paymentMethodsFlow = paymentMerchantsFlow.map { merchants ->
         merchants.map { it.methods }.flatten().distinctBy { it.type }.filter { it.type != "apple_pay" }
-    }.map { methods ->
-        methods.ifEmpty {
-            // If Zakhar breaks again
-            listOf(OnRamp.Method("https://tonkeeper.com/assets/onramp/payment_methods/card.png", "card"))
-        }
-    }
+    }.distinctUntilChanged()
 
     private val merchantsFlow = flow {
         emit(purchaseRepository.getMerchants())
@@ -127,8 +129,6 @@ class OnRampViewModel(
             merchants[widget.merchant]?.let { ProviderEntity(widget, it) }
         }
     }.flowOn(Dispatchers.IO)
-
-    private val twinInput = TwinInput(viewModelScope)
 
     val inputPrefixFlow = twinInput.stateFlow.map { it.focus.opposite }.distinctUntilChanged()
     val sendOutputCurrencyFlow = twinInput.stateFlow.map { it.sendCurrency }.distinctUntilChanged()
@@ -174,11 +174,17 @@ class OnRampViewModel(
         val value = Coins.ONE
         val firstLinePrefix = CurrencyFormatter.format(inputCurrencies.send.symbol, value, replaceSymbol = false)
         val firstRate = rates.convert(inputCurrencies.send, value, inputCurrencies.receive)
+        if (!firstRate.isPositive) {
+            return@combine UiState.RateFormatted(null, null)
+        }
         val firstLineSuffix = CurrencyFormatter.format(inputCurrencies.receive.symbol, firstRate, replaceSymbol = false)
         val firstLine = "$firstLinePrefix ≈ $firstLineSuffix"
 
         val secondLinePrefix = CurrencyFormatter.format(inputCurrencies.receive.symbol, value, replaceSymbol = false)
         val secondRate = rates.convert(inputCurrencies.receive, value, inputCurrencies.send)
+        if (!secondRate.isPositive) {
+            return@combine UiState.RateFormatted(null, null)
+        }
         val secondLineSuffix = CurrencyFormatter.format(inputCurrencies.send.symbol, secondRate, replaceSymbol = false)
         val secondLine = "$secondLinePrefix ≈ $secondLineSuffix"
         UiState.RateFormatted(firstLine, secondLine)
@@ -255,9 +261,22 @@ class OnRampViewModel(
     }.distinctUntilChanged()
 
     val purchaseType: String
-        get() = if (twinInput.state.sendCurrency.fiat) "buy" else "sell"
+        get() {
+            val state = twinInput.state
+            return if (!state.sendCurrency.fiat && !state.receiveCurrency.fiat) {
+                "swap"
+            } else if (state.sendCurrency.fiat) {
+                "buy"
+            } else {
+                "sell"
+            }
+        }
 
-    var network: String = "native"
+    val fromNetwork: String?
+        get() = com.tonapps.wallet.data.purchase.OnRampUtils.normalizeType(twinInput.state.sendCurrency)
+
+    val toNetwork: String?
+        get() = com.tonapps.wallet.data.purchase.OnRampUtils.normalizeType(twinInput.state.receiveCurrency)
 
     val from: String
         get() = OnRampUtils.fixSymbol(twinInput.state.sendCurrency.symbol)
@@ -279,12 +298,17 @@ class OnRampViewModel(
             "crypto_$to"
         }
 
-    val paymentMethod: String
-        get() = _selectedPaymentMethodFlow.value ?: "unknown"
+    val paymentMethod: String?
+        get() {
+            if (purchaseType == "swap") {
+                return null
+            }
+            return _selectedPaymentMethodFlow.value ?: "unknown"
+        }
 
     init {
         applyDefaultCurrencies()
-        applyNetworkObserver()
+        // applyNetworkObserver()
         applyOverValueObserver()
         applyDefaultAmountObserver()
         startObserveInputButtonEnabled()
@@ -355,14 +379,14 @@ class OnRampViewModel(
         _sendValueFlow.tryEmit(coins)
     }
 
-    private fun applyNetworkObserver() {
+    /*private fun applyNetworkObserver() {
         combine(
             twinInput.stateFlow,
             onRampDataFlow.map { it.data }
         ) { state, data ->
             network = data.resolveNetwork(true, state.sendCurrency) ?: data.resolveNetwork(false, state.receiveCurrency) ?: "native"
         }.launch()
-    }
+    }*/
 
     fun updateFocusInput(type: TwinInput.Type) {
         twinInput.updateFocus(type)
@@ -485,7 +509,8 @@ class OnRampViewModel(
         return OnRampArgsEntity(
             from = from,
             to = to,
-            network = network,
+            fromNetwork = fromNetwork,
+            toNetwork = toNetwork,
             wallet = walletAddress.trim(),
             purchaseType = purchaseType,
             amount = twinInput.state.send.coins,

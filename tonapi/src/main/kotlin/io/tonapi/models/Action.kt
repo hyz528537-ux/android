@@ -16,9 +16,11 @@
 package io.tonapi.models
 
 import io.tonapi.models.ActionSimplePreview
+import io.tonapi.models.AddExtensionAction
 import io.tonapi.models.AuctionBidAction
 import io.tonapi.models.ContractDeployAction
 import io.tonapi.models.DepositStakeAction
+import io.tonapi.models.DepositTokenStakeAction
 import io.tonapi.models.DomainRenewAction
 import io.tonapi.models.ElectionsDepositStakeAction
 import io.tonapi.models.ElectionsRecoverStakeAction
@@ -31,12 +33,15 @@ import io.tonapi.models.JettonTransferAction
 import io.tonapi.models.NftItemTransferAction
 import io.tonapi.models.NftPurchaseAction
 import io.tonapi.models.PurchaseAction
+import io.tonapi.models.RemoveExtensionAction
+import io.tonapi.models.SetSignatureAllowedAction
 import io.tonapi.models.SmartContractAction
 import io.tonapi.models.SubscriptionAction
 import io.tonapi.models.TonTransferAction
 import io.tonapi.models.UnSubscriptionAction
 import io.tonapi.models.WithdrawStakeAction
 import io.tonapi.models.WithdrawStakeRequestAction
+import io.tonapi.models.WithdrawTokenStakeRequestAction
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -124,15 +129,30 @@ data class Action (
     @SerialName(value = "Purchase")
     val purchase: PurchaseAction? = null,
 
+    @SerialName(value = "AddExtension")
+    val addExtension: AddExtensionAction? = null,
+
+    @SerialName(value = "RemoveExtension")
+    val removeExtension: RemoveExtensionAction? = null,
+
+    @SerialName(value = "SetSignatureAllowedAction")
+    val setSignatureAllowedAction: SetSignatureAllowedAction? = null,
+
     @SerialName(value = "GasRelay")
-    val gasRelay: GasRelayAction? = null
+    val gasRelay: GasRelayAction? = null,
+
+    @SerialName(value = "DepositTokenStake")
+    val depositTokenStake: DepositTokenStakeAction? = null,
+
+    @SerialName(value = "WithdrawTokenStakeRequest")
+    val withdrawTokenStakeRequest: WithdrawTokenStakeRequestAction? = null
 
 ) {
 
     /**
      * 
      *
-     * Values: TonTransfer,ExtraCurrencyTransfer,ContractDeploy,JettonTransfer,JettonBurn,JettonMint,NftItemTransfer,Subscribe,UnSubscribe,AuctionBid,NftPurchase,DepositStake,WithdrawStake,WithdrawStakeRequest,ElectionsDepositStake,ElectionsRecoverStake,JettonSwap,SmartContractExec,DomainRenew,Purchase,Unknown.unknown
+     * Values: TonTransfer,ExtraCurrencyTransfer,ContractDeploy,JettonTransfer,JettonBurn,JettonMint,NftItemTransfer,Subscribe,UnSubscribe,AuctionBid,NftPurchase,DepositStake,WithdrawStake,WithdrawStakeRequest,ElectionsDepositStake,ElectionsRecoverStake,JettonSwap,SmartContractExec,DomainRenew,Purchase,DepositTokenStake,WithdrawTokenStakeRequest,Unknown.unknown
      */
     @Serializable(with = TypeSerializer::class)
     enum class Type(val value: kotlin.String) {
@@ -156,6 +176,8 @@ data class Action (
         @SerialName(value = "SmartContractExec") SmartContractExec("SmartContractExec"),
         @SerialName(value = "DomainRenew") DomainRenew("DomainRenew"),
         @SerialName(value = "Purchase") Purchase("Purchase"),
+        @SerialName(value = "DepositTokenStake") DepositTokenStake("DepositTokenStake"),
+        @SerialName(value = "WithdrawTokenStakeRequest") WithdrawTokenStakeRequest("WithdrawTokenStakeRequest"),
         @SerialName(value = "Unknown") Unknown("Unknown"),
         @SerialName(value = "unknown") unknown("unknown");
     }

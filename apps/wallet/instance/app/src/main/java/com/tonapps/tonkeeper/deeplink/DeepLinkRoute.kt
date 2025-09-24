@@ -146,7 +146,7 @@ sealed class DeepLinkRoute {
             address = uri.pathOrNull ?: throw IllegalArgumentException("Address is required"),
             amount = uri.queryLong("amount"),
             text = uri.query("text"),
-            jettonAddress = (uri.query("jettonAddress") ?: uri.query("jetton"))?.toRawAddress(),
+            jettonAddress = uri.query("jettonAddress") ?: uri.query("jetton"),
             bin = uri.query("bin")?.cellFromBase64(),
             initStateBase64 = uri.query("init")
         ) {
@@ -158,7 +158,7 @@ sealed class DeepLinkRoute {
                 throw IllegalArgumentException("Invalid address")
             }
 
-            if (!jettonAddress.isNullOrBlank() && !jettonAddress.isValidTonAddress()) {
+            if (!jettonAddress.isNullOrBlank() && !jettonAddress.isValidTonAddress() && !jettonAddress.isValidTronAddress()) {
                 throw IllegalArgumentException("Invalid jetton address")
             }
 

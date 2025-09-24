@@ -8,9 +8,9 @@ import com.tonapps.tonkeeper.ui.screen.collectibles.manage.list.Item
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.wallet.localization.Plurals
-import uikit.compose.components.ResizeOptions
 import uikit.extensions.drawable
 import uikit.widget.AsyncImageView
+import uikit.widget.ResizeOptions
 
 class CollectionHolder(
     parent: ViewGroup,

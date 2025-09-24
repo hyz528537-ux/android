@@ -4,9 +4,8 @@ import android.net.Uri
 import android.os.Parcelable
 import com.tonapps.icu.Coins
 import com.tonapps.wallet.api.entity.BalanceEntity
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.api.entity.TokenEntity
-import com.tonapps.wallet.data.core.currency.WalletCurrency
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 

@@ -137,7 +137,7 @@ class SendContactsViewModel(
             !contactsRepository.isHidden(it.to, wallet.testnet)
         }.mapIndexed { index, event ->
             val position = ListCell.getPosition(events.size, index)
-            Item.LatestContact(position, event.to, event.timestamp)
+            Item.LatestContact(position, event.to, event.timestamp.value)
         }
     }
 

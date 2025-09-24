@@ -6,7 +6,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
 import com.tonapps.tonkeeper.ui.screen.token.picker.list.Item
 import com.tonapps.tonkeeperx.R
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.localization.Localization
 import uikit.extensions.drawable

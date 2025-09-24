@@ -23,6 +23,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
+import androidx.compose.ui.platform.ComposeView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnLayout
@@ -156,6 +157,12 @@ open class BaseFragment(
         })
     }
 
+    fun putIntArg(key: String, value: Int) {
+        setArgs(Bundle().apply {
+            putInt(key, value)
+        })
+    }
+
     fun putParcelableArrayListArg(key: String, value: ArrayList<out Parcelable>) {
         setArgs(Bundle().apply {
             putParcelableArrayList(key, value)
@@ -225,7 +232,9 @@ open class BaseFragment(
         val view = if (this is Modal) {
             wrapInModal(inflater.context, contentView, savedInstanceState)
         } else {
-            contentView.setBackgroundColor(requireContext().backgroundPageColor)
+            if (contentView !is ComposeView) {
+                contentView.setBackgroundColor(requireContext().backgroundPageColor)
+            }
             when (this) {
                 is SwipeBack -> wrapInSwipeBack(inflater.context, contentView, savedInstanceState)
                 is BottomSheet -> wrapInBottomSheet(inflater.context, contentView, savedInstanceState)

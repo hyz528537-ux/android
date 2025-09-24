@@ -1,18 +1,18 @@
 package com.tonapps.blockchain.ton.tlb
 
+import com.tonapps.blockchain.ton.extensions.loadString
+import com.tonapps.blockchain.ton.extensions.storeMaybeStringTail
 import org.ton.block.Coins
 import org.ton.block.MsgAddressInt
 import org.ton.cell.CellBuilder
 import org.ton.cell.CellSlice
 import org.ton.cell.invoke
-import org.ton.tlb.CellRef
 import org.ton.tlb.TlbCodec
 import org.ton.tlb.TlbConstructor
 import org.ton.tlb.TlbObject
 import org.ton.tlb.TlbPrettyPrinter
 import org.ton.tlb.loadTlb
 import org.ton.tlb.providers.TlbConstructorProvider
-import org.ton.tlb.storeRef
 import org.ton.tlb.storeTlb
 
 data class NftTransfer(
@@ -51,10 +51,7 @@ private object NftTransferTlbConstructor : TlbConstructor<NftTransfer>(
         storeTlb(MsgAddressInt, value.excessesAddress)
         storeBit(false)
         storeTlb(Coins, value.forwardAmount)
-        storeBit(value.comment != null)
-        value.comment?.let {
-            storeRef(StringTlbConstructor, CellRef(it))
-        }
+        storeMaybeStringTail(value.comment)
     }
 
     override fun loadTlb(
@@ -66,7 +63,7 @@ private object NftTransferTlbConstructor : TlbConstructor<NftTransfer>(
         val excessesAddress = loadTlb(MsgAddressInt)
         loadBit()
         val forwardAmount = loadTlb(Coins)
-        val comment = if (loadBit()) loadTlb(StringTlbConstructor) else null
+        val comment = loadString()
         NftTransfer(queryId, newOwnerAddress, excessesAddress, forwardAmount, comment)
     }
 }

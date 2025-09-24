@@ -1,6 +1,5 @@
 package com.tonapps.ledger.ble
 
-import com.ledger.live.ble.BleManager
 import com.tonapps.ledger.transport.Transport
 import io.ktor.util.hex
 import kotlinx.coroutines.suspendCancellableCoroutine

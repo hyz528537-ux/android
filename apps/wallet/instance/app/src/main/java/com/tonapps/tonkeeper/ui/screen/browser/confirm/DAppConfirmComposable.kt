@@ -33,36 +33,36 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.wallet.localization.Localization
-import uikit.compose.AppTheme
-import uikit.compose.Dimens
-import uikit.compose.UIKit
-import uikit.compose.components.AsyncImage
-import uikit.compose.components.Checkbox
-import uikit.compose.components.Header
-import uikit.compose.components.PrimaryButton
-import uikit.compose.components.TextHeader
+import ui.components.Checkbox
+import ui.components.Header
+import ui.components.TextHeader
+import ui.components.button.TKButton
+import ui.theme.Dimens
+import ui.theme.Shapes
+import ui.theme.UIKit
 
 @Composable
 fun Disclaimer() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(UIKit.colors.fieldBackground)
+            .clip(Shapes.medium)
+            .background(UIKit.colorScheme.field.background)
             .padding(Dimens.offsetMedium)
     ) {
         Text(
             modifier = Modifier.padding(end = Dimens.offsetLarge),
             text = stringResource(id = Localization.dapp_disclaimer),
             style = UIKit.typography.body2,
-            color = UIKit.colors.textPrimary,
+            color = UIKit.colorScheme.text.primary,
         )
         Icon(
             painter = painterResource(id = UIKitIcon.ic_exclamationmark_circle_16),
             contentDescription = null,
-            tint = UIKit.colors.iconSecondary,
+            tint = UIKit.colorScheme.icon.secondary,
             modifier = Modifier.align(Alignment.TopEnd)
         )
     }
@@ -77,19 +77,20 @@ fun DAppIcon(
             modifier = Modifier
                 .size(96.dp)
                 .clip(RoundedCornerShape(24.dp))
-                .background(UIKit.colors.backgroundContent),
+                .background(UIKit.colorScheme.background.content),
             contentAlignment = Alignment.Center
         ) {
             if (icon != null) {
                 AsyncImage(
                     model = icon,
-                    modifier = Modifier.size(96.dp)
+                    modifier = Modifier.size(96.dp),
+                    contentDescription = null
                 )
             } else {
                 Image(
                     painter = painterResource(id = UIKitIcon.ic_globe_56),
                     contentDescription = null,
-                    colorFilter = ColorFilter.tint(UIKit.colors.iconSecondary)
+                    colorFilter = ColorFilter.tint(UIKit.colorScheme.icon.secondary)
                 )
             }
         }
@@ -136,7 +137,7 @@ fun DAppConfirmComposable(
             Spacer(modifier = Modifier.height(Dimens.offsetLarge))
             Disclaimer()
             Spacer(modifier = Modifier.height(Dimens.offsetMedium))
-            PrimaryButton(
+            TKButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onOpen,
                 text = stringResource(id = Localization.open)
@@ -158,24 +159,10 @@ fun DAppConfirmComposable(
                     modifier = Modifier.clickable { isChecked = !isChecked },
                     text = stringResource(id = Localization.do_not_show_again),
                     style = UIKit.typography.body1,
-                    color = UIKit.colors.textSecondary
+                    color = UIKit.colorScheme.text.secondary
                 )
             }
             Spacer(modifier = Modifier.height(Dimens.offsetLarge))
         }
-    }
-}
-
-@Preview
-@Composable
-private fun DAppConfirmComposablePreview() {
-    UIKit(theme = AppTheme.BLUE) {
-        DAppConfirmComposable(
-            host = "app.ston.fi",
-            name = "Demo DApp",
-            onOpen = {},
-            onCheckedChange = {},
-            onFinishClick = {},
-        )
     }
 }

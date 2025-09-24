@@ -3,7 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize")
     id("kotlinx-serialization")
-    id("kotlin-kapt")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
@@ -42,6 +41,7 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.workmanager)
     implementation(libs.kotlinX.datetime)
+    implementation(libs.kotlinX.collections.immutable)
     implementation(libs.j2objc)
     implementation(libs.cbor)
     implementation(libs.ton.tvm)
@@ -50,6 +50,8 @@ dependencies {
     implementation(libs.ton.blockTlb)
     implementation(libs.ton.tonapiTl)
     implementation(libs.ton.contract)
+
+    implementation(project(ProjectModules.KMP.ui))
 
     implementation(project(ProjectModules.Wallet.localization))
     implementation(project(ProjectModules.Wallet.api))
@@ -127,8 +129,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.sse)
     implementation(libs.aptabase)
-
-    implementation(libs.bleManager)
+    implementation(libs.coil.compose)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.foundation)
@@ -136,8 +137,21 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
     implementation(libs.compose.preview)
+    implementation(libs.compose.paging)
+    implementation(libs.compose.paging.runtime)
     debugImplementation(libs.compose.debugTooling)
 
 
     implementation(libs.compose.viewModel)
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-P",
+            "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=${buildDir}/compose_metrics",
+            "-P",
+            "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=${buildDir}/compose_reports"
+        )
+    }
 }

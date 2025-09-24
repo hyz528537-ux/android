@@ -1,4 +1,9 @@
 class ProjectModules {
+
+    object KMP {
+        const val ui = ":kmp:ui"
+    }
+
     object Module {
         const val tonApi = ":tonapi"
 

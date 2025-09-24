@@ -14,7 +14,6 @@ import com.tonapps.extensions.logError
 import com.tonapps.extensions.max24
 import com.tonapps.extensions.plus
 import com.tonapps.icu.CurrencyFormatter.withCustomSymbol
-import com.tonapps.tonkeeper.core.history.ActionType
 import com.tonapps.tonkeeper.core.history.HistoryHelper
 import com.tonapps.tonkeeper.core.history.list.item.HistoryItem
 import com.tonapps.tonkeeper.core.history.nameRes
@@ -31,7 +30,7 @@ import com.tonapps.uikit.color.textPrimaryColor
 import com.tonapps.uikit.color.textTertiaryColor
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.uikit.list.ListCell
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.data.settings.SpamTransactionState
@@ -53,6 +52,7 @@ import uikit.widget.ColumnLayout
 import uikit.widget.AsyncImageView
 import androidx.core.view.isVisible
 import androidx.core.net.toUri
+import com.tonapps.wallet.data.events.ActionType
 
 
 class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragment.Modal {
@@ -86,6 +86,9 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
 
     private val isScam: Boolean
         get() = (localIsScam ?: actionArgs?.isScam) == true
+
+    private val isSimplePreview: Boolean
+        get() = actionArgs?.action == ActionType.Unknown
 
     private val comment: String?
         get() = actionArgs?.let { action ->
@@ -172,6 +175,20 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
             initArgs(actionArgs!!)
         } else {
             finish()
+        }
+
+        if (isSimplePreview) {
+            accountNameView.visibility = View.VISIBLE
+            accountNameView.position = ListCell.Position.FIRST
+            accountNameView.title = getString(Localization.name)
+            accountNameView.value = actionArgs?.tokenCode
+
+            feeView.position = ListCell.Position.MIDDLE
+
+            commentView.visibility = View.VISIBLE
+            commentView.position = ListCell.Position.LAST
+            commentView.title = getString(Localization.details)
+            commentView.value = actionArgs?.title
         }
     }
 
@@ -535,22 +552,6 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
                 view.position = ListCell.getPosition(visibleViews.size, i)
             } else {
                 view.background = ListCell.getPosition(visibleViews.size, i).drawable(requireContext())
-            }
-        }
-    }
-
-    private class CommentReportDialog(context: Context) :
-        ModalDialog(context, R.layout.dialog_tx_report_comment) {
-
-        init {
-            findViewById<View>(R.id.close)?.setOnClickListener { dismiss() }
-        }
-
-        fun show(callback: () -> Unit) {
-            super.show()
-            findViewById<View>(R.id.button)?.setOnClickListener {
-                callback()
-                dismiss()
             }
         }
     }

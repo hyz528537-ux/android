@@ -16,6 +16,7 @@ import com.tonapps.wallet.data.core.entity.TransferType
 import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.rates.RatesRepository
 import com.tonapps.wallet.data.settings.SettingsRepository
+import com.tonapps.wallet.data.token.TokenRepository
 import io.tonapi.models.JettonQuantity
 import io.tonapi.models.MessageConsequences
 import io.tonapi.models.Risk
@@ -32,6 +33,7 @@ class EmulationUseCase(
     private val batteryRepository: BatteryRepository,
     private val api: API,
     private val assetsManager: AssetsManager,
+    private val tokenRepository: TokenRepository,
 ) {
 
     suspend operator fun invoke(
@@ -140,7 +142,13 @@ class EmulationUseCase(
         currency: WalletCurrency,
     ): Emulated.Total {
         val balanceFiat = assetsManager.getTotalBalance(wallet, currency) ?: Coins.ZERO
-        val tokens = getTokens(wallet, risk.ton, risk.jettons)
+        val ton = tokenRepository.getTON(currency, wallet.accountId, wallet.testnet, true)
+        val tonValue = if (risk.transferAllRemainingBalance) {
+            ton?.balance?.value?.toLong() ?: risk.ton
+        } else {
+            risk.ton
+        }
+        val tokens = getTokens(wallet, tonValue, risk.jettons)
         val rates = ratesRepository.getRates(currency, tokens.map { it.token.address })
         val totalFiat = tokens.map { token ->
             rates.convert(token.token.address, token.value)

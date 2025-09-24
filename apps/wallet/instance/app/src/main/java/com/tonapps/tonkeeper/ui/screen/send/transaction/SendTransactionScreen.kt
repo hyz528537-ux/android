@@ -331,8 +331,10 @@ class SendTransactionScreen(wallet: WalletEntity) :
     }
 
     private fun showTotalDialog(state: SendTransactionState.Details) {
-        val description = if (state.nftCount > 0) {
+        val description = if (state.nftCount == 1) {
             getString(Localization.send_transaction_detail_nft)
+        } else if (state.nftCount > 0) {
+            getString(Localization.send_transaction_detail_nfts)
         } else {
             getString(Localization.send_transaction_detail)
         }

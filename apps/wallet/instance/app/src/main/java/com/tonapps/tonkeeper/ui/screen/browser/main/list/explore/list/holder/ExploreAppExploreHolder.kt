@@ -6,9 +6,9 @@ import com.tonapps.tonkeeper.helper.BrowserHelper.openDApp
 import com.tonapps.tonkeeper.ui.screen.browser.main.list.explore.list.ExploreItem
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.color.backgroundContentTintColor
-import uikit.compose.components.ResizeOptions
 import uikit.extensions.drawable
 import uikit.widget.AsyncImageView
+import uikit.widget.ResizeOptions
 
 class ExploreAppExploreHolder(parent: ViewGroup): ExploreHolder<ExploreItem.App>(parent, R.layout.view_browser_app) {
 

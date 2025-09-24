@@ -6,8 +6,8 @@ import androidx.core.view.doOnLayout
 import com.tonapps.tonkeeper.helper.BrowserHelper.openDApp
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.list.BaseListHolder
-import uikit.compose.components.ResizeOptions
 import uikit.widget.AsyncImageView
+import uikit.widget.ResizeOptions
 
 class BannerHolder(parent: ViewGroup): BaseListHolder<BannerAppItem>(parent, R.layout.view_browser_app_banner) {
 

@@ -25,10 +25,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
+    flavorDimensions += listOf("version")
+
     productFlavors {
-        create("default") {}
-        create("uk") {
-        }
+        create("default") { dimension = "version" }
     }
 
     buildTypes {
@@ -51,7 +51,6 @@ android {
     }
 
     targetProjectPath = ":apps:wallet:instance:main"
-    flavorDimensions += listOf("service")
 
     experimentalProperties["android.experimental.self-instrumenting"] = true
     experimentalProperties["android.experimental.testOptions.managedDevices.setupTimeoutMinutes"] = 20
@@ -64,10 +63,10 @@ android {
 }
 
 dependencies {
-    implementation("androidx.test.ext:junit:1.2.1")
-    implementation("androidx.test.espresso:espresso-core:3.6.1")
-    implementation("androidx.test.uiautomator:uiautomator:2.3.0")
-    implementation("androidx.benchmark:benchmark-macro-junit4:1.3.3")
+    implementation(libs.androidX.test.core)
+    implementation(libs.androidX.test.espresso)
+    implementation(libs.androidX.test.uiautomator)
+    implementation(libs.androidX.benchmark)
 }
 
 baselineProfile {

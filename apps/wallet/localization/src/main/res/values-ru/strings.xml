@@ -40,8 +40,9 @@
     <string name="add_to_contact">Добавить в контакты</string>
     <string name="staking_unstake_cycle">Запрос на вывод будет исполнен после завершения цикла через %1$s</string>
     <string name="send_transaction_scroll">Проверьте все данные для подтверждения</string>
-    <string name="send_transaction_detail">Общая стоимость токенов, которые будут отправлены с вашего кошелька. Возвраты не учитываются в общей стоимости.</string>
-    <string name="send_transaction_detail_nft">Общая стоимость токенов, за исключением стоимости NFT, которые будут отправлены с вашего кошелька. Возвраты не учитываются в общей стоимости.</string>
+    <string name="send_transaction_detail">Итоговая стоимость токенов, которые вы отправляете.</string>
+    <string name="send_transaction_detail_nft">Итоговая стоимость токенов, которые вы отправляете. NFT тоже будет отправлен.</string>
+    <string name="send_transaction_detail_nfts">Итоговая стоимость токенов, которые вы отправляете. NFT тоже будут отправлены.</string>
     <string name="keystone_sign_step1">Отсканируйте QR-код с помощью Keystone</string>
     <string name="keystone_sign_step2">Подтвердите транзакцию в Keystone</string>
     <string name="keystone_sign_step3">Отсканируйте QR-код подписанной транзакции Keystone</string>
@@ -675,4 +676,9 @@
     <string name="deposit_and_stake">Депозит и стейкинг</string>
     <string name="ethena_check_eligibility">Проверить статус</string>
     <string name="about_ethena">Подробнее об Ethena</string>
+    <string name="swap_disclaimer">Сервис предоставлен %1$s\n%2$s · %3$s</string>
+    <string name="terms_of_use">Условия</string>
+    <string name="privacy_policy">Политика</string>
+    <string name="invalid_address">Неверный адрес кошелька.</string>
+    <string name="scam_address_error">Переводы на этот адрес не поддерживаются.</string>
 </resources>

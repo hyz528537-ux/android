@@ -13,6 +13,10 @@ import java.util.Locale
 
 object CurrencyFormatter {
 
+    const val MINUS = "-"
+    const val PREFIX_PLUS = "+ "
+    const val PREFIX_MINUS = "− "
+
     private val customDigitLocales = listOf(
         Locale("ar"),
         Locale("fa"),
@@ -64,7 +68,7 @@ object CurrencyFormatter {
         roundingMode: RoundingMode = RoundingMode.DOWN,
         stripTrailingZeros: Boolean = true,
     ): CharSequence {
-        val format = format(value = value, roundingMode = roundingMode, stripTrailingZeros = stripTrailingZeros)
+        val format = format(value = value, roundingMode = roundingMode, stripTrailingZeros = stripTrailingZeros, cutLongSymbol = false)
         return "$format%"
     }
 
@@ -78,8 +82,9 @@ object CurrencyFormatter {
         roundingMode: RoundingMode = RoundingMode.DOWN,
         replaceSymbol: Boolean = true,
         stripTrailingZeros: Boolean = true,
+        cutLongSymbol: Boolean = false,
     ): CharSequence {
-       return format.format(currency, value, roundingMode, replaceSymbol, stripTrailingZeros)
+       return format.format(currency, value, roundingMode, replaceSymbol, stripTrailingZeros, cutLongSymbol)
     }
 
     fun formatFull(
@@ -96,24 +101,25 @@ object CurrencyFormatter {
         roundingMode: RoundingMode = RoundingMode.DOWN,
         replaceSymbol: Boolean = true,
         stripTrailingZeros: Boolean = true,
+        cutLongSymbol: Boolean = false,
     ): CharSequence {
-        return format(currency, value.value, roundingMode, replaceSymbol, stripTrailingZeros)
+        return format(currency, value.value, roundingMode, replaceSymbol, stripTrailingZeros, cutLongSymbol)
     }
 
     fun formatFiat(
         currency: String,
         value: BigDecimal,
-        roundingMode: RoundingMode = RoundingMode.DOWN,
+        roundingMode: RoundingMode = RoundingMode.HALF_EVEN,
         replaceSymbol: Boolean = true,
         stripTrailingZeros: Boolean = false,
     ): CharSequence {
-        return format(currency, value, roundingMode, replaceSymbol, stripTrailingZeros)
+        return format(currency, value, roundingMode, replaceSymbol, stripTrailingZeros, false)
     }
 
     fun formatFiat(
         currency: String,
         value: Coins,
-        roundingMode: RoundingMode = RoundingMode.DOWN,
+        roundingMode: RoundingMode = RoundingMode.HALF_EVEN,
         replaceSymbol: Boolean = true,
     ) = formatFiat(currency, value.value, roundingMode, replaceSymbol)
 

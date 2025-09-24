@@ -56,6 +56,9 @@ data class ConfigEntity(
     val qrScannerExtends: List<QRScannerExtendsEntity>,
     val region: String,
     val tonkeeperApiUrl: String,
+    val tronSwapUrl: String,
+    val tronSwapTitle: String,
+    val tronApiKey: String? = null,
 ): Parcelable {
 
     @IgnoredOnParcel
@@ -128,7 +131,10 @@ data class ConfigEntity(
             QRScannerExtendsEntity.of(array)
         } ?: emptyList(),
         region = json.getString("region"),
-        tonkeeperApiUrl = json.optString("tonkeeper_api_url", "https://api.tonkeeper.com")
+        tonkeeperApiUrl = json.optString("tonkeeper_api_url", "https://api.tonkeeper.com"),
+        tronSwapUrl = json.optString("tron_swap_url", "https://widget.letsexchange.io/en?affiliate_id=ffzymmunvvyxyypo&coin_from=ton&coin_to=USDT-TRC20&is_iframe=true"),
+        tronSwapTitle = json.optString("tron_swap_title", "LetsExchange"),
+        tronApiKey = json.optString("tron_api_key")
     )
 
     constructor() : this(
@@ -175,8 +181,20 @@ data class ConfigEntity(
         enabledStaking = emptyList(),
         qrScannerExtends = emptyList(),
         region = "US",
-        tonkeeperApiUrl = "https://api.tonkeeper.com"
+        tonkeeperApiUrl = "https://api.tonkeeper.com",
+        tronSwapUrl = "https://widget.letsexchange.io/en?affiliate_id=ffzymmunvvyxyypo&coin_from=ton&coin_to=USDT-TRC20&is_iframe=true",
+        tronSwapTitle = "LetsExchange"
     )
+
+    fun formatTransactionExplorer(testnet: Boolean, tron: Boolean, hash: String): String {
+        return if (tron) {
+            "https://tronscan.org/#/transaction/$hash"
+        } else if (testnet) {
+            "https://testnet.tonviewer.com/transaction/$hash"
+        } else {
+            transactionExplorer.format(hash)
+        }
+    }
 
     companion object {
         val default = ConfigEntity()

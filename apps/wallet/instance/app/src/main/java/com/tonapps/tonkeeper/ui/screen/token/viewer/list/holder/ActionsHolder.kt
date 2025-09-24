@@ -3,12 +3,9 @@ package com.tonapps.tonkeeper.ui.screen.token.viewer.list.holder
 import android.view.View
 import android.view.ViewGroup
 import com.tonapps.tonkeeper.helper.BrowserHelper
-import com.tonapps.tonkeeper.koin.remoteConfig
 import com.tonapps.tonkeeper.koin.serverFlags
-import com.tonapps.tonkeeper.ui.screen.browser.dapp.DAppScreen
 import com.tonapps.tonkeeper.ui.screen.qr.QRScreen
 import com.tonapps.tonkeeper.ui.screen.send.main.SendScreen
-import com.tonapps.tonkeeper.ui.screen.staking.stake.StakingScreen
 import com.tonapps.tonkeeper.ui.screen.swap.SwapScreen
 import com.tonapps.tonkeeper.ui.screen.token.viewer.list.Item
 import com.tonapps.tonkeeperx.R
@@ -46,8 +43,8 @@ class ActionsHolder(parent: ViewGroup) : Holder<Item.Actions>(parent, R.layout.v
             View.GONE
         }
         swapView.setOnClickListener {
-            if (item.swapMethod != null) {
-                BrowserHelper.openPurchase(context, item.swapMethod)
+            if (item.tronSwapUrl != null) {
+                BrowserHelper.open(context, item.tronSwapUrl)
             } else {
                 val fragment = SwapScreen.newInstance(
                     wallet = item.wallet,

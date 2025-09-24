@@ -190,12 +190,12 @@ class OnRampScreen(wallet: WalletEntity): BaseOnRampScreen(wallet) {
         val view = PaymentTypeView(requireContext())
         view.title = method.title
         view.subtitle = method.subtitle
-        view.setIcon(method.icon)
         view.tag = method.type
         view.setOnClickListener {
             viewModel.setSelectedPaymentMethod(method.type)
         }
         view.setRounding(method.country.equals("ru", true) || !method.isCard)
+        view.setIcon(method.icon)
         return view
     }
 

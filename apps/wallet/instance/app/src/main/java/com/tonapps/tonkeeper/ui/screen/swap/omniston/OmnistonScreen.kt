@@ -3,6 +3,7 @@ package com.tonapps.tonkeeper.ui.screen.swap.omniston
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.util.TypedValue
@@ -18,7 +19,9 @@ import com.tonapps.tonkeeper.extensions.addFeeItem
 import com.tonapps.tonkeeper.extensions.finishDelay
 import com.tonapps.tonkeeper.extensions.hideKeyboard
 import com.tonapps.tonkeeper.extensions.id
+import com.tonapps.tonkeeper.extensions.isOverlapping
 import com.tonapps.tonkeeper.extensions.routeToHistoryTab
+import com.tonapps.tonkeeper.helper.BrowserHelper
 import com.tonapps.tonkeeper.helper.TwinInput
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.popup.ActionSheet
@@ -33,7 +36,9 @@ import com.tonapps.tonkeeper.ui.screen.swap.omniston.state.SwapQuoteState
 import com.tonapps.tonkeeper.ui.screen.swap.omniston.state.SwapTokenState
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.color.accentBlueColor
+import com.tonapps.uikit.color.backgroundPageColor
 import com.tonapps.uikit.color.textAccentColor
+import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.core.currency.WalletCurrency
@@ -42,6 +47,8 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.core.parameter.parametersOf
 import uikit.base.BaseFragment
+import uikit.drawable.FooterDrawable
+import uikit.extensions.clickable
 import uikit.extensions.collectFlow
 import uikit.extensions.doKeyboardAnimation
 import uikit.extensions.dp
@@ -96,6 +103,8 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
     private lateinit var taskView: ProcessTaskView
     private lateinit var feeView: ItemLineView
     private lateinit var slippageView: ItemLineView
+    private lateinit var disclaimerView: AppCompatTextView
+    private lateinit var actionContainerDrawable: FooterDrawable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -174,16 +183,24 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
             reset()
         }
 
+        disclaimerView = view.findViewById(R.id.disclaimer)
+        disclaimerView.movementMethod = LinkMovementMethod.getInstance()
+        applyDisclaimer()
+
         continueButton = view.findViewById(R.id.continue_button)
         continueButton.setOnClickListener { next() }
 
+        actionContainerDrawable = FooterDrawable(requireContext())
+        actionContainerDrawable.setColor(requireContext().backgroundPageColor)
         actionContainerView = view.findViewById(R.id.action_container)
+        actionContainerView.background = actionContainerDrawable
 
         detailsContainerView = view.findViewById(R.id.details_container)
 
         view.doKeyboardAnimation { offset, _, _ ->
             bottomReviewView.translationY = -offset.toFloat()
             actionContainerView.translationY = -offset.toFloat()
+            updateDivider()
         }
 
         sendInputView.doOnEditorAction = { actionId ->
@@ -220,6 +237,7 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
         collectFlow(viewModel.priceFlow) { (first, second) ->
             priceView.text = first
             priceReversedView.text = second
+            updateDivider()
         }
         collectFlow(viewModel.stepFlow) { step ->
             if (step == OmnistonStep.Input) {
@@ -255,6 +273,40 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
                 TwinInput.Type.Receive -> receiveInputView.focusWithKeyboard()
             }
         }
+    }
+
+    private fun updateDivider() {
+        val needDivider = actionContainerView.isOverlapping(priceView) || actionContainerView.isOverlapping(priceReversedView)
+        actionContainerDrawable.setDivider(needDivider)
+    }
+
+    private fun applyDisclaimer() {
+        val textSecondaryColor = requireContext().textSecondaryColor
+        val provider = getString(Localization.ston_fi)
+        val termsOfUse = getString(Localization.terms_of_use)
+        val privacyPolicy = getString(Localization.privacy_policy)
+        val text = requireContext().getString(Localization.swap_disclaimer, provider, termsOfUse, privacyPolicy)
+        val builder = SpannableStringBuilder(text)
+
+        val providerStart = text.indexOf(provider)
+        val providerEnd = providerStart + provider.length
+        builder.setSpan(ClickableSpanCompat(textSecondaryColor) {
+            BrowserHelper.open(requireContext(), "https://ston.fi/")
+        }, providerStart, providerEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        val termsOfUseStart = text.indexOf(termsOfUse)
+        val termsOfUseEnd = termsOfUseStart + termsOfUse.length
+        builder.setSpan(ClickableSpanCompat(textSecondaryColor) {
+            BrowserHelper.open(requireContext(), "https://ston.fi/terms")
+        }, termsOfUseStart, termsOfUseEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        val privacyPolicyStart = text.indexOf(privacyPolicy)
+        val privacyPolicyEnd = privacyPolicyStart + privacyPolicy.length
+        builder.setSpan(ClickableSpanCompat(textSecondaryColor) {
+            BrowserHelper.open(requireContext(), "https://ston.fi/privacy")
+        }, privacyPolicyStart, privacyPolicyEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        disclaimerView.text = builder
     }
 
     private fun applyResetProgress(progress: Float) {

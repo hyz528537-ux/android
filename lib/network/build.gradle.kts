@@ -23,6 +23,7 @@ android {
 
 dependencies {
     implementation(libs.kotlinX.coroutines.android)
+    implementation(libs.androidX.core)
     implementation(libs.okhttp)
     implementation(libs.okhttp.sse)
 }

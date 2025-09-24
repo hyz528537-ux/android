@@ -1,6 +1,7 @@
 package com.tonapps.tonkeeper.ui.screen.root
 
 import android.net.Uri
+import com.tonapps.icu.Coins
 import com.tonapps.ledger.ton.LedgerConnectData
 import com.tonapps.tonkeeper.core.entities.WalletPurchaseMethodEntity
 import com.tonapps.tonkeeper.core.history.list.item.HistoryItem
@@ -42,7 +43,7 @@ sealed class RootEvent {
     data class Transfer(
         val wallet: WalletEntity,
         val address: String,
-        val amount: Long?,
+        val amount: Coins?,
         val text: String?,
         val jettonAddress: String?,
         val bin: Cell?,

@@ -16,6 +16,7 @@
 package io.tonapi.models
 
 import io.tonapi.models.AccountAddress
+import io.tonapi.models.Price
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -40,11 +41,18 @@ data class SubscriptionAction (
     @SerialName(value = "beneficiary")
     val beneficiary: AccountAddress,
 
-    @SerialName(value = "amount")
-    val amount: kotlin.Long,
+    @SerialName(value = "admin")
+    val admin: AccountAddress,
+
+    @SerialName(value = "price")
+    val price: Price,
 
     @SerialName(value = "initial")
-    val initial: kotlin.Boolean
+    val initial: kotlin.Boolean,
+
+    @SerialName(value = "amount")
+    @Deprecated(message = "This property is deprecated.")
+    val amount: kotlin.Long? = null
 
 ) {
 

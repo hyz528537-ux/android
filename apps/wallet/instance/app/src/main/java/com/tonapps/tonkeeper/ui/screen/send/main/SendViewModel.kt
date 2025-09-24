@@ -15,19 +15,16 @@ import com.tonapps.extensions.filterList
 import com.tonapps.extensions.state
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
-import com.tonapps.tonkeeper.api.getCurrencyCodeByCountry
 import com.tonapps.tonkeeper.core.Amount
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.Fee
 import com.tonapps.tonkeeper.core.SendBlockchainException
 import com.tonapps.tonkeeper.core.entities.SendMetadataEntity
 import com.tonapps.tonkeeper.core.entities.TransferEntity
-import com.tonapps.tonkeeper.core.entities.WalletPurchaseMethodEntity
 import com.tonapps.tonkeeper.extensions.isPrintableAscii
 import com.tonapps.tonkeeper.extensions.isSafeModeEnabled
 import com.tonapps.tonkeeper.extensions.toGrams
 import com.tonapps.tonkeeper.extensions.with
-import com.tonapps.tonkeeper.koin.settingsRepository
 import com.tonapps.tonkeeper.manager.tx.TransactionManager
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
 import com.tonapps.tonkeeper.ui.screen.send.main.SendScreen.Companion.Type
@@ -42,7 +39,7 @@ import com.tonapps.tonkeeper.ui.screen.send.main.state.TonTransaction
 import com.tonapps.tonkeeper.usecase.sign.SignUseCase
 import com.tonapps.wallet.api.API
 import com.tonapps.wallet.api.SendBlockchainState
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.api.tron.entity.TronResourcesEntity
 import com.tonapps.wallet.data.account.AccountRepository
@@ -77,7 +74,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -222,7 +218,7 @@ class SendViewModel(
     }.state(viewModelScope)
 
     val uiInputAddressErrorFlow =
-        destinationFlow.map { it is SendDestination.NotFound || it is SendDestination.TokenError }
+        destinationFlow.map { it is SendDestination.NotFound || it is SendDestination.Scam || it is SendDestination.TokenError }
 
     private val _uiInputAmountFlow = MutableEffectFlow<Coins>()
     val uiInputAmountFlow = _uiInputAmountFlow.asSharedFlow()
@@ -385,7 +381,7 @@ class SendViewModel(
         TronTransfer(
             from = tronAddress,
             to = destination.address,
-            amount = amount.value.toLong().toBigInteger(),
+            amount = amount.value.toBigInteger(),
             contractAddress = token.address
         )
     }
@@ -462,15 +458,15 @@ class SendViewModel(
         if (value.isNegative) {
             value = Coins.ZERO
         }
+        val fiat = rates.convert(token.address, value)
 
         SendTransaction.Amount(
             value = value,
-            converted = rates.convert(token.address, value),
+            converted = fiat,
             format = CurrencyFormatter.formatFull(token.symbol, value, token.decimals),
-            convertedFormat = CurrencyFormatter.format(
+            convertedFormat = CurrencyFormatter.formatFiat(
                 currency.code,
-                rates.convert(token.address, value),
-                RoundingMode.UP,
+                fiat
             ),
         )
     }
@@ -518,7 +514,7 @@ class SendViewModel(
     }
 
     fun initializeTokenAndAmount(
-        tokenAddress: String?, amountNano: Long?, type: Type
+        tokenAddress: String?, amount: Coins?, type: Type
     ) {
         tokensFlow.take(1).filter {
             it.isNotEmpty()
@@ -533,7 +529,7 @@ class SendViewModel(
             ?: TokenEntity.TON
         }.flowOn(Dispatchers.IO).onEach { token ->
             userInputToken(token)
-            applyAmount(token, amountNano)
+            applyAmount(token, amount)
         }.launchIn(viewModelScope)
 
         _userInputFlow.update {
@@ -542,12 +538,12 @@ class SendViewModel(
     }
 
     suspend fun isNeedMemoAddress(targetAddress: String): Boolean = withContext(Dispatchers.IO) {
-       api.resolveAccount(targetAddress, wallet.testnet)?.memoRequired == true
+        api.resolveAccount(targetAddress, wallet.testnet)?.memoRequired == true
     }
 
-    private fun applyAmount(token: TokenEntity, amountNano: Long?) {
-        amountNano?.let {
-            _uiInputAmountFlow.tryEmit(Coins.of(it, token.decimals))
+    private fun applyAmount(token: TokenEntity, amount: Coins?) {
+        amount?.let {
+            _uiInputAmountFlow.tryEmit(it)
         }
     }
 
@@ -562,6 +558,10 @@ class SendViewModel(
 
         val account = accountDeferred.await() ?: return@withContext SendDestination.NotFound
         val publicKey = publicKeyDeferred.await()
+
+        if (account.isScam == true) {
+            return@withContext SendDestination.Scam
+        }
 
         SendDestination.TonAccount(
             userInput = userInput,
@@ -1398,25 +1398,4 @@ class SendViewModel(
         }
         return tokenCustomPayload ?: TokenEntity.TransferPayload.empty(token.address)
     }
-
-    val swapMethodFlow = flow {
-        val method = purchaseRepository.getMethod(
-            id = "letsexchange_buy_swap",
-            testnet = wallet.testnet,
-            locale = settingsRepository.getLocale()
-        )
-        if (method != null) {
-            val currency = api.getCurrencyCodeByCountry(settingsRepository)
-            emit(
-                WalletPurchaseMethodEntity(
-                    method = method,
-                    wallet = wallet,
-                    currency = currency,
-                    config = api.config
-                )
-            )
-        } else {
-            emit(null)
-        }
-    }.take(1).flowOn(Dispatchers.IO)
 }

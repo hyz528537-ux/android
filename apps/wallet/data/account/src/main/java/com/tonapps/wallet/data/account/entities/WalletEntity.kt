@@ -17,6 +17,8 @@ import com.tonapps.extensions.readEnum
 import com.tonapps.extensions.readParcelableCompat
 import com.tonapps.extensions.writeBooleanCompat
 import com.tonapps.extensions.writeEnum
+import com.tonapps.wallet.api.entity.value.Blockchain
+import com.tonapps.wallet.api.entity.value.BlockchainAddress
 import com.tonapps.wallet.data.account.Wallet
 import kotlinx.parcelize.Parcelize
 import org.ton.api.pk.PrivateKeyEd25519
@@ -90,6 +92,13 @@ data class WalletEntity(
     val accountId: String = contract.address.toAccountId()
 
     val address: String = contract.address.toWalletAddress(testnet)
+
+    val blockchainAddress: BlockchainAddress
+        get() = BlockchainAddress(
+            value = address,
+            testnet = testnet,
+            blockchain = Blockchain.TON
+        )
 
     val isWatchOnly: Boolean
         get() = type == Wallet.Type.Watch

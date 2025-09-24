@@ -76,5 +76,5 @@ include(":apps:wallet:data:contacts")
 include(":apps:wallet:data:swap")
 
 
-include(":shared:core")
-include(":shared:ui")
+include(":kmp:core")
+include(":kmp:ui")

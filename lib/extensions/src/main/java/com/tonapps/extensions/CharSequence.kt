@@ -26,6 +26,17 @@ val CharSequence.withPlus: CharSequence
         return builder
     }
 
+val CharSequence.withApproximately: CharSequence
+    get() {
+        if (startsWith("≈")) {
+            return this
+        }
+        val builder = SpannableStringBuilder()
+        builder.append("≈ ")
+        builder.append(this)
+        return builder
+    }
+
 fun CharSequence.plus(text: String): CharSequence {
     val builder = SpannableStringBuilder()
     builder.append(this)

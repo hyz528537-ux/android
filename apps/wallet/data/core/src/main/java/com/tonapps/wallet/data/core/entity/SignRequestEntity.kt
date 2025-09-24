@@ -27,7 +27,8 @@ data class SignRequestEntity(
     val messages: List<RawMessageEntity>,
     val network: TonNetwork,
     val messagesVariants: MessagesVariantsEntity? = null,
-    val seqNo: Int? = null
+    val seqNo: Int? = null,
+    val ignoreInsufficientBalance: Boolean = false
 ): Parcelable {
 
     @IgnoredOnParcel
@@ -75,6 +76,9 @@ data class SignRequestEntity(
         private var network: TonNetwork = TonNetwork.MAINNET
         private val messages = mutableListOf<RawMessageEntity>()
         private var seqNo: Int? = null
+        private var ignoreInsufficientBalance = false
+
+        fun setIgnoreInsufficientBalance(ignoreInsufficientBalance: Boolean) = apply { this.ignoreInsufficientBalance = ignoreInsufficientBalance }
 
         fun setSeqNo(seqNo: Int) = apply { this.seqNo = seqNo }
 
@@ -98,7 +102,8 @@ data class SignRequestEntity(
                 messages = messages.toList(),
                 network = network,
                 appUri = appUri,
-                seqNo = seqNo
+                seqNo = seqNo,
+                ignoreInsufficientBalance = ignoreInsufficientBalance
             )
         }
     }

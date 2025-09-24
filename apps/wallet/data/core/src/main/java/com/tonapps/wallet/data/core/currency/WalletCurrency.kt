@@ -107,6 +107,7 @@ data class WalletCurrency(
             "KRW", // South Korean Won
             "IDR", // Indonesian Rupiah
             "INR", // Indian Rupee
+            "PKR", // Pakistani Rupee
             "JPY", // Japanese Yen
             "CAD", // Canadian Dollar
             "ARS", // Argentine Peso
@@ -242,6 +243,35 @@ data class WalletCurrency(
             title = "Ethereum",
             chain = Chain.ETC()
         )
+
+        fun simple(code: String, decimals: Int, name: String, imageUrl: String): WalletCurrency {
+            val chain = Chain.Unknown(name, code, decimals)
+            return WalletCurrency(
+                code = code,
+                title = name,
+                chain = chain,
+                iconUrl = imageUrl
+            )
+        }
+
+        fun unknownChain(
+            type: String = "unknown",
+            address: String = "unknown"
+        ) = Chain.Unknown(type, address)
+
+        fun unknown(
+            code: String = "unknown",
+            name: String = "unknown",
+            imageUrl: String? = null,
+            chain: Chain.Unknown = unknownChain()
+        ): WalletCurrency {
+            return WalletCurrency(
+                code = code,
+                title = name,
+                chain = chain,
+                iconUrl = imageUrl
+            )
+        }
 
         fun createChain(type: String, address: String): Chain {
             return when (type) {

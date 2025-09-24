@@ -25,10 +25,16 @@ import coil3.transform.RoundedCornersTransformation
 import coil3.transform.Transformation
 import coil3.util.CoilUtils
 import uikit.R
-import uikit.compose.components.ResizeOptions
 import uikit.extensions.useAttributes
 import uikit.widget.image.BlurTransformation
 import uikit.widget.image.BorderTransformation
+
+data class ResizeOptions(val width: Int, val height: Int) {
+
+    companion object {
+        fun forSquareSize(size: Int) = ResizeOptions(size, size)
+    }
+}
 
 @Deprecated("Use Compose")
 class AsyncImageView @JvmOverloads constructor(
@@ -209,7 +215,8 @@ class AsyncImageView @JvmOverloads constructor(
         }
         if (roundAsCircle) {
             transformations.add(CircleCropTransformation())
-        } else if (!roundedCornerRadius.isEmpty) {
+        }
+        if (!roundedCornerRadius.isEmpty) {
             transformations.add(RoundedCornersTransformation(
                 topLeft = roundedCornerRadius.topLeft,
                 topRight = roundedCornerRadius.topRight,

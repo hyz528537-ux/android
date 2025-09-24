@@ -6,9 +6,9 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.tonapps.tonkeeper.ui.screen.settings.apps.list.Item
 import com.tonapps.tonkeeperx.R
 import com.tonapps.wallet.data.dapps.entities.AppEntity
-import uikit.compose.components.ResizeOptions
 import uikit.extensions.drawable
 import uikit.widget.AsyncImageView
+import uikit.widget.ResizeOptions
 
 class AppHolder(
     parent: ViewGroup,

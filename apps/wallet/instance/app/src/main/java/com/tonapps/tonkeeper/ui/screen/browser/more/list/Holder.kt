@@ -5,9 +5,9 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.tonapps.tonkeeper.helper.BrowserHelper.openDApp
 import com.tonapps.tonkeeperx.R
 import com.tonapps.uikit.list.BaseListHolder
-import uikit.compose.components.ResizeOptions
 import uikit.extensions.drawable
 import uikit.widget.AsyncImageView
+import uikit.widget.ResizeOptions
 
 class Holder(parent: ViewGroup): BaseListHolder<Item>(parent, R.layout.view_browser_full_app) {
 

@@ -22,12 +22,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.wallet.localization.Localization
-import uikit.compose.AppTheme
-import uikit.compose.Dimens
-import uikit.compose.UIKit
-import uikit.compose.components.Header
-import uikit.compose.components.SecondaryButton
-import uikit.compose.components.TextHeader
+import ui.components.Header
+import ui.components.TextHeader
+import ui.components.button.TKButton
+import ui.theme.ButtonColorsSecondary
+import ui.theme.Dimens
+import ui.theme.UIKit
 
 @Composable
 fun DAppSafeComposable(
@@ -65,29 +65,20 @@ fun DAppSafeComposable(
 
         Spacer(modifier = Modifier.height(Dimens.offsetExtraSmall))
 
-        SecondaryButton(
+        TKButton(
             modifier = Modifier.fillMaxWidth(),
             onClick = onSafeClick,
-            text = stringResource(id = Localization.dapp_safe_model_button)
+            text = stringResource(id = Localization.dapp_safe_model_button),
+            buttonColors = ButtonColorsSecondary
         )
 
-        SecondaryButton(
+        TKButton(
             modifier = Modifier.fillMaxWidth(),
             onClick = onClose,
-            text = stringResource(id = Localization.close)
+            text = stringResource(id = Localization.close),
+            buttonColors = ButtonColorsSecondary
         )
 
         Spacer(modifier = Modifier.height(Dimens.offsetExtraSmall))
-    }
-}
-
-@Preview
-@Composable
-private fun DAppSafeComposablePreview() {
-    UIKit(theme = AppTheme.BLUE) {
-        DAppSafeComposable(
-            onSafeClick = {},
-            onClose = {}
-        )
     }
 }

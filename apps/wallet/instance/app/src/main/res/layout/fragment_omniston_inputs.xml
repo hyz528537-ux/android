@@ -67,12 +67,23 @@
 
     </uikit.widget.ColumnLayout>
 
-    <FrameLayout
+    <uikit.widget.ColumnLayout
         android:id="@+id/action_container"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/itemHeight"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/itemHeight"
         android:layout_gravity="bottom"
         android:layout_marginVertical="@dimen/offsetMedium">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/disclaimer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/offsetMedium"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/actionSize"
+            android:textAppearance="@style/TextAppearance.Body2"
+            android:textColor="?attr/textTertiaryColor"/>
 
         <uikit.widget.LoadableButton
             android:id="@+id/continue_button"
@@ -83,6 +94,6 @@
             android:text="@string/continue_action"/>
 
 
-    </FrameLayout>
+    </uikit.widget.ColumnLayout>
 
 </FrameLayout>

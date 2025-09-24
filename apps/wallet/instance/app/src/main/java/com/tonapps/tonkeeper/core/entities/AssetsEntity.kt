@@ -2,7 +2,7 @@ package com.tonapps.tonkeeper.core.entities
 
 import com.tonapps.icu.Coins
 import com.tonapps.wallet.api.entity.BalanceEntity
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.core.currency.WalletCurrency

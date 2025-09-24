@@ -62,7 +62,10 @@ internal class CurrencyFormat(val locale: Locale) {
             put("USDT", "USD₮")
         }
 
-        private fun fixSymbol(value: String): String {
+        private fun fixSymbol(value: String, cutLongSymbol: Boolean): String {
+            if (cutLongSymbol && value.length > 5) {
+                return value.substring(0, 5) + "…"
+            }
             if (value.equals("USDT", ignoreCase = true)) {
                 return "USD₮"
             }
@@ -164,7 +167,12 @@ internal class CurrencyFormat(val locale: Locale) {
         val bigDecimal = value.stripTrailingZeros().setScale(scale, RoundingMode.HALF_EVEN).stripTrailingZeros()
         val decimals = bigDecimal.scale()
         val amount = getFormat(decimals).format(bigDecimal)
-        return format(currency, amount, true)
+        return format(
+            currency = currency,
+            value = amount,
+            replaceSymbol = true,
+            cutLongSymbol = false
+        )
     }
 
     fun format(
@@ -173,6 +181,7 @@ internal class CurrencyFormat(val locale: Locale) {
         roundingMode: RoundingMode = RoundingMode.DOWN,
         replaceSymbol: Boolean = true,
         stripTrailingZeros: Boolean,
+        cutLongSymbol: Boolean,
     ): CharSequence {
         val scale = getScale(value.abs())
         val bigDecimal = if (stripTrailingZeros) {
@@ -182,15 +191,21 @@ internal class CurrencyFormat(val locale: Locale) {
         }
         val decimals = bigDecimal.scale()
         val amount = getFormat(decimals).format(bigDecimal)
-        return format(currency, amount, replaceSymbol)
+        return format(
+            currency = currency,
+            value = amount,
+            replaceSymbol = replaceSymbol,
+            cutLongSymbol = cutLongSymbol
+        )
     }
 
     private fun format(
         currency: String = "",
         value: String,
         replaceSymbol: Boolean,
+        cutLongSymbol: Boolean,
     ): CharSequence {
-        val symbol = if (replaceSymbol) symbols[currency] else fixSymbol(currency)
+        val symbol = if (replaceSymbol) symbols[currency] else fixSymbol(currency, cutLongSymbol)
         val builder = StringBuilder()
         if (symbol != null) {
             if (monetarySymbolFirstPosition && isFiat(currency)) {
@@ -207,7 +222,7 @@ internal class CurrencyFormat(val locale: Locale) {
         } else {
             builder.append(value)
             builder.append(DEFAULT_SPACE)
-            builder.append(currency)
+            builder.append(fixSymbol(currency, cutLongSymbol))
         }
         return builder.toString()
     }

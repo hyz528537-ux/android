@@ -15,7 +15,7 @@ import com.tonapps.uikit.color.iconSecondaryColor
 import com.tonapps.uikit.color.stateList
 import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.uikit.icon.UIKitIcon
-import com.tonapps.wallet.api.entity.Blockchain
+import com.tonapps.wallet.api.entity.value.Blockchain
 import com.tonapps.wallet.data.core.HIDDEN_BALANCE
 import com.tonapps.wallet.localization.Localization
 import uikit.extensions.drawable
