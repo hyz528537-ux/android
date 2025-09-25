@@ -108,10 +108,8 @@ class SignDataViewModel(
 
     private fun buildCell(payload: SignDataRequestPayload.Cell, timestamp: Long): Cell {
         val cell = payload.value
-        val schemaHash = crc32(payload.schema.toByteArray())
+        val schemaHash = crc32(payload.schema.toByteArray()).toLong() and 0xFFFF_FFFFL
         val encodedDomain = encodeDnsName(domain.value)
-
-        Log.d("SignDataValueLog", "encodedDomain: $encodedDomain")
 
         return CellBuilder.beginCell().apply {
             storeOpCode(TONOpCode.SIGN_DATA)
