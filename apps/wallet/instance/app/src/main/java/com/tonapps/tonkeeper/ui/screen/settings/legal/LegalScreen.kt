@@ -3,6 +3,7 @@ package com.tonapps.tonkeeper.ui.screen.settings.legal
 import android.os.Bundle
 import android.view.View
 import com.tonapps.tonkeeper.helper.BrowserHelper
+import com.tonapps.tonkeeper.koin.serverConfig
 import com.tonapps.tonkeeperx.R
 import uikit.base.BaseFragment
 import uikit.widget.HeaderView
@@ -20,14 +21,16 @@ class LegalScreen: BaseFragment(R.layout.fragment_legal), BaseFragment.SwipeBack
         headerView = view.findViewById(R.id.header)
         headerView.doOnCloseClick = { finish() }
 
+        val serverConfig = requireContext().serverConfig!!
+
         termsView = view.findViewById(R.id.terms)
         termsView.setOnClickListener {
-            BrowserHelper.open(requireActivity(), "https://tonkeeper.com/terms/")
+            BrowserHelper.open(requireActivity(), serverConfig.termsOfUseUrl)
         }
 
         privacyView = view.findViewById(R.id.privacy)
         privacyView.setOnClickListener {
-            BrowserHelper.open(requireActivity(), "https://tonkeeper.com/privacy/")
+            BrowserHelper.open(requireActivity(), serverConfig.privacyPolicyUrl)
         }
     }
 

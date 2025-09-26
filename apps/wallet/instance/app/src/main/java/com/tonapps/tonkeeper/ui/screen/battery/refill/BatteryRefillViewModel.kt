@@ -67,6 +67,9 @@ class BatteryRefillViewModel(
     private val isBatteryDisabled: Boolean
         get() = api.config.flags.disableBattery
 
+    private val isCryptoDisabled: Boolean
+        get() = api.config.disableBatteryCryptoRechargeModule
+
     private val _promoFlow = MutableStateFlow<String?>(null)
     private val promoFlow = _promoFlow.asStateFlow()
 
@@ -129,7 +132,7 @@ class BatteryRefillViewModel(
 
         val rechargeMethodsItems = uiItemsRechargeMethods(wallet)
 
-        if (!isBatteryDisabled && rechargeMethodsItems.isNotEmpty()) {
+        if (!isBatteryDisabled && !isCryptoDisabled && rechargeMethodsItems.isNotEmpty()) {
             uiItems.addAll(uiItemsRechargeMethods(wallet))
             uiItems.add(Item.Space)
         }

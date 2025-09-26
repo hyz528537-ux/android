@@ -16,6 +16,7 @@ data class ConfigEntity(
     val supportLink: String,
     val nftExplorer: String,
     val transactionExplorer: String,
+    val accountExplorer: String,
     val mercuryoSecret: String,
     val tonapiMainnetHost: String,
     val tonapiTestnetHost: String,
@@ -38,6 +39,7 @@ data class ConfigEntity(
     val batteryBeta: Boolean,
     val batterySendDisabled: Boolean,
     val disableBatteryIapModule: Boolean,
+    val disableBatteryCryptoRechargeModule: Boolean,
     val batteryMaxInputAmount: String,
     val batteryRefundEndpoint: String,
     val batteryPromoDisable: Boolean,
@@ -59,6 +61,8 @@ data class ConfigEntity(
     val tronSwapUrl: String,
     val tronSwapTitle: String,
     val tronApiKey: String? = null,
+    val privacyPolicyUrl: String,
+    val termsOfUseUrl: String
 ): Parcelable {
 
     @IgnoredOnParcel
@@ -82,6 +86,7 @@ data class ConfigEntity(
         supportLink = json.getString("supportLink"),
         nftExplorer = json.getString("NFTOnExplorerUrl"),
         transactionExplorer = json.getString("transactionExplorer"),
+        accountExplorer = json.getString("accountExplorer"),
         mercuryoSecret = json.getString("mercuryoSecret"),
         tonapiMainnetHost = json.getString("tonapiMainnetHost"),
         tonapiTestnetHost = json.getString("tonapiTestnetHost"),
@@ -108,6 +113,7 @@ data class ConfigEntity(
         batteryBeta = json.optBoolean("battery_beta", true),
         batterySendDisabled = json.optBoolean("disable_battery_send", false),
         disableBatteryIapModule = json.optBoolean("disable_battery_iap_module", false),
+        disableBatteryCryptoRechargeModule = json.optBoolean("disable_battery_crypto_recharge_module", false),
         batteryMaxInputAmount = json.optString("batteryMaxInputAmount", "3"),
         batteryRefundEndpoint = json.optString("batteryRefundEndpoint", "https://battery-refund-app.vercel.app"),
         batteryPromoDisable = json.optBoolean("disable_battery_promo_module", true),
@@ -134,7 +140,9 @@ data class ConfigEntity(
         tonkeeperApiUrl = json.optString("tonkeeper_api_url", "https://api.tonkeeper.com"),
         tronSwapUrl = json.optString("tron_swap_url", "https://widget.letsexchange.io/en?affiliate_id=ffzymmunvvyxyypo&coin_from=ton&coin_to=USDT-TRC20&is_iframe=true"),
         tronSwapTitle = json.optString("tron_swap_title", "LetsExchange"),
-        tronApiKey = json.optString("tron_api_key")
+        tronApiKey = json.optString("tron_api_key"),
+        privacyPolicyUrl = json.getString("privacy_policy"),
+        termsOfUseUrl = json.getString("terms_of_use"),
     )
 
     constructor() : this(
@@ -142,6 +150,7 @@ data class ConfigEntity(
         supportLink = "mailto:support@tonkeeper.com",
         nftExplorer = "https://tonviewer.com/nft/%s",
         transactionExplorer = "https://tonviewer.com/transaction/%s",
+        accountExplorer = "https://tonviewer.com/%s",
         mercuryoSecret = "",
         tonapiMainnetHost = "https://keeper.tonapi.io",
         tonapiTestnetHost = "https://testnet.tonapi.io",
@@ -164,6 +173,7 @@ data class ConfigEntity(
         batteryBeta = true,
         batterySendDisabled = false,
         disableBatteryIapModule = false,
+        disableBatteryCryptoRechargeModule = false,
         batteryMaxInputAmount = "3",
         batteryRefundEndpoint = "https://battery-refund-app.vercel.app",
         batteryPromoDisable = true,
@@ -183,7 +193,9 @@ data class ConfigEntity(
         region = "US",
         tonkeeperApiUrl = "https://api.tonkeeper.com",
         tronSwapUrl = "https://widget.letsexchange.io/en?affiliate_id=ffzymmunvvyxyypo&coin_from=ton&coin_to=USDT-TRC20&is_iframe=true",
-        tronSwapTitle = "LetsExchange"
+        tronSwapTitle = "LetsExchange",
+        privacyPolicyUrl = "https://tonkeeper.com/privacy",
+        termsOfUseUrl = "https://tonkeeper.com/terms"
     )
 
     fun formatTransactionExplorer(testnet: Boolean, tron: Boolean, hash: String): String {

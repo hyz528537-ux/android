@@ -53,6 +53,7 @@ import uikit.widget.AsyncImageView
 import androidx.core.view.isVisible
 import androidx.core.net.toUri
 import com.tonapps.wallet.data.events.ActionType
+import com.tonapps.tonkeeper.koin.serverConfig
 
 
 class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragment.Modal {
@@ -375,16 +376,11 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
 
     private fun openExplorer(actionArgs: HistoryItem.Event) {
         val url = when (actionArgs.blockchain) {
-            Blockchain.TON -> if (actionArgs.wallet.testnet) {
-                "https://testnet.tonviewer.com/transaction"
-            } else {
-                "https://tonviewer.com/transaction"
-            }
+            Blockchain.TON -> requireContext().serverConfig!!.transactionExplorer.format(actionArgs.txId)
 
-            Blockchain.TRON -> "https://tronscan.org/#/transaction"
-            else -> return
+            Blockchain.TRON -> "https://tronscan.org/#/transaction/${actionArgs.txId}"
         }
-        navigation?.openURL("$url/${actionArgs.txId}")
+        navigation?.openURL(url)
     }
 
     private fun openMore(view: View, actionArgs: HistoryItem.Event) {
@@ -551,7 +547,8 @@ class TransactionScreen : BaseFragment(R.layout.dialog_transaction), BaseFragmen
             if (view is TransactionDetailView) {
                 view.position = ListCell.getPosition(visibleViews.size, i)
             } else {
-                view.background = ListCell.getPosition(visibleViews.size, i).drawable(requireContext())
+                view.background =
+                    ListCell.getPosition(visibleViews.size, i).drawable(requireContext())
             }
         }
     }

@@ -12,12 +12,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.size.Size
+import ui.components.base.UIKitProgressIndicator
 import ui.components.image.AsyncImage
 import ui.theme.UIKit
 
@@ -31,39 +36,56 @@ internal fun EventIconAction(
 
     val iconUrl = action.iconUrl
     val pictureUrl = if (!action.spam) action.imageUrl else null
+    val showLoader = action.state == UiEvent.Item.Action.State.Pending
 
-    Box(
-        modifier = Modifier
-            .size(iconSize)
-            .clip(CircleShape)
-            .background(colorScheme.background.contentTint),
-        contentAlignment = Alignment.Center
-    ) {
-        if (pictureUrl != null) {
-            AsyncImage(
-                modifier = Modifier.matchParentSize(),
-                url = pictureUrl,
-                size = 128,
-                contentScale = ContentScale.Crop
+    Layout(
+        modifier = Modifier.drawBehind {
+            drawCircle(
+                color = colorScheme.background.contentTint,
+                radius = size.minDimension / 2f,
             )
-        } else if (iconUrl != null) {
-            AsyncImage(
-                modifier = Modifier
-                    .matchParentSize()
-                    .padding(8.dp),
-                url = iconUrl,
-                size = Size.ORIGINAL,
-                contentScale = ContentScale.Inside,
-                colorFilter = UIKit.colorScheme.icon.secondaryColorFilter,
-                crossfadeDuration = 0
-            )
+        },
+        content = {
+            when {
+                pictureUrl != null -> {
+                    AsyncImage(
+                        modifier = Modifier.clip(CircleShape),
+                        url = pictureUrl,
+                        size = 128,
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                iconUrl != null -> {
+                    AsyncImage(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(colorScheme.background.contentTint)
+                            .padding(8.dp),
+                        url = iconUrl,
+                        size = Size.ORIGINAL,
+                        contentScale = ContentScale.Inside,
+                        colorFilter = colorScheme.icon.secondaryColorFilter,
+                        crossfadeDuration = 0
+                    )
+                }
+            }
+            if (showLoader) {
+                UIKitProgressIndicator()
+            }
         }
+    ) { measurables, _ ->
+        val sizePx = iconSize.roundToPx()
+        val fixed = Constraints.fixed(sizePx, sizePx)
+        val contentPlaceable = measurables.getOrNull(0)?.measure(fixed)
+        val loaderPlaceable = if (showLoader) {
+            measurables.getOrNull(1)?.measure(Constraints())
+        } else null
 
-        if (action.state == UiEvent.Item.Action.State.Pending) {
-            EventActionLoading(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = (-4).dp, y = (-4).dp)
+        layout(sizePx, sizePx) {
+            contentPlaceable?.place(0, 0)
+            loaderPlaceable?.place(
+                x = (-4).dp.roundToPx(),
+                y = (-4).dp.roundToPx()
             )
         }
     }

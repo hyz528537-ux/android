@@ -105,7 +105,7 @@ class TxEventsViewModel(
         eventsRepository.hiddenTxIdsFlow,
     ) { paging, filterId, decryptedComment, hiddenTxIds ->
         paging.filter { item ->
-            !hiddenTxIds.contains(item.id) && (filterId == TxFilter.All.id || item.isMatch(filterId)) && !item.progress
+            !hiddenTxIds.contains(item.id) && (filterId == TxFilter.All.id || item.isMatch(filterId))
         }.map { item ->
             val decrypted = decryptedComment[item.id]
             if (decrypted.isNullOrEmpty()) {

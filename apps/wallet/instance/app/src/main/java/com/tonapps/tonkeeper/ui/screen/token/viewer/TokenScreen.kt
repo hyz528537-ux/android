@@ -1,16 +1,17 @@
 package com.tonapps.tonkeeper.ui.screen.token.viewer
 
 import android.graphics.Rect
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import androidx.core.net.toUri
 import androidx.core.view.doOnLayout
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.core.history.list.HistoryAdapter
 import com.tonapps.tonkeeper.core.history.list.HistoryItemDecoration
 import com.tonapps.tonkeeper.core.history.list.item.HistoryItem
+import com.tonapps.tonkeeper.helper.ExternalLinkHelper
+import com.tonapps.tonkeeper.koin.serverConfig
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.manager.widget.WidgetManager
 import com.tonapps.tonkeeper.popup.ActionSheet
@@ -28,7 +29,6 @@ import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.token.entities.AccountTokenEntity
 import com.tonapps.wallet.localization.Localization
-import kotlinx.coroutines.flow.take
 import org.koin.core.parameter.parametersOf
 import uikit.base.BaseFragment
 import uikit.extensions.collectFlow
@@ -36,8 +36,6 @@ import uikit.extensions.dp
 import uikit.extensions.drawable
 import uikit.extensions.getDimensionPixelSize
 import uikit.extensions.setRightDrawable
-import androidx.core.net.toUri
-import com.tonapps.tonkeeper.helper.ExternalLinkHelper
 
 class TokenScreen(wallet: WalletEntity) :
     BaseListWalletScreen<ScreenContext.Wallet>(ScreenContext.Wallet(wallet)),
@@ -47,7 +45,12 @@ class TokenScreen(wallet: WalletEntity) :
 
     private val args: TokenArgs by lazy { TokenArgs(requireArguments()) }
 
-    override val viewModel: TokenViewModel by walletViewModel { parametersOf(args.address, args.rawUsde) }
+    override val viewModel: TokenViewModel by walletViewModel {
+        parametersOf(
+            args.address,
+            args.rawUsde
+        )
+    }
 
     private val tokenAdapter = TokenAdapter {
         viewModel.setChartPeriod(it)
@@ -128,11 +131,14 @@ class TokenScreen(wallet: WalletEntity) :
     }
 
     private fun actionMenu(view: View, token: AccountTokenEntity) {
+        val accountExplorerUrl = requireContext().serverConfig!!.accountExplorer
         val detailsUrl = with(screenContext.wallet) {
             if (token.isTrc20) {
-                ExternalLinkHelper.tronToken(address, testnet)
+                ExternalLinkHelper.tronToken(viewModel.tronAddress ?: "", testnet)
+            } else if (token.isTon) {
+                accountExplorerUrl.format(address)
             } else {
-                ExternalLinkHelper.tonToken(address, token.address, testnet)
+                accountExplorerUrl.format("$address/jetton/${token.address}")
             }
         }.toUri()
 
