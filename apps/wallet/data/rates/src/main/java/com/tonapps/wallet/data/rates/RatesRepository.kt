@@ -22,6 +22,39 @@ class RatesRepository(
 ) {
 
     private val localDataSource = BlobDataSource(context)
+    private val manager = RateManager()
+
+    suspend fun getRate(
+        from: WalletCurrency,
+        to: WalletCurrency,
+        baseCurrency: WalletCurrency = WalletCurrency.USD
+    ): RateData? = withContext(Dispatchers.IO) {
+        if (!manager.hasRate(from, to)) {
+            val all = listOf(from, to, baseCurrency)
+            val currency = all.first { it.fiat }
+            val tokens = all.filter { !it.fiat }
+            val response = fetchRates(currency.code, tokens.map { it.tokenQuery })
+            for (token in tokens) {
+                val tokenRates = response[token.tokenQuery] ?: continue
+                val price = tokenRates.prices?.get(currency.code)?.let {
+                    Coins.of(it, currency.decimals)
+                } ?: continue
+                manager.addRate(token, currency, price)
+            }
+        }
+        manager.getRate(from, to)?.let {
+            RateData(from, to, it)
+        }
+    }
+
+    suspend fun convert(
+        amount: Coins,
+        from: WalletCurrency,
+        to: WalletCurrency
+    ): Coins {
+        getRate(from, to)
+        return manager.convert(amount, from, to) ?: Coins.ZERO
+    }
 
     suspend fun updateAll(currency: WalletCurrency, tokens: List<String>) = withContext(Dispatchers.IO) {
         load(currency, tokens.take(100).toMutableList())

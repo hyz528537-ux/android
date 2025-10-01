@@ -30,6 +30,29 @@ object Emoji {
     private val customIcons = CustomIcons()
     private val emojiPattern = """^(\p{So})""".toRegex()
 
+    suspend fun findByName(context: Context, query: String): List<EmojiEntity> {
+        if (query.isBlank()) {
+            return listOf()
+        }
+        return get(context).filter {
+            if (it.custom) {
+                false
+            } else {
+                val name = it.name ?: return@filter false
+                name.contains(query, true)
+            }
+        }
+    }
+
+    suspend fun findByNames(context: Context, query: List<String>): List<EmojiEntity> {
+        if (query.isEmpty()) {
+            return emptyList()
+        }
+        return query.map {
+            findByName(context, it)
+        }.flatten().distinct()
+    }
+
     fun getEmojiFromPrefix(text: String): String? {
         val matchResult = emojiPattern.find(text)
         return matchResult?.value

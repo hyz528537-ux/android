@@ -42,9 +42,7 @@ class CurrencyHolder(
         if (iconRes != null) {
             iconView.setIcon(iconRes)
             iconView.visibility = View.VISIBLE
-        }
-
-        if (icon != null) {
+        } else if (icon != null) {
             imageView.setImageURI(icon)
             imageView.visibility = View.VISIBLE
         }

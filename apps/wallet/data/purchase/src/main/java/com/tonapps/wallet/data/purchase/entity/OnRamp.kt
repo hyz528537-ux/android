@@ -70,6 +70,10 @@ sealed class OnRamp: Parcelable {
         val max: Double? by lazy {
             merchants.mapNotNull { it.limits?.max }.maxOrNull()
         }
+
+        fun containsMerchant(merchant: String): Boolean {
+            return merchants.any { it.slug.equals(merchant, true) }
+        }
     }
 
     @Serializable

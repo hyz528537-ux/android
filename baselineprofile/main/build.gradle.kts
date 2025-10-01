@@ -1,10 +1,13 @@
 @file:Suppress("UnstableApiUsage")
 import com.android.build.api.dsl.ManagedVirtualDevice
+import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("com.android.test")
-    id("org.jetbrains.kotlin.android")
-    id("androidx.baselineprofile")
+    alias(libs.plugins.android.test)
+    alias(libs.plugins.android.kotlin)
+    alias(libs.plugins.android.baselineprofile)
 }
 
 val isCI = project.hasProperty("android.injected.signing.store.file")
@@ -21,8 +24,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = Build.compileJavaVersion
+        targetCompatibility = Build.compileJavaVersion
     }
 
     flavorDimensions += listOf("version")
@@ -36,10 +39,6 @@ android {
             isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("debug")
         }
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
     }
 
     testOptions.managedDevices.devices {
@@ -74,6 +73,7 @@ baselineProfile {
     // useConnectedDevices = false
     enableEmulatorDisplay = !isCI
 }
+
 
 androidComponents {
     onVariants { v ->

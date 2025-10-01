@@ -64,7 +64,7 @@ class EventsRepository(
     }
 
     suspend fun fetch(query: TxFetchQuery): TxPage {
-        val events = remoteDataSource.events(query).take(query.limit)
+        val events = remoteDataSource.events(query)
         return TxPage(
             source = TxPage.Source.REMOTE,
             events = events,

@@ -51,8 +51,6 @@ platform :android do
     desc "Build the android aab for release"
     lane :build_release do |options|
         flavor = options[:flavor] || "default"
-        gradle(task: 'clean')
-
         gradle(
             task: "bundle",
             build_type: "release",
@@ -121,7 +119,7 @@ platform :android do
 
         assemble_release(flavor: "site")
     end
-    
+
     desc "Build and upload to GooglePlay (UK)"
     lane :beta_uk do
         fetch_and_increment_build_number(app_identifier: "com.ton_keeper.uk")
@@ -131,4 +129,3 @@ platform :android do
         assemble_release(flavor: "uk")
     end
 end
-

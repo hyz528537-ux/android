@@ -12,7 +12,8 @@ import com.tonapps.wallet.data.events.tx.TxPage
 import com.tonapps.wallet.data.events.tx.model.TxEvent
 import com.tonapps.wallet.data.settings.SettingsRepository
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import ui.components.events.UiEvent
 import java.util.concurrent.ConcurrentHashMap
 
@@ -38,7 +39,9 @@ internal class TxPagingSource(
 
     private val processedEventIds = mutableSetOf<String>()
 
-    override suspend fun load(params: LoadParams<Timestamp>): LoadResult<Timestamp, UiEvent.Item> {
+    override suspend fun load(
+        params: LoadParams<Timestamp>
+    ): LoadResult<Timestamp, UiEvent.Item> = withContext(Dispatchers.IO) {
         try {
             val beforeTimestamp = params.key
             val data = if (params is LoadParams.Refresh && beforeTimestamp == null) {
@@ -47,21 +50,21 @@ internal class TxPagingSource(
                 nextLoad(beforeTimestamp ?: Timestamp.now, params.loadSize)
             }
             if (data.isEmpty) {
-                return LoadResult.Page(emptyList(), null, null)
-            }
+                LoadResult.Page(emptyList(), null, null)
+            } else {
+                val uiItems = data.events.map {
+                    cache[it.id] = it
+                    uiMapper.event(it)
+                }
 
-            val uiItems = data.events.map {
-                cache[it.id] = it
-                uiMapper.event(it)
+                LoadResult.Page(
+                    data = uiItems.toImmutableList(),
+                    prevKey = null,
+                    nextKey = data.nextKey
+                )
             }
-
-            return LoadResult.Page(
-                data = uiItems.toImmutableList(),
-                prevKey = null,
-                nextKey = data.nextKey
-            )
         } catch (e: Throwable) {
-            return LoadResult.Error(e)
+            LoadResult.Error(e)
         }
     }
 
@@ -86,7 +89,7 @@ internal class TxPagingSource(
             beforeTimestamp = beforeTimestamp,
             limit = limit
         )
-        return eventsRepository.fetch(query)
+        return processEvents(eventsRepository.fetch(query))
     }
 
     private suspend fun prevLoad(afterTimestamp: Timestamp, limit: Int): TxPage {
@@ -94,20 +97,30 @@ internal class TxPagingSource(
             afterTimestamp = afterTimestamp,
             limit = limit
         )
-        return eventsRepository.fetch(query)
+        return processEvents(eventsRepository.fetch(query))
     }
 
     private suspend fun initialLoad(limit: Int): TxPage {
         val query = query(
             limit = limit
         )
-        return eventsRepository.fetch(query)
+        return processEvents(eventsRepository.fetch(query))
+    }
+
+    private fun processEvents(page: TxPage): TxPage {
+        val events = processEvents(page.events, page.limit)
+        return page.copy(
+            events = events
+        )
     }
 
     private fun processEvents(events: List<TxEvent>, limit: Int): List<TxEvent> {
         val filtered = events.filter {
             !processedEventIds.contains(it.id)
-        }.sortedByDescending { it.timestamp }.take(limit)
+        }.sortedByDescending {
+            it.timestamp
+        }.take(limit)
+        processedEventIds.addAll(filtered.map { it.id })
         return filtered
     }
 

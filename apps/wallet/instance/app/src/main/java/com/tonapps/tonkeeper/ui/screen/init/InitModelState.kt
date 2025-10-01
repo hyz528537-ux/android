@@ -13,6 +13,7 @@ import com.tonapps.tonkeeper.ui.screen.init.list.AccountItem
 import com.tonapps.wallet.api.entity.AccountDetailsEntity
 import com.tonapps.wallet.data.account.Wallet
 import com.tonapps.wallet.data.account.entities.WalletEntity
+import kotlinx.coroutines.flow.filterNotNull
 import org.ton.api.pub.PublicKeyEd25519
 
 class InitModelState(private val savedStateHandle: SavedStateHandle) {
@@ -55,7 +56,7 @@ class InitModelState(private val savedStateHandle: SavedStateHandle) {
         private const val WORDS_COUNT_KEY = "words_count"
     }
 
-    val labelFlow = savedStateHandle.getStateFlow(LABEL_KEY, Wallet.Label("", "", Color.TRANSPARENT))
+    val labelFlow = savedStateHandle.getStateFlow<Wallet.Label?>(LABEL_KEY, null).filterNotNull()
 
     var passcode: String?
         get() = savedStateHandle[PASSCODE_KEY]

@@ -1,5 +1,6 @@
 package com.tonapps.tonkeeper.usecase.sign
 
+import android.util.Log
 import com.tonapps.blockchain.ton.extensions.EmptyPrivateKeyEd25519.sign
 import com.tonapps.blockchain.ton.extensions.hex
 import com.tonapps.blockchain.tron.TronTransaction

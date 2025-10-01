@@ -186,6 +186,10 @@ data class Coins(
         parcel.writeInt(decimals)
     }
 
+    fun withNewDecimals(newDecimals: Int): Coins {
+        return of(value, newDecimals)
+    }
+
     operator fun plus(other: Coins): Coins {
         return of(value + other.value, decimals)
     }

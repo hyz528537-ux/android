@@ -7,6 +7,7 @@
     <string name="fake" translatable="false">FAKE</string>
     <string name="beta" translatable="false">Beta</string>
     <string name="ston_fi" translatable="false">STON.fi</string>
+    <string name="changelly" translatable="false">Changelly</string>
     <string name="nft" translatable="false">NFT</string>
     <string name="slippage" translatable="false">Slippage</string>
     <string name="ok" translatable="false">OK</string>

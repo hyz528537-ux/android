@@ -8,5 +8,5 @@ data class TxTronParams(
 ) {
 
     val isEmtpy: Boolean
-        get() = address != null && tonProofToken != null
+        get() = address == null && tonProofToken == null
 }

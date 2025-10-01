@@ -1,7 +1,9 @@
 package com.tonapps.blockchain.ton.contract
 
+import android.util.Log
 import com.tonapps.blockchain.ton.TONOpCode
 import com.tonapps.blockchain.ton.extensions.equalsAddress
+import com.tonapps.blockchain.ton.extensions.normalizeHash
 import com.tonapps.blockchain.ton.extensions.storeMaybeAddress
 import com.tonapps.blockchain.ton.extensions.storeMaybeStringTail
 import com.tonapps.blockchain.ton.extensions.storeOpCode
@@ -28,6 +30,7 @@ import org.ton.contract.SmartContract
 import org.ton.contract.wallet.WalletTransfer
 import org.ton.tlb.CellRef
 import org.ton.tlb.constructor.AnyTlbConstructor
+import org.ton.tlb.loadTlb
 import org.ton.tlb.storeTlb
 import java.math.BigInteger
 
@@ -200,6 +203,15 @@ abstract class BaseWalletContract(
         storeRefs(unsignedBody.refs)
     }
 
+    fun normalizedHashFromSignedBody(signedBody: Cell): BitString? {
+        try {
+            val message = parseTransferMessageCell(signedBody)
+            return message.normalizeHash()
+        } catch (e: Throwable) {
+            return null
+        }
+    }
+
     fun createTransferMessageCell(
         address: MsgAddressInt,
         privateKey: PrivateKeyEd25519,
@@ -264,6 +276,10 @@ abstract class BaseWalletContract(
             init = maybeStateInit,
             body = body
         )
+    }
+
+    fun parseTransferMessageCell(cell: Cell) = cell.parse {
+        loadTlb(Message.tlbCodec(AnyTlbConstructor))
     }
 
     fun createTransferMessageCell(

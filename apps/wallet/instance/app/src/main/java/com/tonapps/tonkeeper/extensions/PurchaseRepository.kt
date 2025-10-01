@@ -9,6 +9,7 @@ import com.tonapps.wallet.data.purchase.entity.PurchaseMethodEntity
 import com.tonapps.wallet.data.settings.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -18,16 +19,6 @@ data class OnRampResult(
     val data: OnRamp.Data,
     val country: String
 )
-
-
-fun PurchaseRepository.onRampDataFlow(
-    environment: Environment
-) = environment.countryFlow
-    .mapNotNull { country ->
-        getOnRamp()?.let { data ->
-            OnRampResult(data, country)
-        }
-    }
 
 
 suspend fun PurchaseRepository.getProvidersByCountry(

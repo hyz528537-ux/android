@@ -3,6 +3,7 @@ package com.tonapps.wallet.data.staking.entities
 import android.os.Parcelable
 import com.tonapps.icu.Coins
 import com.tonapps.wallet.data.staking.StakingPool
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -11,12 +12,14 @@ data class StakingEntity(
     val info: List<StakingInfoEntity>
 ): Parcelable {
 
+    @IgnoredOnParcel
     val poolsWithJettons: List<PoolEntity> by lazy {
         pools.map { it.pools }.flatten().filter {
             it.liquidJettonMaster != null
         }
     }
 
+    @IgnoredOnParcel
     val poolsJettonAddresses: List<String> by lazy {
         poolsWithJettons.mapNotNull { it.liquidJettonMaster }
     }

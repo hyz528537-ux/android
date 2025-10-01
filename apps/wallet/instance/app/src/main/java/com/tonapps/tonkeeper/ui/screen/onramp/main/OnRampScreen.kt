@@ -176,6 +176,8 @@ class OnRampScreen(wallet: WalletEntity): BaseOnRampScreen(wallet) {
             priceReversedView.visibility = View.VISIBLE
             priceReversedView.text = state.to
         }
+
+        updateDivider()
     }
 
     private fun applyBalanceState(state: UiState.Balance) {

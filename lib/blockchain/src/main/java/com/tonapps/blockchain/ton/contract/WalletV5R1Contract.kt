@@ -1,6 +1,5 @@
 package com.tonapps.blockchain.ton.contract
 
-import android.util.Log
 import com.tonapps.blockchain.ton.TONOpCode
 import com.tonapps.blockchain.ton.TonNetwork
 import com.tonapps.blockchain.ton.contract.WalletV5R1Contract.W5Context.Client
@@ -12,12 +11,12 @@ import org.ton.api.pub.PublicKeyEd25519
 import org.ton.bigint.BigInt
 import org.ton.bigint.toBigInt
 import org.ton.bitstring.BitString
+import org.ton.block.Message
 import org.ton.block.MessageRelaxed
 import org.ton.boc.BagOfCells
 import org.ton.cell.Cell
 import org.ton.cell.CellBuilder
 import org.ton.cell.buildCell
-import org.ton.cell.storeRef
 import org.ton.contract.wallet.WalletTransfer
 import org.ton.crypto.hex
 import org.ton.tlb.CellRef

@@ -435,6 +435,16 @@ data class WalletCurrency(
         get() = chain is Chain.TRON
 
     @IgnoredOnParcel
+    val isJetton: Boolean
+        get() = if (isTONChain && code == TON_KEY) {
+            false
+        } else if (isTONChain) {
+            true
+        } else {
+            false
+        }
+
+    @IgnoredOnParcel
     val decimals: Int
         get() = chain.decimals
 
@@ -462,7 +472,6 @@ data class WalletCurrency(
         }
     }
 
-
     @IgnoredOnParcel
     val address: String by lazy {
         when (chain) {
@@ -483,6 +492,27 @@ data class WalletCurrency(
             chain.name // code
         }*/
         code
+    }
+
+    @IgnoredOnParcel
+    val key: String by lazy {
+        if (fiat) {
+            "fiat:$code"
+        } else if (isUSDT) {
+            "stablecoin:$code"
+        } else if (isTONChain && code == TON_KEY) {
+            "crypto:TON"
+        } else if (isTONChain) {
+            "crypto:TON:$address"
+        } else {
+            "crypto:$code"
+        }
+    }
+
+
+    @IgnoredOnParcel
+    val tokenQuery: String by lazy {
+        if (isTONChain) address else code
     }
 
     override fun equals(other: Any?): Boolean {
@@ -513,5 +543,25 @@ data class WalletCurrency(
             return true
         }
         return false
+    }
+
+    override fun hashCode(): Int {
+        var result = code.hashCode()
+        result = 31 * result + title.hashCode()
+        result = 31 * result + alias.hashCode()
+        result = 31 * result + chain.hashCode()
+        result = 31 * result + (iconUrl?.hashCode() ?: 0)
+        result = 31 * result + fiat.hashCode()
+        result = 31 * result + isUSDT.hashCode()
+        result = 31 * result + isTONChain.hashCode()
+        result = 31 * result + isTronChain.hashCode()
+        result = 31 * result + decimals
+        result = 31 * result + (drawableRes ?: 0)
+        result = 31 * result + isCustom.hashCode()
+        result = 31 * result + (iconUri?.hashCode() ?: 0)
+        result = 31 * result + (chainName?.hashCode() ?: 0)
+        result = 31 * result + address.hashCode()
+        result = 31 * result + symbol.hashCode()
+        return result
     }
 }

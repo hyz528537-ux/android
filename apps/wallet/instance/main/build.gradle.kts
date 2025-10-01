@@ -24,7 +24,7 @@ android {
         targetSdk = Build.compileSdkVersion
         versionCode = 600
 
-        versionName = "5.4.3" // Format is "major.minor.patch" (e.g. "1.0.0") and only numbers are allowed
+        versionName = "5.4.4" // Format is "major.minor.patch" (e.g. "1.0.0") and only numbers are allowed
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -82,11 +82,12 @@ android {
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
         resources {
             excludes.add("/META-INF/{AL2.0,LGPL2.1}")
             excludes += setOf(
@@ -94,10 +95,6 @@ android {
                 "META-INF/*.kotlin_module"
             )
         }
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
     }
 }
 

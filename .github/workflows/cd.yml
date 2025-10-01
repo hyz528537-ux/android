@@ -32,9 +32,9 @@ jobs:
 
       - name: Decode signing certificate into a file
         env:
-         CERTIFICATE_BASE64: ${{ secrets.ANDROID_DIST_SIGNING_KEY }}
+          CERTIFICATE_BASE64: ${{ secrets.ANDROID_DIST_SIGNING_KEY }}
         run: |
-         echo $CERTIFICATE_BASE64 | base64 --decode > google-release.keystore
+          echo $CERTIFICATE_BASE64 | base64 --decode > google-release.keystore
 
       - name: Build android beta
         run: bundle exec fastlane android beta

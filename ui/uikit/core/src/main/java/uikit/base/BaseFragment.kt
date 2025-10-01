@@ -232,9 +232,7 @@ open class BaseFragment(
         val view = if (this is Modal) {
             wrapInModal(inflater.context, contentView, savedInstanceState)
         } else {
-            if (contentView !is ComposeView) {
-                contentView.setBackgroundColor(requireContext().backgroundPageColor)
-            }
+            contentView.setBackgroundColor(requireContext().backgroundPageColor)
             when (this) {
                 is SwipeBack -> wrapInSwipeBack(inflater.context, contentView, savedInstanceState)
                 is BottomSheet -> wrapInBottomSheet(inflater.context, contentView, savedInstanceState)

@@ -129,8 +129,10 @@ internal class DatabaseSource(
         val bodyIndex = cursor.getColumnIndex(SPAM_TABLE_BODY_COLUMN)
         val events = mutableListOf<AccountEvent>()
         while (cursor.moveToNext()) {
-            val body = cursor.getString(bodyIndex)
-            events.add(Serializer.fromJSON(body))
+            try {
+                val body = cursor.getString(bodyIndex)
+                events.add(Serializer.fromJSON(body))
+            } catch (ignored: Throwable) { }
         }
         cursor.close()
         return events.toList()

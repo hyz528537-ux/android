@@ -7,7 +7,6 @@ import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.extensions.getUriForResourceId
-import com.tonapps.tonkeeper.extensions.onRampDataFlow
 import com.tonapps.tonkeeper.manager.assets.AssetsManager
 import com.tonapps.tonkeeper.os.AndroidCurrency
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
@@ -46,10 +45,7 @@ class OnRampPickerViewModel(
     private val environment: Environment,
 ): BaseWalletVM(app) {
 
-    private val onRampResultFlow = purchaseRepository
-        .onRampDataFlow(environment)
-
-    private val onRampFlow = onRampResultFlow.map { it.data }
+    private val onRampFlow = purchaseRepository.onRampDataFlow()
 
     private val currencyByCountry: WalletCurrency
         get() {
@@ -170,7 +166,7 @@ class OnRampPickerViewModel(
         } else {
             WalletCurrency.FIAT.mapNotNull { WalletCurrency.of(it) }.filter {
                 it.containsQuery(query)
-            }.take(3)
+            }.take(5)
         }
     }
 
@@ -235,7 +231,7 @@ class OnRampPickerViewModel(
         } else {
             tonAssets.filter {
                 it.contains(query)
-            }.take(3)
+            }.take(30)
         }
 
         val moreItem = if (query.isEmpty() && tonAssets.size > max) {
@@ -283,6 +279,7 @@ class OnRampPickerViewModel(
         currencies: List<WalletCurrency>,
         query: String
     ): List<Item> {
+        val max = if (query.isEmpty()) 2 else 50
         val list = mutableListOf<Item>()
 
         val previewCurrencies = currencies.filter {
@@ -291,7 +288,7 @@ class OnRampPickerViewModel(
             } else {
                 it.containsQuery(query)
             }
-        }.take(2)
+        }.take(max)
 
         for ((index, currency) in previewCurrencies.withIndex()) {
             val position = if (query.isNotEmpty()) {

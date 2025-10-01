@@ -1,6 +1,10 @@
 package com.tonapps.tonkeeper.ui.screen.onramp.main
 
 import android.os.Bundle
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatTextView
@@ -8,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.tonapps.extensions.toUriOrNull
 import com.tonapps.tonkeeper.core.AnalyticsHelper
 import com.tonapps.tonkeeper.extensions.hideKeyboard
+import com.tonapps.tonkeeper.extensions.isOverlapping
 import com.tonapps.tonkeeper.helper.BrowserHelper
 import com.tonapps.tonkeeper.koin.walletViewModel
 import com.tonapps.tonkeeper.ui.base.WalletContextScreen
@@ -17,6 +22,8 @@ import com.tonapps.tonkeeper.ui.screen.onramp.main.view.ReviewInputView
 import com.tonapps.tonkeeper.ui.screen.onramp.picker.provider.OnRampProviderPickerScreen
 import com.tonapps.tonkeeper.ui.screen.purchase.PurchaseConfirmDialog
 import com.tonapps.tonkeeperx.R
+import com.tonapps.uikit.color.backgroundPageColor
+import com.tonapps.uikit.color.textSecondaryColor
 import com.tonapps.uikit.icon.UIKitIcon
 import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.purchase.entity.OnRamp
@@ -25,8 +32,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import uikit.base.BaseFragment
+import uikit.drawable.FooterDrawable
 import uikit.extensions.collectFlow
 import uikit.extensions.doKeyboardAnimation
+import uikit.span.ClickableSpanCompat
 import uikit.widget.HeaderView
 import uikit.widget.LoadableButton
 import uikit.widget.SlideBetweenView
@@ -45,10 +54,13 @@ open class BaseOnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.
 
     private lateinit var headerView: HeaderView
     private lateinit var nextContainerView: ViewGroup
+    private lateinit var nextContainerBodyView: View
     lateinit var button: LoadableButton
     private lateinit var pairNotAvailableView: AppCompatTextView
     private lateinit var providerContainerView: ViewGroup
     private lateinit var providerTitleView: AppCompatTextView
+    private lateinit var disclaimerView: AppCompatTextView
+    private lateinit var actionContainerDrawable: FooterDrawable
     lateinit var minMaxView: AppCompatTextView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -60,7 +72,12 @@ open class BaseOnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.
 
         reviewReceive = view.findViewById(R.id.review_receive)
 
+        actionContainerDrawable = FooterDrawable(requireContext())
+        actionContainerDrawable.setColor(requireContext().backgroundPageColor)
+
         nextContainerView = view.findViewById(R.id.next_container)
+        nextContainerBodyView = view.findViewById(R.id.next_container_body)
+        nextContainerBodyView.background = actionContainerDrawable
 
         button = view.findViewById(R.id.next_button)
 
@@ -71,10 +88,18 @@ open class BaseOnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.
         providerTitleView = view.findViewById(R.id.provider_title)
         providerTitleView.text = getString(Localization.provider)
 
+
+
+        disclaimerView = view.findViewById(R.id.disclaimer)
+        disclaimerView.movementMethod = LinkMovementMethod.getInstance()
+        applyDisclaimer()
+
         view.doKeyboardAnimation { offset, progress, isShowing ->
             onKeyboardAnimation(offset, progress, isShowing)
+            updateDivider()
         }
 
+        collectFlow(viewModel.isChangellyFlow, ::applyIsChangelly)
         collectFlow(viewModel.openWidgetFlow, ::openWidget)
         collectFlow(viewModel.allowedPairFlow, ::applyAllowedPair)
         collectFlow(viewModel.stepFlow, ::applyStep)
@@ -88,7 +113,46 @@ open class BaseOnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.
                 minMaxView.text = getString(Localization.min_amount, it)
             }
         }
+    }
 
+    fun updateDivider() {
+        if (disclaimerView.visibility != View.VISIBLE) {
+            actionContainerDrawable.setDivider(false)
+            return
+        }
+        val priceView = view?.findViewById<View>(R.id.price) ?: return
+        val priceReversedView = view?.findViewById<View>(R.id.price_reversed) ?: return
+        val needDivider = nextContainerBodyView.isOverlapping(priceView) || nextContainerBodyView.isOverlapping(priceReversedView)
+        // actionContainerDrawable.setDivider(needDivider)
+    }
+
+    private fun applyDisclaimer() {
+        val textSecondaryColor = requireContext().textSecondaryColor
+        val provider = getString(Localization.changelly)
+        val termsOfUse = getString(Localization.terms_of_use)
+        val privacyPolicy = getString(Localization.privacy_policy)
+        val text = requireContext().getString(Localization.swap_disclaimer, provider, termsOfUse, privacyPolicy)
+        val builder = SpannableStringBuilder(text)
+
+        val providerStart = text.indexOf(provider)
+        val providerEnd = providerStart + provider.length
+        builder.setSpan(ClickableSpanCompat(textSecondaryColor) {
+            BrowserHelper.open(requireContext(), "https://changelly.com/")
+        }, providerStart, providerEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        val termsOfUseStart = text.indexOf(termsOfUse)
+        val termsOfUseEnd = termsOfUseStart + termsOfUse.length
+        builder.setSpan(ClickableSpanCompat(textSecondaryColor) {
+            BrowserHelper.open(requireContext(), "https://changelly.com/terms-of-use")
+        }, termsOfUseStart, termsOfUseEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        val privacyPolicyStart = text.indexOf(privacyPolicy)
+        val privacyPolicyEnd = privacyPolicyStart + privacyPolicy.length
+        builder.setSpan(ClickableSpanCompat(textSecondaryColor) {
+            BrowserHelper.open(requireContext(), "https://changelly.com/privacy-policy")
+        }, privacyPolicyStart, privacyPolicyEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        disclaimerView.text = builder
     }
 
     override fun finish() {
@@ -109,6 +173,11 @@ open class BaseOnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.
             confirmUiState()
             slidesView.next()
         }
+    }
+
+    private fun applyIsChangelly(isChangelly: Boolean) {
+        disclaimerView.visibility = if (isChangelly) View.VISIBLE else View.GONE
+        updateDivider()
     }
 
     private fun applySelectedProvider(state: UiState.SelectedProvider) {
@@ -206,6 +275,7 @@ open class BaseOnRampScreen(wallet: WalletEntity): WalletContextScreen(R.layout.
 
     private fun openWebView(url: String, selectedProvider: String) {
         button.isLoading = true
+
         BrowserHelper.open(requireContext(), url)
         lifecycleScope.launch {
             delay(3000)

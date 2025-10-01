@@ -390,7 +390,7 @@ internal class TxActionMapper(
 
     private fun auctionBid(address: BlockchainAddress, action: AuctionBidAction): TxActionBody {
         val currency = currency(action.amount)
-        val amount = Coins.of(action.amount.value, currency.decimals)
+        val amount = Coins.ofNano(action.amount.value, currency.decimals)
         val product = action.nft?.let {
             product(it, address.testnet)
         }

@@ -15,15 +15,20 @@ internal class SwapApi(
     private val okHttpClient: OkHttpClient
 ) {
 
-    fun getSwapAssets() = withRetry {
-        okHttpClient.get("https://swap.tonkeeper.com/v2/swap/assets")
+    fun getSwapAssets(prefix: String) = withRetry {
+        okHttpClient.get("$prefix/v2/swap/assets")
     }
 
-    fun stream(from: SwapAssetParam, to: SwapAssetParam, userAddress: String): Flow<SwapEntity.Messages?> {
+    fun stream(
+        prefix: String,
+        from: SwapAssetParam,
+        to: SwapAssetParam,
+        userAddress: String
+    ): Flow<SwapEntity.Messages?> {
         if (from.isEmpty && to.isEmpty) {
             return emptyFlow()
         }
-        val builder = "https://swap.tonkeeper.com/v2/swap/omniston/stream".toUri().buildUpon()
+        val builder = "$prefix/v2/swap/omniston/stream".toUri().buildUpon()
         from.apply("from", builder)
         to.apply("to", builder)
         builder.appendQueryParameter("userAddress", userAddress)

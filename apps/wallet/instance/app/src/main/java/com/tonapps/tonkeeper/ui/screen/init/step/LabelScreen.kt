@@ -6,12 +6,9 @@ import android.view.View
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import com.tonapps.tonkeeper.ui.component.label.LabelEditorView
-import com.tonapps.tonkeeper.ui.screen.init.InitEvent
 import com.tonapps.tonkeeper.ui.screen.init.InitRoute
-import com.tonapps.tonkeeper.ui.screen.init.InitScreen
 import com.tonapps.tonkeeper.ui.screen.init.InitViewModel
 import com.tonapps.tonkeeperx.R
-import com.tonapps.wallet.data.account.WalletColor
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import uikit.base.BaseFragment
@@ -46,6 +43,7 @@ class LabelScreen: BaseFragment(R.layout.fragment_init_label) {
         }
 
         collectFlow(initViewModel.labelFlow) { label ->
+            Log.d("InitViewModelLog", "setNewLabel: $label")
             with(editorView) {
                 name = label.name
                 emoji = label.emoji

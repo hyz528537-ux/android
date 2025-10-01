@@ -34,6 +34,7 @@ class Holder(
         itemView.setOnClickListener { onClick(item) }
 
         iconView.setImageURI(item.iconUri, this)
+
         if (item.best) {
             titleView.text = item.title.withBlueBadge(context, Localization.best)
         } else {

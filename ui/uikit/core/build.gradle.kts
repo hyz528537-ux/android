@@ -11,9 +11,6 @@ android {
         minSdk = Build.minSdkVersion
         consumerProguardFiles("consumer-rules.pro")
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
 
 dependencies {

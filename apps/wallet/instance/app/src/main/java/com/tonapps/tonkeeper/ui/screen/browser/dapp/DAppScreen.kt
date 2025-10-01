@@ -10,7 +10,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.app.ShareCompat
 import androidx.core.content.pm.ShortcutInfoCompat
@@ -94,7 +97,7 @@ class DAppScreen(wallet: WalletEntity) : InjectedTonConnectScreen(R.layout.fragm
         override fun onPageStarted(url: String, favicon: Bitmap?) {
             super.onPageStarted(url, favicon)
             refreshView.isRefreshing = true
-            applyHost(url)
+            hostView.text = getString(Localization.loading)
         }
 
         override fun onReceivedTitle(title: String) {
@@ -105,7 +108,7 @@ class DAppScreen(wallet: WalletEntity) : InjectedTonConnectScreen(R.layout.fragm
         override fun onPageFinished(url: String) {
             super.onPageFinished(url)
             refreshView.isRefreshing = false
-            applyHost(url)
+            applyHost(webView.url ?: url)
         }
 
         override fun onScroll(y: Int, x: Int) {
@@ -177,9 +180,7 @@ class DAppScreen(wallet: WalletEntity) : InjectedTonConnectScreen(R.layout.fragm
     }
 
     private fun applyHost(url: String) {
-        url.toUri().host?.let {
-            hostView.text = it
-        }
+        hostView.text = url.toUri().host ?: "unknown"
     }
 
     private fun openNewTab(url: String) {

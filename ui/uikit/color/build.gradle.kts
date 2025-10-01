@@ -9,9 +9,6 @@ android {
     defaultConfig {
         minSdk = Build.minSdkVersion
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
 
 dependencies {

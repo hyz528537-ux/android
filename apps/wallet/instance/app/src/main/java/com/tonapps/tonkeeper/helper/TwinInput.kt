@@ -3,6 +3,7 @@ package com.tonapps.tonkeeper.helper
 import android.util.Log
 import com.tonapps.icu.Coins
 import com.tonapps.wallet.data.core.currency.WalletCurrency
+import com.tonapps.wallet.data.rates.RateData
 import com.tonapps.wallet.data.rates.entity.RatesEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update

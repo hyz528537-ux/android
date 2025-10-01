@@ -3,6 +3,7 @@ package com.tonapps.tonkeeper.ui.screen.init
 import android.app.Application
 import android.content.Context
 import android.graphics.Color
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.tonapps.blockchain.MnemonicHelper
@@ -13,6 +14,7 @@ import com.tonapps.blockchain.ton.TonNetwork
 import com.tonapps.blockchain.ton.contract.BaseWalletContract
 import com.tonapps.blockchain.ton.contract.WalletV5R1Contract
 import com.tonapps.blockchain.ton.contract.WalletVersion
+import com.tonapps.blockchain.ton.extensions.EmptyPrivateKeyEd25519
 import com.tonapps.blockchain.ton.extensions.toAccountId
 import com.tonapps.blockchain.ton.extensions.toRawAddress
 import com.tonapps.blockchain.ton.extensions.toWalletAddress
@@ -21,8 +23,10 @@ import com.tonapps.extensions.MutableEffectFlow
 import com.tonapps.extensions.logError
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
+import com.tonapps.security.clear
 import com.tonapps.tonkeeper.Environment
 import com.tonapps.tonkeeper.core.AnalyticsHelper
+import com.tonapps.tonkeeper.extensions.consistentBucketFor
 import com.tonapps.tonkeeper.extensions.fixW5Title
 import com.tonapps.tonkeeper.manager.push.PushManager
 import com.tonapps.tonkeeper.ui.base.BaseWalletVM
@@ -52,18 +56,25 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.ton.api.pub.PublicKeyEd25519
 import org.ton.block.AddrStd
 import org.ton.mnemonic.Mnemonic
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.String
 
 @OptIn(FlowPreview::class)
 class InitViewModel(
@@ -92,6 +103,10 @@ class InitViewModel(
     private val testnet: Boolean = type == InitArgs.Type.Testnet
     private val walletsCount = AtomicInteger(-1)
 
+    private val walletLabelHelper: WalletLabelHelper by lazy {
+        WalletLabelHelper(context)
+    }
+
     private val tonNetwork: TonNetwork
         get() = if (testnet) TonNetwork.TESTNET else TonNetwork.MAINNET
 
@@ -104,25 +119,24 @@ class InitViewModel(
     private val _routeFlow = MutableEffectFlow<InitRoute>()
     val routeFlow = _routeFlow.asSharedFlow().filterNotNull()
 
-    private val _watchAccountResolveFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    private val _watchAccountResolveFlow = MutableStateFlow<String>("")
     val watchAccountFlow = _watchAccountResolveFlow.asSharedFlow()
         .debounce(1000)
         .filter { it.isNotBlank() }
         .map {
             val account = api.resolveAddressOrName(it, testnet)
             if (account == null || account.walletVersion == WalletVersion.UNKNOWN) {
-                setWatchAccount(null)
+                setWatchAccount(null, null)
                 return@map null
             }
-            setWatchAccount(account)
+            setWatchAccount(it, account)
             account
         }.flowOn(Dispatchers.IO)
 
     private val _accountsFlow = MutableEffectFlow<List<AccountItem>?>()
     val accountsFlow = _accountsFlow.asSharedFlow().filterNotNull()
 
-    val labelFlow =
-        savedState.labelFlow.stateIn(viewModelScope, SharingStarted.Lazily, null).filterNotNull()
+    val labelFlow = savedState.labelFlow
 
     private val isPinSet = AtomicBoolean(false)
 
@@ -147,8 +161,7 @@ class InitViewModel(
             setLoading(true)
             isPinSet.set(passcodeManager.hasPinCode())
 
-            val labelName = args.labelName ?: getDefaultWalletName()
-            setLabelName(labelName)
+            args.labelName?.let(::setInitName)
 
             if (type == InitArgs.Type.New) {
                 withContext(Dispatchers.Main) {
@@ -161,12 +174,25 @@ class InitViewModel(
     }
 
     private suspend fun start() {
+        setLabel(
+            name = getDefaultWalletName(),
+            emoji = Emoji.WALLET_ICON,
+            color = WalletColor.all.first()
+        )
+
         when (type) {
             InitArgs.Type.Watch -> routeTo(InitRoute.WatchAccount)
             InitArgs.Type.Import, InitArgs.Type.Testnet -> routeTo(InitRoute.ImportWords)
             InitArgs.Type.Signer, InitArgs.Type.SignerQR -> resolveWallets(savedState.publicKey!!)
             InitArgs.Type.Ledger -> routeTo(InitRoute.SelectAccount)
-            InitArgs.Type.Keystone -> routeTo(InitRoute.LabelAccount)
+            InitArgs.Type.Keystone -> {
+                setLabel(
+                    name = getDefaultWalletName(),
+                    emoji = Emoji.WALLET_ICON,
+                    color = WalletColor.all.first()
+                )
+                routeTo(InitRoute.LabelAccount)
+            }
             InitArgs.Type.New -> {
                 if (requestSetPinCode) {
                     routeTo(InitRoute.CreatePasscode)
@@ -175,6 +201,7 @@ class InitViewModel(
                 } else {
                     routeTo(InitRoute.LabelAccount)
                 }
+                generateNewWallet()
             }
         }
     }
@@ -249,6 +276,7 @@ class InitViewModel(
             try {
                 val privateKey = MnemonicHelper.privateKey(mnemonic)
                 val publicKey = privateKey.publicKey()
+                setPublicKey(publicKey)
                 resolveWallets(InitModelState.PublicKey(publicKey = publicKey))
                 true
             } catch (e: Throwable) {
@@ -307,28 +335,46 @@ class InitViewModel(
             if (items.size > 1) {
                 routeTo(InitRoute.SelectAccount)
             } else if (requestSetPinCode) {
-                val accountName = items.first().name
-                if (!accountName.isNullOrBlank()) {
-                    setLabelName(accountName)
-                }
+                applyAccountName(items)
                 routeTo(InitRoute.CreatePasscode)
             } else {
                 routeTo(if (environment.isGooglePlayServicesAvailable) InitRoute.Push else InitRoute.LabelAccount)
             }
         }
 
+
+    private fun setInitName(name: String) {
+        if (name.isBlank()) {
+            return
+        }
+
+        val (parsedName, parsedEmoji) = walletLabelHelper.parseNameAndEmoji(listOf(name))
+
+        if (parsedName.isNullOrBlank() && parsedEmoji.isNullOrEmpty()) {
+            return
+        }
+
+        setLabel(Wallet.Label(
+            accountName = parsedName ?: "",
+            emoji = parsedEmoji ?: "",
+        ))
+    }
+
+    private suspend fun applyAccountName(accounts: List<AccountItem>) {
+        val names = accounts.mapNotNull { it.name?.trim() }
+
+        val (emoji, color) = generateLabel(names)
+
+        setLabel(Wallet.Label(
+            accountName = names.firstOrNull() ?: getDefaultWalletName(),
+            emoji = emoji ?: Emoji.WALLET_ICON,
+            color = color ?: WalletColor.all.first()
+        ))
+    }
+
     private fun applyAccountName() {
         viewModelScope.launch {
-            val selectedAccounts = getSelectedAccounts()
-            val accountName = (if (selectedAccounts.size == 1) {
-                selectedAccounts.first()
-            } else {
-                selectedAccounts.firstOrNull { !it.name.isNullOrBlank() }
-            })?.name
-
-            if (!accountName.isNullOrBlank()) {
-                setLabelName(accountName)
-            }
+            applyAccountName(getSelectedAccounts())
         }
     }
 
@@ -370,15 +416,45 @@ class InitViewModel(
         }
     }
 
-    private suspend fun setWatchAccount(account: AccountDetailsEntity?) {
+    private fun setPublicKey(publicKey: PublicKeyEd25519?) {
+        if (publicKey == null || publicKey == EmptyPrivateKeyEd25519.publicKey()) {
+            savedState.publicKey = null
+        } else {
+            savedState.publicKey = InitModelState.PublicKey(publicKey = publicKey)
+        }
+    }
+
+    private suspend fun setWatchAccount(
+        query: String?,
+        account: AccountDetailsEntity?
+    ) {
+        if (account == null) {
+            setPublicKey(null)
+            savedState.watchAccount = null
+            setLabel(Wallet.Label())
+        }
+
         val oldAccount = getWatchAccount()
         if (oldAccount?.equals(account) == true) {
             return
         }
 
+        val publicKey = account?.address?.let {
+            api.safeGetPublicKey(it, testnet)
+        }
+        setPublicKey(publicKey)
+
         savedState.watchAccount = account
 
-        setLabelName(account?.name ?: getDefaultWalletName())
+        val names = listOfNotNull(account?.name, query)
+        val (generatedEmoji, generatedColor) = generateLabel(names)
+        val accountName = account?.name ?: getDefaultWalletName()
+
+        setLabel(Wallet.Label(
+            accountName = accountName,
+            emoji = generatedEmoji ?: Emoji.WALLET_ICON,
+            color = generatedColor ?: WalletColor.all.first()
+        ))
     }
 
     private suspend fun getDefaultWalletName(): String {
@@ -426,34 +502,22 @@ class InitViewModel(
         savedState.label = label
     }
 
-    private suspend fun getLabel(): Wallet.Label = withContext(Dispatchers.IO) {
-        var label = savedState.label ?: Wallet.Label(
-            accountName = getDefaultWalletName(),
-            emoji = Emoji.WALLET_ICON,
-            color = WalletColor.all.first()
-        )
-        if (label.color == Color.TRANSPARENT) {
-            label = label.copy(color = WalletColor.all.first())
-        }
-        if (label.emoji.isBlank()) {
-            label = label.copy(emoji = Emoji.WALLET_ICON)
-        }
-        if (label.name.isBlank()) {
-            label = label.copy(accountName = getDefaultWalletName())
-        }
-        label
+    private suspend fun generateLabel(names: List<String> = emptyList()): Pair<CharSequence?, Int?> {
+        val publicKey = savedState.publicKey?.publicKey?.key?.toByteArray()
+        return walletLabelHelper.generate(names, publicKey)
     }
 
-    private suspend fun setLabelName(name: String) {
-        val oldLabel = getLabel()
-        val emoji = Emoji.getEmojiFromPrefix(name) ?: oldLabel.emoji
-
-        setLabel(
-            oldLabel.copy(
-                accountName = name.replace(emoji.toString(), "").trim(),
-                emoji = emoji
+    private suspend fun getLabel(): Wallet.Label = withContext(Dispatchers.IO) {
+        val savedLabel = savedState.label
+        if (savedLabel != null && !savedLabel.isEmpty) {
+            savedLabel
+        } else {
+            Wallet.Label(
+                accountName = "",
+                emoji = "",
+                color = Color.TRANSPARENT
             )
-        )
+        }
     }
 
     fun nextStep(context: Context, from: InitRoute) {
@@ -552,10 +616,22 @@ class InitViewModel(
             names.add(builder.toString())
         }
 
+        val (generatedEmoji, generatedColor) = generateLabel(names)
+
+        val emoji = label.emoji.ifBlank {
+            generatedEmoji
+        }
+
+        val color = if (label.color == Color.TRANSPARENT) {
+            generatedColor
+        } else {
+            label.color
+        }
+
         return Wallet.NewLabel(
             names = names,
-            emoji = label.emoji,
-            color = label.color
+            emoji = emoji ?: Emoji.WALLET_ICON,
+            color = color ?: WalletColor.all.first()
         )
     }
 
@@ -565,16 +641,31 @@ class InitViewModel(
 
     private suspend fun saveWatchWallet(): WalletEntity {
         val account = getWatchAccount() ?: throw IllegalStateException("Account is not set")
-        val publicKey = api.safeGetPublicKey(account.address, testnet)
+        val publicKey = savedState.publicKey?.publicKey ?: EmptyPrivateKeyEd25519.publicKey()
+
         val label = buildNewLabel(SimpleAccount(account))
 
         return accountRepository.addWatchWallet(label, publicKey, account.walletVersion)
     }
 
-    private suspend fun newWallet(context: Context): WalletEntity {
+    private suspend fun generateNewWallet() = withContext(Dispatchers.IO) {
         AndroidSecureRandom.seed(entropyHelper.getSeed(512))
-
         val mnemonic = Mnemonic.generate(random = AndroidSecureRandom)
+        savedState.mnemonic = mnemonic
+        val publicKey = MnemonicHelper.privateKey(mnemonic).publicKey()
+        setPublicKey(publicKey)
+
+        val (emoji, color) = generateLabel()
+
+        setLabel(
+            name = getDefaultWalletName(),
+            emoji = emoji?.toString() ?: Emoji.WALLET_ICON,
+            color = color ?: WalletColor.all.first()
+        )
+    }
+
+    private suspend fun newWallet(context: Context): WalletEntity {
+        val mnemonic = savedState.mnemonic!!
         val walletId = AccountRepository.newWalletId()
         saveMnemonic(context, listOf(walletId), mnemonic)
         val label = buildNewLabel(SimpleAccount(version = WalletVersion.V5R1))

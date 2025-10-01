@@ -8,9 +8,6 @@ import com.tonapps.extensions.singleValue
 import com.tonapps.icu.Coins
 import com.tonapps.icu.CurrencyFormatter
 import com.tonapps.tonkeeper.Environment
-import com.tonapps.tonkeeper.billing.BillingManager
-import com.tonapps.tonkeeper.extensions.getProvidersByCountry
-import com.tonapps.tonkeeper.extensions.onRampDataFlow
 import com.tonapps.tonkeeper.helper.TwinInput
 import com.tonapps.tonkeeper.helper.TwinInput.Companion.opposite
 import com.tonapps.tonkeeper.manager.assets.AssetsManager
@@ -28,13 +25,13 @@ import com.tonapps.wallet.data.account.entities.WalletEntity
 import com.tonapps.wallet.data.core.currency.CurrencyCountries
 import com.tonapps.wallet.data.core.currency.WalletCurrency
 import com.tonapps.wallet.data.purchase.PurchaseRepository
-import com.tonapps.wallet.data.purchase.entity.MerchantEntity
-import com.tonapps.wallet.data.purchase.entity.OnRamp
 import com.tonapps.wallet.data.rates.RatesRepository
 import com.tonapps.wallet.data.settings.SettingsRepository
 import com.tonapps.wallet.localization.Localization
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -45,12 +42,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
@@ -101,7 +95,10 @@ class OnRampViewModel(
 
     private val twinInput = TwinInput(viewModelScope)
 
-    private val onRampDataFlow = purchaseRepository.onRampDataFlow(environment)
+    private val onRampDataFlow = purchaseRepository
+        .onRampDataFlow()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+        .filterNotNull()
 
     private val paymentMerchantsFlow = twinInput.stateFlow
         .map { it.sendCurrency.code.uppercase() }
@@ -136,16 +133,21 @@ class OnRampViewModel(
 
     val allowedPairFlow = combine(
         twinInput.currenciesStateFlow,
-        onRampDataFlow.map { it.data }.distinctUntilChanged()
+        onRampDataFlow.map { it }.distinctUntilChanged()
     ) { (send, receive), data ->
         data.findValidPairs(send.symbol, receive.symbol).pair
-    }.distinctUntilChanged()
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val isChangellyFlow = allowedPairFlow.map { pairs ->
+        val merchantSlugs = pairs?.merchants?.map { it.slug } ?: return@map false
+        merchantSlugs.size == 1 && merchantSlugs.contains("changelly")
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     val ratesFlow = twinInput.currenciesStateFlow.map { inputCurrencies ->
         val fiatCurrency = inputCurrencies.fiat ?: settingsRepository.currency
-        val tokens = inputCurrencies.cryptoTokens.filter { it.isTONChain }.map { it.address }
+        val tokens = inputCurrencies.cryptoTokens.map { it.tokenQuery }
         ratesRepository.getRates(fiatCurrency, tokens)
-    }.distinctUntilChanged()
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null).filterNotNull()
 
     val minAmountFlow = combine(
         twinInput.stateFlow.map { it.send }.distinctUntilChanged(),
@@ -553,7 +555,7 @@ class OnRampViewModel(
                 val availableProviders = api.calculateOnRamp(args)
                 if (availableProviders.isEmpty) {
                     throw IOException("No providers available for the selected payment method")
-                } else if (paymentMethods.size == 1 && availableProviders.size == 1) {
+                } else if ((paymentMethods.size == 1 || args.withoutPaymentMethod) && availableProviders.size == 1) {
                     val provider = availableProviders.items.first()
                     val merchants = purchaseRepository.getMerchants()
                     val method = merchants.find { it.id == provider.merchant } ?: throw IOException("No merchant found for provider: ${provider.merchant}")

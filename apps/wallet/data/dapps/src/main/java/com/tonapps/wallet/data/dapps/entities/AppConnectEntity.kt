@@ -7,6 +7,7 @@ import com.tonapps.extensions.asJSON
 import com.tonapps.security.CryptoBox
 import com.tonapps.security.Sodium
 import com.tonapps.security.hex
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 
@@ -54,6 +55,7 @@ data class AppConnectEntity(
         }
     }
 
+    @IgnoredOnParcel
     val publicKeyHex: String by lazy {
         hex(keyPair.publicKey)
     }

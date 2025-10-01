@@ -1,9 +1,9 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kotlin)
+    alias(libs.plugins.kotlin.compose)
     id("kotlin-parcelize")
     id("kotlinx-serialization")
-    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -13,27 +13,11 @@ android {
 
     defaultConfig {
         minSdk = Build.minSdkVersion
-
-        ndk {
-            abiFilters.add("armeabi-v7a")
-            abiFilters.add("arm64-v8a")
-            abiFilters.add("x86")
-            abiFilters.add("x86_64")
-        }
     }
 
     buildFeatures {
         buildConfig = true
         compose = true
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
     }
 }
 

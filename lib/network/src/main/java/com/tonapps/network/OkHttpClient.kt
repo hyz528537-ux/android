@@ -1,5 +1,6 @@
 package com.tonapps.network
 
+import android.util.Log
 import androidx.collection.ArrayMap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
@@ -8,6 +9,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.retry
 import okhttp3.FormBody
 import okhttp3.MediaType.Companion.toMediaType
@@ -117,11 +120,11 @@ fun OkHttpClient.sse(
                 null -> IOException("SSE connection failed with response: ${response?.code}")
                 else -> t
             }
-            this@callbackFlow.cancel(CancellationException(error.message, error))
+            channel.close(error)
         }
 
         override fun onClosed(eventSource: EventSource) {
-            this@callbackFlow.cancel(CancellationException("EventSource closed"))
+            close()
         }
     }
     val builder = requestBuilder(url)
@@ -143,6 +146,7 @@ fun OkHttpClient.sse(
 }.retry { cause ->
     when {
         cause is CancellationException -> false
+        cause is IOException && cause.message.equals("canceled", ignoreCase = true) -> false
         cause is StreamResetException && cause.errorCode == ErrorCode.CANCEL -> false
         cause is OutOfMemoryError -> false
         else -> {

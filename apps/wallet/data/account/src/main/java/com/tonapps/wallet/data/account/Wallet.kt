@@ -1,6 +1,8 @@
 package com.tonapps.wallet.data.account
 
+import android.graphics.Color
 import android.os.Parcelable
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
 sealed class Wallet {
@@ -18,25 +20,49 @@ sealed class Wallet {
 
     @Parcelize
     data class Label(
-        val accountName: String,
-        val emoji: CharSequence,
-        val color: Int
+        val accountName: String = "",
+        val emoji: CharSequence = "",
+        val color: Int = WalletColor.all.first()
     ): Parcelable {
 
-        val isEmpty: Boolean
-            get() = accountName.isBlank() && emoji.isBlank()
+        @IgnoredOnParcel
+        val isEmpty: Boolean by lazy {
+            accountName.isBlank() && emoji.isBlank()
+        }
 
         val name: String
             get() = accountName
 
-        val title: CharSequence?
-            get() = if (isEmpty) {
+        @IgnoredOnParcel
+        val title: CharSequence? by lazy {
+            if (isEmpty) {
                 null
             } else if (emoji.startsWith("custom_")) {
                 name
             } else {
                 String.format("%s %s", emoji, name)
             }
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+            other as Label
+            if (accountName != other.accountName) return false
+            if (emoji != other.emoji) return false
+            if (color != other.color) return false
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = color
+            result = 31 * result + accountName.hashCode()
+            result = 31 * result + emoji.hashCode()
+            result = 31 * result + isEmpty.hashCode()
+            result = 31 * result + name.hashCode()
+            result = 31 * result + (title?.hashCode() ?: 0)
+            return result
+        }
     }
 
 

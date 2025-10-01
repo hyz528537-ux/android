@@ -328,10 +328,9 @@ class SendTransactionViewModel(
 
         val states = mutableListOf<SendBlockchainState>()
         for (cell in cells) {
-            val boc = cell.base64()
             val status = transactionManager.send(
                 wallet = wallet,
-                boc = boc,
+                boc = cell,
                 withBattery = isBattery,
                 source = source,
                 confirmationTime = confirmationTimeSeconds

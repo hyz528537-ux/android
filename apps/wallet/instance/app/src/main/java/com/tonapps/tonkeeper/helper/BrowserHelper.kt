@@ -1,8 +1,10 @@
 package com.tonapps.tonkeeper.helper
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Browser
 import android.util.Log
@@ -26,6 +28,8 @@ import androidx.core.net.toUri
 import com.tonapps.tonkeeper.koin.analytics
 
 object BrowserHelper {
+
+    private fun Uri.isHttpOrHttps() = scheme == "http" || scheme == "https"
 
     fun BrowserAppEntity.openDApp(context: Context, wallet: WalletEntity, source: String, country: String) {
         if (useCustomTabs || useTG) {
@@ -75,7 +79,7 @@ object BrowserHelper {
     }
 
     fun open(activity: Activity, uri: Uri) {
-        if (uri.scheme != "http" && uri.scheme != "https") {
+        if (!uri.isHttpOrHttps()) {
             external(activity, uri)
             return
         }

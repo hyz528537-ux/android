@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.dsl.NdkOptions
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
@@ -17,13 +19,14 @@ android {
                 cppFlags += "-std=c++17"
             }
         }
+
+        ndk {
+            debugSymbolLevel = NdkOptions.DebugSymbolLevel.SYMBOL_TABLE.toString()
+        }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
+
+    buildFeatures {
+        prefab = true
     }
 
     externalNativeBuild {

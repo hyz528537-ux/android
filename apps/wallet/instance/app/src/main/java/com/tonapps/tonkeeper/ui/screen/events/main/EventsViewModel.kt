@@ -117,7 +117,6 @@ class EventsViewModel(
 
         val hasFilter = _selectedFilter.value != null
 
-
         if (hasFilter) {
             (historyEvents + tronHistoryEvents + dAppNotifications).sortedBy { it.timestampForSort }
         } else {

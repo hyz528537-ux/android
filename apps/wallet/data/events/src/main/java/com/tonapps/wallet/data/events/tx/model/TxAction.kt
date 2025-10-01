@@ -35,7 +35,7 @@ data class TxAction(
         get() = body.sender
 
     val account: TxActionBody.Account?
-        get() = if (body.type == ActionType.Received) sender else recipient
+        get() = if (isOut) recipient else sender
 
     val subtitle: String?
         get() = body.subtitle.ifBlank {

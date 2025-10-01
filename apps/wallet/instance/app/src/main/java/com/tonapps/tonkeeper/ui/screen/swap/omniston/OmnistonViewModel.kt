@@ -51,10 +51,12 @@ import com.tonapps.wallet.data.settings.entities.PreferredFeeMethod
 import com.tonapps.wallet.data.swap.SwapRepository
 import com.tonapps.wallet.data.token.TokenRepository
 import com.tonapps.wallet.data.token.entities.AccountTokenEntity
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -66,6 +68,9 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -74,12 +79,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.ton.cell.Cell
 import org.ton.contract.wallet.WalletTransfer
 import uikit.UiButtonState
 import uikit.extensions.collectFlow
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.time.Duration.Companion.milliseconds
 
 class OmnistonViewModel(
@@ -227,12 +234,16 @@ class OmnistonViewModel(
     val providerUrl: String
         get() = "unknown"
 
-    private var lastMessages: SwapEntity.Messages? = null
+    private val lastMessages = AtomicReference<SwapEntity.Messages?>(null)
 
     init {
         applyInputsObserver()
         applyDefaultCurrencies()
         applyCurrenciesFromArgs(args)
+
+        twinInput.stateFlow.collectFlow {
+            checkButtonState()
+        }
     }
 
     private fun applyCurrenciesFromArgs(args: OmnistonArgs) {
@@ -246,19 +257,14 @@ class OmnistonViewModel(
 
     @OptIn(FlowPreview::class)
     private fun applyInputsObserver() {
-        swapRequestFlow.onEach {
-            cancelSwapStream()
-            if (it.isEmpty) {
-                checkButtonState()
-            } else {
-                setButtonState(UiButtonState.Loading)
-            }
-        }.launch()
-
         swapRequestFlow.filterNotNull()
             .onEach {
                 cancelSwapStream()
-                setButtonState(if (it.isEmpty) UiButtonState.Default(false) else UiButtonState.Loading)
+                if (it.isEmpty) {
+                    checkButtonState()
+                } else {
+                    setButtonState(UiButtonState.Loading)
+                }
             }
             .debounce(600)
             .onEach(::startSwapStream)
@@ -275,11 +281,12 @@ class OmnistonViewModel(
 
     private fun setMessages(messages: SwapEntity.Messages) {
         if (messages.isEmpty) {
+            lastMessages.set(null)
             checkButtonState()
             return
         }
 
-        lastMessages = messages
+        lastMessages.set(messages)
         if (twinInput.state.focus == TwinInput.Type.Send) {
             val amount = Coins.ofNano(messages.askUnits, twinInput.state.receive.decimals)
             _receiveOutputValueFlow.value = amount
@@ -287,14 +294,12 @@ class OmnistonViewModel(
             val amount = Coins.ofNano(messages.bidUnits, twinInput.state.send.decimals)
             _sendOutputValueFlow.value = amount
         }
+
         checkButtonState()
     }
 
     private fun checkButtonState() {
-        if (lastMessages == null) {
-            return
-        }
-        if (twinInput.state.isEmpty) {
+        if (twinInput.state.isEmpty || lastMessages.get() == null) {
             setButtonState(UiButtonState.Default(false))
             return
         }
@@ -394,6 +399,9 @@ class OmnistonViewModel(
             } else {
                 _receiveOutputValueFlow.value = Coins.ZERO
             }
+
+            cancelSwapStream()
+            checkButtonState()
         }
     }
 
@@ -413,8 +421,13 @@ class OmnistonViewModel(
     }
 
     suspend fun next() = withContext(Dispatchers.IO) {
+        swapStreamJob?.cancel()
+        swapStreamJob = null
+
         try {
-            val stateMessages = lastMessages ?: throw Exception("Messages are empty")
+            val stateMessages = lastMessages.getAndSet(null) ?: throw Exception("Messages are empty")
+            cancelSwapStream()
+
             val tonBalance = requestTONToken() ?: throw Exception("TON token not found")
 
             val batteryEnabled = isBatteryIsEnabledTx()
@@ -586,10 +599,9 @@ class OmnistonViewModel(
                 val confirmationTimeMillis = state.timestamp - System.currentTimeMillis()
                 val states = mutableListOf<SendBlockchainState>()
                 for (cell in cells) {
-                    val boc = cell.base64()
                     val status = transactionManager.send(
                         wallet = wallet,
-                        boc = boc,
+                        boc = cell,
                         withBattery = isBattery,
                         source = "swap",
                         confirmationTime = confirmationTimeMillis / 1000.0
@@ -719,24 +731,55 @@ class OmnistonViewModel(
         )
     }
 
+    @OptIn(FlowPreview::class)
     private fun startSwapStream(request: SwapRequest) {
         cancelSwapStream()
+        if (request.isEmpty) {
+            checkButtonState()
+            return
+        }
+        val insufficientBalance = uiStateToken.value.insufficientBalance
+        if (insufficientBalance) {
+            setButtonState(UiButtonState.Default(false))
+            return
+        }
+
+        setButtonState(UiButtonState.Loading)
         swapStreamJob = api.swapStream(
             from = request.fromParam,
             to = request.toParam,
             userAddress = wallet.address.toRawAddress()
-        ).filterNotNull().onEach(::setMessages).launch()
+        ).filterNotNull().debounce(800).onEach(::setMessages).launch()
     }
 
     private fun cancelSwapStream() {
-        lastMessages = null
+        lastMessages.set(null)
         cancelResetTimer()
-
         swapStreamJob?.cancel()
         swapStreamJob = null
     }
 
+    // TODO rewrite later
+    fun restoreSwapStream() {
+        viewModelScope.launch {
+            try {
+                withTimeout(1000) {
+                    val last = swapRequestFlow.firstOrNull() ?: throw Exception("Swap request is empty")
+                    withContext(Dispatchers.Main) {
+                        startSwapStream(last)
+                        setButtonState(UiButtonState.Loading)
+                    }
+                }
+            } catch (e: Throwable) {
+                if (e !is CancellationException) {
+                    finish()
+                }
+            }
+        }
+    }
+
     fun reset() {
         _stepFlow.value = OmnistonStep.Input
+        restoreSwapStream()
     }
 }

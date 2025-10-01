@@ -2,6 +2,7 @@ package com.tonapps.wallet.data.purchase
 
 import android.content.Context
 import android.util.Log
+import com.google.firebase.BuildConfig
 import com.tonapps.extensions.getParcelable
 import com.tonapps.extensions.prefs
 import com.tonapps.extensions.putParcelable
@@ -20,6 +21,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import org.ton.crypto.digest.sha512
 import org.ton.crypto.hex
@@ -37,12 +40,18 @@ class PurchaseRepository(
     timeout = TimeUnit.DAYS.toMillis(1)
 ) {
 
-    private val onRampCache = simple<OnRamp.Data>(context, "onRamp", TimeUnit.MINUTES.toMillis(30))
+    private val onRampCache = simple<OnRamp.Data>(context, "onRamp", TimeUnit.DAYS.toMillis(14))
     private val merchantsCache = simpleJSON<List<MerchantEntity>>(context,"merchants", TimeUnit.DAYS.toMillis(1))
 
-    suspend fun getOnRamp(): OnRamp.Data? = withContext(Dispatchers.IO) {
-        getOnRampData()
-    }
+    fun onRampDataFlow() = flow {
+        getOnRampDataCache()?.let {
+            emit(it)
+        }
+
+        fetchOnRampDataCache()?.let {
+            emit(it)
+        }
+    }.flowOn(Dispatchers.IO)
 
     private fun loadOnRampMerchants(): List<MerchantEntity> {
         return try {
@@ -82,15 +91,18 @@ class PurchaseRepository(
         }
     }
 
-    private suspend fun getOnRampData(): OnRamp.Data? {
+    private fun getOnRampDataCache(): OnRamp.Data? {
         val cacheKey = "data_${api.country}"
-        var data = onRampCache.getCache(cacheKey)
-        if (data == null) {
-            data = loadOnRampData() ?: return null
-            onRampCache.setCache(cacheKey, data)
-        }
+        return onRampCache.getCache(cacheKey)
+    }
+
+    private suspend fun fetchOnRampDataCache(): OnRamp.Data? {
+        val data = loadOnRampData() ?: return null
+        val cacheKey = "data_${api.country}"
+        onRampCache.setCache(cacheKey, data)
         return data
     }
+
 
     fun get(
         testnet: Boolean,

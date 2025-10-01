@@ -377,12 +377,9 @@ class TxDetailsViewModel(
     }
 
     fun onClickDetailsRow(rowId: String) {
-        if (rowId == COMMENT_ROW_ID) {
-            requestDecryptComment()
-        } else if (rowId == ADDRESS_ROW_ID || rowId == ACCOUNT_NAME_ROW_ID) {
-            copyAccount(rowId == ADDRESS_ROW_ID)
-        } else if (rowId == COMMENT_ROW_ID) {
-            copyComment()
+        when (rowId) {
+            COMMENT_ROW_ID -> clickOnComment()
+            ADDRESS_ROW_ID, ACCOUNT_NAME_ROW_ID -> copyAccount(rowId == ADDRESS_ROW_ID)
         }
     }
 
@@ -394,9 +391,14 @@ class TxDetailsViewModel(
         }
     }
 
-    fun requestDecryptComment() {
-        viewModelScope.launch {
-            decryptComment()
+    private fun clickOnComment() {
+        val text = action.text ?: return
+        if (text is TxActionBody.Text.Encrypted) {
+            viewModelScope.launch {
+                decryptComment()
+            }
+        } else if (text is TxActionBody.Text.Plain) {
+            copyComment()
         }
     }
 

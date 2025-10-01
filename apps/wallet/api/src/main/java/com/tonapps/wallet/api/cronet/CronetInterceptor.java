@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -77,7 +78,7 @@ public final class CronetInterceptor implements Interceptor, AutoCloseable {
     @Override
     public Response intercept(Chain chain) throws IOException {
         if (chain.call().isCanceled()) {
-            throw new IOException("Canceled");
+            throw new CancellationException();
         }
 
         Request request = chain.request();

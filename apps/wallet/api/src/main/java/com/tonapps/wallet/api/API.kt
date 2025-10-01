@@ -28,14 +28,12 @@ import com.tonapps.wallet.api.entity.ConfigEntity
 import com.tonapps.wallet.api.entity.EthenaEntity
 import com.tonapps.wallet.api.entity.OnRampArgsEntity
 import com.tonapps.wallet.api.entity.OnRampMerchantEntity
-import com.tonapps.wallet.api.entity.SwapEntity
 import com.tonapps.wallet.api.entity.TokenEntity
 import com.tonapps.wallet.api.entity.value.Timestamp
 import com.tonapps.wallet.api.internal.ConfigRepository
 import com.tonapps.wallet.api.internal.InternalApi
 import com.tonapps.wallet.api.internal.SwapApi
 import com.tonapps.wallet.api.tron.TronApi
-import com.tonapps.wallet.api.tron.entity.TronEventEntity
 import io.Serializer
 import io.batteryapi.apis.DefaultApi
 import io.batteryapi.models.Balance
@@ -61,8 +59,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -191,19 +187,19 @@ class API(
         return withRetry { battery(testnet).getRechargeMethods(false) }
     }
 
-    fun getOnRampData() = internalApi.getOnRampData()
+    fun getOnRampData() = internalApi.getOnRampData(config.webSwapsUrl)
 
-    fun getOnRampPaymentMethods(currency: String) = internalApi.getOnRampPaymentMethods(currency)
+    fun getOnRampPaymentMethods(currency: String) = internalApi.getOnRampPaymentMethods(config.webSwapsUrl, currency)
 
-    fun getOnRampMerchants() = internalApi.getOnRampMerchants()
+    fun getOnRampMerchants() = internalApi.getOnRampMerchants(config.webSwapsUrl)
 
     fun getSwapAssets(): JSONArray = runCatching {
-        swapApi.getSwapAssets()?.let(::JSONArray)
+        swapApi.getSwapAssets(config.webSwapsUrl)?.let(::JSONArray)
     }.getOrNull() ?: JSONArray()
 
     @Throws
     suspend fun calculateOnRamp(args: OnRampArgsEntity): OnRampMerchantEntity.Data = withContext(Dispatchers.IO) {
-        val data = internalApi.calculateOnRamp(args) ?: throw Exception("Empty response")
+        val data = internalApi.calculateOnRamp(config.webSwapsUrl, args) ?: throw Exception("Empty response")
         val json = JSONObject(data)
         val items = json.getJSONArray("items").map { OnRampMerchantEntity(it) }
         val suggested = json.optJSONArray("suggested")?.map { OnRampMerchantEntity(it) } ?: emptyList()
@@ -261,7 +257,11 @@ class API(
         configRepository.refresh(testnet)
     }
 
-    fun swapStream(from: SwapAssetParam, to: SwapAssetParam, userAddress: String) = swapApi.stream(from, to, userAddress)
+    fun swapStream(
+        from: SwapAssetParam,
+        to: SwapAssetParam,
+        userAddress: String
+    ) = swapApi.stream(config.webSwapsUrl, from, to, userAddress)
 
     suspend fun getPageTitle(url: String): String = withContext(Dispatchers.IO) {
         try {
@@ -533,6 +533,15 @@ class API(
             rates().getRates(
                 tokens = tokens,
                 currencies = currencies
+            ).rates
+        }
+    }
+
+    fun getRates(from: String, to: String): Map<String, TokenRates>? {
+        return withRetry {
+            rates().getRates(
+                tokens = listOf(from),
+                currencies = listOf(to)
             ).rates
         }
     }

@@ -23,7 +23,9 @@ import android.webkit.ServiceWorkerController
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebChromeClient.FileChooserParams
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebStorage
 import android.webkit.WebView
@@ -72,6 +74,9 @@ open class WebViewFixed @JvmOverloads constructor(
         open fun onNewTab(url: String) {}
         open fun openFilePicker(fileChooserParams: FileChooserParams) {}
         open fun onPermissionRequest(request: PermissionRequest) {}
+
+        open fun onReceivedHttpError(request: WebResourceRequest?, errorResponse: WebResourceResponse?) { }
+        open fun onReceivedError(request: WebResourceRequest?, error: WebResourceError?) { }
     }
 
     private var isPageLoaded = false
@@ -173,6 +178,16 @@ open class WebViewFixed @JvmOverloads constructor(
                 if (!isStop) {
                     super.onLoadResource(view, url)
                 }
+            }
+
+            override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                super.onReceivedError(view, request, error)
+                callbacks.forEach { it.onReceivedError(request, error) }
+            }
+
+            override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
+                super.onReceivedHttpError(view, request, errorResponse)
+                callbacks.forEach { it.onReceivedHttpError(request, errorResponse) }
             }
         }
 

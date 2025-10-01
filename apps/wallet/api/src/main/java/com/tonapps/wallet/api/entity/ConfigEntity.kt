@@ -9,6 +9,7 @@ import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import androidx.core.net.toUri
+import com.tonapps.wallet.api.Constants
 
 @Parcelize
 data class ConfigEntity(
@@ -62,7 +63,8 @@ data class ConfigEntity(
     val tronSwapTitle: String,
     val tronApiKey: String? = null,
     val privacyPolicyUrl: String,
-    val termsOfUseUrl: String
+    val termsOfUseUrl: String,
+    val webSwapsUrl: String,
 ): Parcelable {
 
     @IgnoredOnParcel
@@ -140,9 +142,10 @@ data class ConfigEntity(
         tonkeeperApiUrl = json.optString("tonkeeper_api_url", "https://api.tonkeeper.com"),
         tronSwapUrl = json.optString("tron_swap_url", "https://widget.letsexchange.io/en?affiliate_id=ffzymmunvvyxyypo&coin_from=ton&coin_to=USDT-TRC20&is_iframe=true"),
         tronSwapTitle = json.optString("tron_swap_title", "LetsExchange"),
-        tronApiKey = json.optString("tron_api_key"),
+        // tronApiKey = json.optString("tron_api_key"),
         privacyPolicyUrl = json.getString("privacy_policy"),
         termsOfUseUrl = json.getString("terms_of_use"),
+        webSwapsUrl = json.optString("web_swaps_url", Constants.SWAP_PREFIX)
     )
 
     constructor() : this(
@@ -195,7 +198,8 @@ data class ConfigEntity(
         tronSwapUrl = "https://widget.letsexchange.io/en?affiliate_id=ffzymmunvvyxyypo&coin_from=ton&coin_to=USDT-TRC20&is_iframe=true",
         tronSwapTitle = "LetsExchange",
         privacyPolicyUrl = "https://tonkeeper.com/privacy",
-        termsOfUseUrl = "https://tonkeeper.com/terms"
+        termsOfUseUrl = "https://tonkeeper.com/terms",
+        webSwapsUrl = Constants.SWAP_PREFIX
     )
 
     fun formatTransactionExplorer(testnet: Boolean, tron: Boolean, hash: String): String {

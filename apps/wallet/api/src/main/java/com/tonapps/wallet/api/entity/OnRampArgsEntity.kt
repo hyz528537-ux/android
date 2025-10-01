@@ -14,6 +14,15 @@ data class OnRampArgsEntity(
     val paymentMethod: String?
 ) {
 
+    val isSwap: Boolean
+        get() = purchaseType == "swap"
+
+    val isSell: Boolean
+        get() = purchaseType == "sell"
+
+    val withoutPaymentMethod: Boolean
+        get() = isSwap || isSell
+
     fun toJSON() = JSONObject().apply {
         put("from", from)
         put("to", to)

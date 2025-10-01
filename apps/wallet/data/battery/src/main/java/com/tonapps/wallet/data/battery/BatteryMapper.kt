@@ -11,7 +11,13 @@ object BatteryMapper {
         balance: Coins,
         meanFees: String
     ): Int {
+        if (!balance.isPositive) {
+            return 0
+        }
         val meanFeesBigDecimal = BigDecimal(meanFees)
+        if (BigDecimal.ZERO >= meanFeesBigDecimal) {
+            return 0
+        }
         return balance.value.divide(meanFeesBigDecimal, 0, RoundingMode.UP).toInt()
     }
 

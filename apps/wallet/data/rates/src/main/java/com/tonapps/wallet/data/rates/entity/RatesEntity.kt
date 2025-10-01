@@ -12,7 +12,7 @@ import java.math.RoundingMode
 
 @Parcelize
 data class RatesEntity(
-    val currency: WalletCurrency,
+    val baseCurrency: WalletCurrency,
     private val map: Map<String, RateEntity>
 ): Parcelable {
 
@@ -26,11 +26,8 @@ data class RatesEntity(
     val isEmpty: Boolean
         get() = map.isEmpty()
 
-    private val isUSD: Boolean
-        get() = currency.code == "USD"
-
     val currencyCode: String
-        get() = currency.code
+        get() = baseCurrency.code
 
     val tokens: List<String>
         get() = map.keys.toList()
@@ -62,7 +59,7 @@ data class RatesEntity(
             val rate = map[token] ?: continue
             result[token] = rate
         }
-        return RatesEntity(currency, result)
+        return RatesEntity(baseCurrency, result)
     }
 
     fun rate(token: String): RateEntity? {
@@ -81,6 +78,13 @@ data class RatesEntity(
         return convert(TokenEntity.TON.address, value)
     }
 
+    private fun princeInBaseCurrency(currency: WalletCurrency): Coins? {
+        if (baseCurrency == currency) {
+            return Coins.ONE
+        }
+        return map[currency.tokenQuery]?.value
+    }
+
     fun convert(
         from: WalletCurrency,
         value: Coins,
@@ -89,19 +93,15 @@ data class RatesEntity(
         if (from == to) {
             return value
         }
-        if (from.isUSDT && to == WalletCurrency.USD || from == WalletCurrency.USD && to.isUSDT) {
-            return value
-        }
-        if (!value.isPositive || isEmpty || (from.fiat && to.fiat)) {
+        if (!value.isPositive || isEmpty) {
             return Coins.ZERO
         }
-        return if (from.fiat) {
-            convertFromFiat(to.address, value)
-        } else if (to.fiat) {
-            convert(from.address, value)
-        } else {
-            convertJetton(from, value, to)
+        val fromRate = princeInBaseCurrency(from)
+        val toRate = princeInBaseCurrency(to)
+        if (fromRate == null || toRate == null) {
+            return Coins.ZERO
         }
+        return value * (fromRate / toRate)
     }
 
     private fun convertJetton(
@@ -123,7 +123,7 @@ data class RatesEntity(
     }
 
     fun convert(token: String, value: Coins): Coins {
-        if (currency.code == token || value == Coins.ZERO) {
+        if (baseCurrency.code == token || value == Coins.ZERO) {
             return value
         }
 
@@ -131,22 +131,8 @@ data class RatesEntity(
         return (value * rate)
     }
 
-    fun convertJetton(fromToken: String, toToken: String, value: Coins): Coins {
-        if (fromToken == toToken || value == Coins.ZERO) {
-            return value
-        }
-        val fromRate = rateValue(fromToken)
-        val toRate = rateValue(toToken)
-
-        if (fromRate.isZero || toRate.isZero) {
-            return Coins.ZERO
-        }
-        val valueInMaster = value * fromRate
-        return valueInMaster.div(toRate, roundingMode = RoundingMode.HALF_DOWN)
-    }
-
     fun convertFromFiat(token: String, value: Coins): Coins {
-        if (currency.code == token) {
+        if (baseCurrency.code == token || value == Coins.ZERO) {
             return value
         }
 

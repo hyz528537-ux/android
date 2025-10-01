@@ -22,5 +22,5 @@ data class TxPage(
         get() = source == Source.LOCAL
 
     val nextKey: Timestamp?
-        get() = events.lastOrNull()?.timestamp
+        get() = events.minByOrNull { it.timestamp.value }?.timestamp
 }

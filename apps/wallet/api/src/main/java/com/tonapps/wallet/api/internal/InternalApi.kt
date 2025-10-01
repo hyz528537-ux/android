@@ -1,6 +1,7 @@
 package com.tonapps.wallet.api.internal
 
 import android.content.Context
+import android.util.Log
 import androidx.collection.ArrayMap
 import androidx.core.net.toUri
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -101,10 +102,8 @@ internal class InternalApi(
         return JSONObject(body)
     }
 
-    private fun swapEndpoint(path: String): String {
-        // val host = "dev-swap.tonkeeper.com"
-        val host = "swap.tonkeeper.com"
-        val builder = "https://$host".toUri().buildUpon()
+    private fun swapEndpoint(prefix: String, path: String): String {
+        val builder = prefix.toUri().buildUpon()
             .appendEncodedPath(path)
         _deviceCountry?.let {
             builder.appendQueryParameter("device_country_code", _deviceCountry)
@@ -113,32 +112,27 @@ internal class InternalApi(
         _storeCountry?.let {
             builder.appendQueryParameter("store_country_code", _storeCountry)
         }
-
         return builder.build().toString()
     }
 
-    fun getSwapAssets() = withRetry {
-        okHttpClient.get(swapEndpoint("v2/swap/assets"))
+    fun getOnRampData(prefix: String) = withRetry {
+        okHttpClient.get(swapEndpoint(prefix, "v2/onramp/currencies"))
     }
 
-    fun getOnRampData() = withRetry {
-        okHttpClient.get(swapEndpoint("v2/onramp/currencies"))
+    fun getOnRampPaymentMethods(prefix: String, currency: String) = withRetry {
+        okHttpClient.get(swapEndpoint(prefix, "v2/onramp/payment_methods"))
     }
 
-    fun getOnRampPaymentMethods(currency: String) = withRetry {
-        okHttpClient.get(swapEndpoint("v2/onramp/payment_methods"))
+    fun getOnRampMerchants(prefix: String) = withRetry {
+        okHttpClient.get(swapEndpoint(prefix, "v2/onramp/merchants"))
     }
 
-    fun getOnRampMerchants() = withRetry {
-        okHttpClient.get(swapEndpoint("v2/onramp/merchants"))
-    }
-
-    fun calculateOnRamp(args: OnRampArgsEntity): String? {
+    fun calculateOnRamp(prefix: String, args: OnRampArgsEntity): String? {
         val json = args.toJSON()
         _deviceCountry?.let { json.put("country", _deviceCountry) }
         return withRetry {
             okHttpClient.postJSON(
-                swapEndpoint("v2/onramp/calculate"),
+                swapEndpoint(prefix, "v2/onramp/calculate"),
                 json.toString()
             ).body.string()
         }

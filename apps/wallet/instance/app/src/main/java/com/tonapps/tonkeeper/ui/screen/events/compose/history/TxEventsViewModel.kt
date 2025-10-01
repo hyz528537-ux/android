@@ -85,9 +85,9 @@ class TxEventsViewModel(
 
     private val pager = Pager(
         config = PagingConfig(
-            initialLoadSize = 30,
-            prefetchDistance = 15,
-            pageSize = 60,
+            initialLoadSize = 15,
+            prefetchDistance = 5,
+            pageSize = 30,
             enablePlaceholders = false,
             maxSize = PagingConfig.MAX_SIZE_UNBOUNDED,
             jumpThreshold = Int.MIN_VALUE,
@@ -105,7 +105,7 @@ class TxEventsViewModel(
         eventsRepository.hiddenTxIdsFlow,
     ) { paging, filterId, decryptedComment, hiddenTxIds ->
         paging.filter { item ->
-            !hiddenTxIds.contains(item.id) && (filterId == TxFilter.All.id || item.isMatch(filterId))
+            !hiddenTxIds.contains(item.id) && !item.spam && (filterId == TxFilter.All.id || item.isMatch(filterId))
         }.map { item ->
             val decrypted = decryptedComment[item.id]
             if (decrypted.isNullOrEmpty()) {

@@ -411,6 +411,7 @@ class OmnistonScreen(wallet: WalletEntity): WalletContextScreen(R.layout.fragmen
             } else {
                 singFailure()
                 slideActionView.reset()
+                viewModel.restoreSwapStream()
             }
         }
     }
